@@ -17,6 +17,7 @@ import {
   CadViewerConfig,
   Defaults,
   FontStyle,
+  generatePointsMap,
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
@@ -773,13 +774,17 @@ const getUnfoldCadViewers = async (
       }
       cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
 
-      const startLines = [];
-      cad.entities.forEach((e) => {
-        if (e instanceof CadLineLike && e.info.startLine) {
-          startLines.push(e);
+      const pointsMap = generatePointsMap(cad.entities);
+      for (const {point, lines} of pointsMap) {
+        if (lines.length !== 1) {
+          continue;
+        }
+        const e = lines[0];
+        if (e.info.startLine) {
           const leader = new CadLeader();
           leader.setColor("red");
-          const to = e.start.clone().add(-1, 1);
+          const targetPoint = e.start.equals(point) ? e.start : e.end;
+          const to = targetPoint.clone().add(-1, 1);
           const from = to.clone().add(-10, 10);
           leader.vertices = [to, from];
           unfoldCad.entities.add(leader);
@@ -791,7 +796,7 @@ const getUnfoldCadViewers = async (
           text.anchor.set(0.5, 1);
           unfoldCad.entities.add(text);
         }
-      });
+      }
     } else {
       const cadName = new CadMtext();
       cadName.text = cad.name;
