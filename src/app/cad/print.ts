@@ -1193,6 +1193,34 @@ const draw型材物料明细 = async (
     const items0 = 型材物料明细.items;
     const items1: typeof items0 = [];
     const itemsGroup: (typeof items0)[] = [];
+    const 切角分隔符 = projectConfig.get("算料单型材物料明细切角分隔符");
+    const get切角Str = (items2: 型材物料明细Item[]) => {
+      if (items2.length < 1) {
+        return "";
+      }
+      const {左切角, 右切角} = items2[0];
+      if (切角分隔符) {
+        const arr = [Number(左切角), Number(右切角)];
+        if (arr.some((v) => isNaN(v))) {
+          return "";
+        }
+        return arr.join(切角分隔符);
+      } else {
+        if (左切角 === "45" && 右切角 === "45") {
+          return "双45";
+        }
+        if (左切角 === "90" && 右切角 === "90") {
+          return "双90";
+        }
+        if (左切角 === "45" || 右切角 === "45") {
+          return "单45";
+        }
+        if (左切角 === "90" && 右切角 === "90") {
+          return "双90";
+        }
+        return "";
+      }
+    };
     for (const item of items0) {
       const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色", "型材长度", "是横料", "左切角", "右切角"];
       const itemPrev = items1.find((v) => keys.every((k) => v[k] === item[k]));
@@ -1209,7 +1237,7 @@ const draw型材物料明细 = async (
           return false;
         }
         const target = v.find((v2) => v2.是横料 === item.是横料);
-        return !target || target.型材长度 === item.型材长度;
+        return !target || (get切角Str([target]) === get切角Str([item]) && target.型材长度 === item.型材长度);
       });
       if (itemsPrev) {
         itemsPrev.push(item);
@@ -1249,45 +1277,6 @@ const draw型材物料明细 = async (
       addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
       addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
       x += widths[2];
-
-      const get切角StrRaw = (items2: typeof items) => {
-        const 双45Count = items2.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
-        if (双45Count > 0) {
-          return "双45";
-        }
-        const 单45Count = items2.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
-        if (单45Count > 0) {
-          return "单45";
-        }
-        const 双90Count = items2.filter((v) => v.左切角 === "90" && v.右切角 === "90").length;
-        if (双90Count > 0) {
-          return "双90";
-        }
-        return "";
-      };
-      const 切角分隔符 = projectConfig.get("算料单型材物料明细切角分隔符");
-      const get切角Str = (items2: typeof items) => {
-        const raw = get切角StrRaw(items2);
-        if (切角分隔符) {
-          let arr: [number, number];
-          switch (raw) {
-            case "双45":
-              arr = [45, 45];
-              break;
-            case "单45":
-              arr = [45, 90];
-              break;
-            case "双90":
-              arr = [90, 90];
-              break;
-            default:
-              return raw;
-          }
-          return arr.join(切角分隔符);
-        } else {
-          return raw;
-        }
-      };
 
       const 横料 = items.filter((v) => v.是横料 === "是");
       const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
