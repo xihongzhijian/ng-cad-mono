@@ -514,6 +514,8 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       }
       if (Array.isArray(data)) {
         data.forEach((v) => info.data.push(v));
+        this.dataSource.data = info.data;
+        this.updateCellInputInfos();
       } else {
         this.message.alert("数据格式错误");
       }

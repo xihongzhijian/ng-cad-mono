@@ -129,7 +129,6 @@ export class CadLineTjqzComponent {
     if (this._openFormLock) {
       return;
     }
-    this._openFormLock = true;
     const {type, index} = this.openSelection;
     if (event.column.field !== "name" || index < 0) {
       return;
@@ -163,6 +162,7 @@ export class CadLineTjqzComponent {
         };
       }
     });
+    this._openFormLock = true;
     const result = await this.message.form(form);
     if (result) {
       this.infoRight.update((v) => {
