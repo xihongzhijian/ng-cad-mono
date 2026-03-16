@@ -1057,9 +1057,15 @@ export const printCads = async (params: PrintCadsParams) => {
         }
       }
     }
-    await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
-    const img = await cad.toDataURL();
-    imageContents1.push({image: img, width: localWidth, height: localHeight});
+    const {imgs} = await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
+    if (imgs.length > 0) {
+      for (const img of imgs) {
+        imageContents1.push({image: img, width: localWidth, height: localHeight});
+      }
+    } else {
+      const img = await cad.toDataURL();
+      imageContents1.push({image: img, width: localWidth, height: localHeight});
+    }
     if (img2) {
       imageContents2.push({image: img2, width: localWidth, height: localHeight});
     }
@@ -1075,8 +1081,8 @@ export const printCads = async (params: PrintCadsParams) => {
 
     const bomTable = params.orders?.[i]?.bomTable;
     if (bomTable) {
-      const imgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
-      for (const image of imgs) {
+      const bomTableImgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
+      for (const image of bomTableImgs) {
         imageContents2.push({image, width: localWidth, height: localHeight});
       }
     }
@@ -1115,32 +1121,42 @@ export const printCads = async (params: PrintCadsParams) => {
 
 const draw型材物料明细 = async (
   cad: CadViewer,
-  data: CadData,
+  dataRaw: CadData,
   型材物料明细: 型材物料明细List | undefined,
   projectConfig: ProjectConfig
 ) => {
+  const result = {imgs: [] as string[]};
   if (!型材物料明细 || !型材物料明细.items) {
-    return;
+    return result;
   }
-  const lines = findRectLines(data, "型材物料明细", true);
+  const lines = findRectLines(dataRaw, "型材物料明细", true);
   if (lines.errors.length > 0 || !lines.locator || !lines.rect.isFinite) {
     console.warn("型材物料明细定位出错");
-    return;
+    return result;
   }
+  lines.locator.visible = false;
 
-  const ps: Promise<void>[] = [];
+  let data = dataRaw;
+  const dataRawCopy = dataRaw.clone();
+  const dataList: CadData[] = [];
+  const entitiesToRender: CadEntity[] = [];
+  const addEntityToRender = (e: CadEntity) => {
+    if (data === dataRaw) {
+      entitiesToRender.push(e);
+    }
+  };
   const addLine = (x1: number, y1: number, x2: number, y2: number) => {
     const line = new CadLine({start: [x1, y1], end: [x2, y2]});
     line.linewidth = 1;
     data.entities.add(line);
-    ps.push(cad.render(line));
+    addEntityToRender(line);
     return line;
   };
   const addText = (maxLength: number, text: string, insert: [number, number], anchor: [number, number], fontStyle?: FontStyle) => {
     const mtext = new CadMtext({text, insert, anchor, fontStyle});
     mtext.text = getWrapedText(cad, text, mtext, {maxLength}).join("\n");
     data.entities.add(mtext);
-    ps.push(cad.render(mtext));
+    addEntityToRender(mtext);
     return mtext;
   };
   const cellPadding = 10;
@@ -1192,7 +1208,7 @@ const draw型材物料明细 = async (
   } else {
     const items0 = 型材物料明细.items;
     const items1: typeof items0 = [];
-    const itemsGroup: (typeof items0)[] = [];
+    const itemsGroupPlain: (typeof items0)[] = [];
     const 切角分隔符 = projectConfig.get("算料单型材物料明细切角分隔符");
     const get切角Str = (items2: 型材物料明细Item[]) => {
       if (items2.length < 1) {
@@ -1232,7 +1248,7 @@ const draw型材物料明细 = async (
     }
     for (const item of items1) {
       const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
-      const itemsPrev = itemsGroup.find((v) => {
+      const itemsPrev = itemsGroupPlain.find((v) => {
         if (!v.find((v2) => keys.every((k) => v2[k] === item[k]))) {
           return false;
         }
@@ -1242,74 +1258,97 @@ const draw型材物料明细 = async (
       if (itemsPrev) {
         itemsPrev.push(item);
       } else {
-        itemsGroup.push([item]);
+        itemsGroupPlain.push([item]);
       }
     }
-    itemsGroup.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
+    itemsGroupPlain.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
+    const itemsGroups: (typeof itemsGroupPlain)[] = [];
+    lineHeight = 119;
+    const itemsPerPage = Math.floor(lines.rect.height / lineHeight);
+    for (let i = 0; i < itemsGroupPlain.length / itemsPerPage; i++) {
+      itemsGroups.push(itemsGroupPlain.slice(i * itemsPerPage, (i + 1) * itemsPerPage));
+    }
 
     widths = [180, 120, 80, 140, 80];
     widths.push(rowWidth - widths.reduce((a, b) => a + b, 0));
-    lineHeight = 119;
     fontSizeText = 30;
     fontSizeTitle = 40;
-    for (const w of widths) {
-      x += w;
-      addLine(x, y, x, y - lineHeight * itemsGroup.length);
-    }
-    x = x0;
-    for (const items of itemsGroup) {
-      addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
-      addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
-
-      const img = new CadImage();
-      img.position.set(x + widths[0] / 2, y - lineHeight / 2);
-      img.anchor.set(0.5, 0.5);
-      img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
-      img.objectFit = "contain";
-      await setImageUrl(img, items[0].截面图);
-      data.entities.add(img);
-      ps.push(cad.render(img));
-      x += widths[0];
-
-      addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
-      x += widths[1];
-
-      addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
-      addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
-      x += widths[2];
-
-      const 横料 = items.filter((v) => v.是横料 === "是");
-      const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
-      if (横料Count > 0) {
-        const text = `${横料[0].型材长度}=${横料Count}`;
-        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+    for (const [i, itemsGroup] of itemsGroups.entries()) {
+      if (i > 0) {
+        data = dataRawCopy.clone();
       }
-      const 竖料 = items.filter((v) => v.是横料 === "否");
-      const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
-      if (竖料Count > 0) {
-        const text = `${竖料[0].型材长度}=${竖料Count}`;
-        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+      dataList.push(data);
+      x = x0;
+      y = y0;
+      for (const w of widths) {
+        x += w;
+        addLine(x, y, x, y - lineHeight * itemsGroup.length);
       }
-      x += widths[3];
+      x = x0;
+      for (const items of itemsGroup) {
+        addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
+        addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
 
-      const 横料切角Str = get切角Str(横料);
-      if (横料切角Str) {
-        addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+        const img = new CadImage();
+        img.position.set(x + widths[0] / 2, y - lineHeight / 2);
+        img.anchor.set(0.5, 0.5);
+        img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
+        img.objectFit = "contain";
+        await setImageUrl(img, items[0].截面图);
+        data.entities.add(img);
+        addEntityToRender(img);
+        x += widths[0];
+
+        addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
+        x += widths[1];
+
+        addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+        addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+        x += widths[2];
+
+        const 横料 = items.filter((v) => v.是横料 === "是");
+        const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
+        if (横料Count > 0) {
+          const text = `${横料[0].型材长度}=${横料Count}`;
+          addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+        }
+        const 竖料 = items.filter((v) => v.是横料 === "否");
+        const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
+        if (竖料Count > 0) {
+          const text = `${竖料[0].型材长度}=${竖料Count}`;
+          addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+        }
+        x += widths[3];
+
+        const 横料切角Str = get切角Str(横料);
+        if (横料切角Str) {
+          addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+        }
+        const 竖料切角Str = get切角Str(竖料);
+        if (竖料切角Str) {
+          addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+        }
+        x += widths[4];
+
+        addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeText});
+
+        x = lines.rect.left;
+        y -= lineHeight;
       }
-      const 竖料切角Str = get切角Str(竖料);
-      if (竖料切角Str) {
-        addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
-      }
-      x += widths[4];
-
-      addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeText});
-
-      x = lines.rect.left;
-      y -= lineHeight;
     }
   }
 
-  await Promise.all(ps);
-  lines.locator.visible = false;
-  await cad.render(lines.locator);
+  addEntityToRender(lines.locator);
+  await cad.render(entitiesToRender);
+  await timeout(0);
+  for (const [i, dataCurr] of dataList.entries()) {
+    let img: string;
+    if (i === 0) {
+      img = await cad.toDataURL();
+    } else {
+      img = await getCadPreview("cad", dataCurr, {config: cad.getConfig()});
+    }
+    result.imgs.push(img);
+  }
+  return result;
 };
