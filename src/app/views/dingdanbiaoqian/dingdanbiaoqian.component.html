@@ -131,7 +131,13 @@
                 </div>
                 @if (config().showBarcode) {
                   <div>
-                    <svg #barcode class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
+                    <svg
+                      #barcode
+                      class="barcode"
+                      height="40"
+                      [attr.jsbarcode-value]="cad.data.info.groupId"
+                      [attr.jsbarcode-height]="40"
+                    ></svg>
                   </div>
                 }
                 <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
@@ -194,7 +200,7 @@
         <ng-template *ngTemplateOutlet="formTpl; context: {$implicit: form}"></ng-template>
         @if (form.barCode) {
           <div class="barcode-container">
-            <svg #barcode class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
+            <svg #barcode class="barcode value" height="40" [attr.jsbarcode-value]="form.barCode" [attr.jsbarcode-height]="40"></svg>
           </div>
         }
       </div>
