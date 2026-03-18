@@ -87,7 +87,7 @@
     <div class="label">激光开料标记线</div>
     @if (data().info["激光开料标记线"]?.length === 0) {
       <div>
-        <button mat-icon-button (click)="arrayAddEnsure(data().info, '激光开料标记线', emptyBjxItem)">
+        <button mat-icon-button (click)="addBjxItem()">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -100,17 +100,13 @@
               <mat-option [value]="type">{{ type }}</mat-option>
             }
           </mat-select>
-          <button mat-icon-button matSuffix [class]="getBjxPointClass(j)" (click)="$event.stopPropagation(); selectBjxPoint(j)">
+          <button mat-icon-button matSuffix [class]="getBjxPointClass(j)" (click)="selectBjxPoint(j, $event)">
             <mat-icon>linear_scale</mat-icon>
           </button>
-          <button
-            mat-icon-button
-            matSuffix
-            (click)="$event.stopPropagation(); arrayAddEnsure(data().info, '激光开料标记线', emptyBjxItem, j + 1)"
-          >
+          <button mat-icon-button matSuffix (click)="addBjxItem(j + 1, $event)">
             <mat-icon>add_circle</mat-icon>
           </button>
-          <button mat-icon-button matSuffix (click)="$event.stopPropagation(); arrayRemoveEnsure(data().info, '激光开料标记线', j)">
+          <button mat-icon-button matSuffix (click)="removeBjxItem(j, $event)">
             <mat-icon>remove_circle</mat-icon>
           </button>
         </mat-form-field>

@@ -59,7 +59,6 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   private _cadPointsLock = false;
   cadStatusIntersectionInfo: CadStatusIntersection["info"] = "";
   bjxTypes = 激光开料标记线类型;
-  emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
   prevConfig: Partial<AppConfig> = {};
 
   selectJointpointEff = this.status.getCadStatusEffect(
@@ -704,7 +703,8 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     return this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && !!v.multi && v.info === key);
   }
 
-  selectBjxPoint(i: number) {
+  selectBjxPoint(i: number, event?: PointerEvent) {
+    event?.stopPropagation();
     this.cadStatusIntersectionInfo = "激光开料标记线";
     this.status.toggleCadStatus(new CadStatusIntersection("激光开料标记线", i));
   }
@@ -765,5 +765,14 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
     this.arrayRemove(arr, i);
     this.updateIntersectionInputs2();
+  }
+
+  addBjxItem(i?: number, event?: PointerEvent) {
+    event?.stopPropagation();
+    this.arrayAddEnsure(this.data().info, "激光开料标记线", {type: "短直线", ids: []}, i);
+  }
+  removeBjxItem(i: number, event?: PointerEvent) {
+    event?.stopPropagation();
+    this.arrayRemoveEnsure(this.data().info, "激光开料标记线", i);
   }
 }
