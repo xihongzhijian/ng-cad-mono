@@ -1,5 +1,5 @@
 import {getTypeOf, ObjectOf, Point} from "@lucilor/utils";
-import {cloneDeep, isEqual} from "lodash";
+import {cloneDeep} from "lodash";
 
 export class Defaults {
   static get DASH_ARRAY() {
@@ -148,34 +148,6 @@ export const linewidth2lineweight = (x: number) => {
 export const toFixedTrim = (num: number, fractionDigits?: number) => {
   const str = num.toFixed(fractionDigits);
   return Number(str).toString();
-};
-
-const purgeObject2 = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>) => {
-  const isEmpty = (val: any) => val === undefined || val === null;
-  Object.keys(obj).forEach((key) => {
-    let value = obj[key];
-    if (isEmpty(value) || key === "") {
-      delete obj[key];
-    } else if (defaultObj && isEqual(value, defaultObj[key])) {
-      delete obj[key];
-    } else if (Array.isArray(value)) {
-      value = value.filter((v) => !isEmpty(v));
-      if (value.length < 1) {
-        delete obj[key];
-      }
-    } else if (typeof value === "object") {
-      purgeObject2(value, defaultObj);
-      if (Object.keys(value).length < 1) {
-        delete obj[key];
-      }
-    }
-  });
-};
-
-export const purgeObject = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>): ObjectOf<any> => {
-  const result = cloneDeep(obj);
-  purgeObject2(result, defaultObj);
-  return result;
 };
 
 export const importObjProps = <T extends object>(obj: T, data: ObjectOf<any>, propertyKeys: (keyof T)[]) => {

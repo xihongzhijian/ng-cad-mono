@@ -1,5 +1,5 @@
-import {Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
-import {getVectorFromArray, purgeObject} from "../../cad-utils";
+import {Matrix, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
+import {getVectorFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -52,7 +52,7 @@ export class CadHatch extends CadEntity {
     }
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const paths: any[] = [];
     this.paths.forEach((path) => {
       const edges: any[] = [];
@@ -61,7 +61,7 @@ export class CadHatch extends CadEntity {
       path.vertices.forEach((vertice) => vertices.push(vertice.toArray()));
       paths.push({edges, vertices});
     });
-    return {...super.export(), ...purgeObject({paths})};
+    return {...super.export(), ...purgeObject<ObjectOf<any>>({paths})};
   }
 
   protected _transform(matrix: Matrix) {

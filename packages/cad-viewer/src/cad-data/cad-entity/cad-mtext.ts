@@ -1,6 +1,6 @@
-import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {Matrix, MatrixLike, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
-import {getVectorFromArray, purgeObject} from "../../cad-utils";
+import {getVectorFromArray} from "../../cad-utils";
 import {FontStyle} from "../cad-styles";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
@@ -41,11 +41,11 @@ export class CadMtext extends CadEntity {
     this.info = data.info ?? {};
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const anchor = this.anchor.toArray();
     return {
       ...super.export(),
-      ...purgeObject({insert: this.insert.toArray(), fontStyle: this.fontStyle, text: this.text, anchor})
+      ...purgeObject<ObjectOf<any>>({insert: this.insert.toArray(), fontStyle: this.fontStyle, text: this.text, anchor})
     };
   }
 

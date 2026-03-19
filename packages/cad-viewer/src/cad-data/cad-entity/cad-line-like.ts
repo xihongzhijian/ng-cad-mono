@@ -1,5 +1,4 @@
-import {Curve, ObjectOf, Point} from "@lucilor/utils";
-import {purgeObject} from "../../cad-utils";
+import {Curve, ObjectOf, Point, purgeObject} from "@lucilor/utils";
 import {DEFAULT_LENGTH_TEXT_SIZE} from "../cad-entities";
 import {CadEntity} from "./cad-entity";
 
@@ -143,10 +142,10 @@ export abstract class CadLineLike extends CadEntity {
     this.线功能 = data.线功能 ?? cadLineOptions.线功能.defaultValue;
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const result = {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         mingzi: this.mingzi,
         mingzi2: this.mingzi2,
         qujian: this.qujian,

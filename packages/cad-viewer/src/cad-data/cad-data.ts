@@ -1,4 +1,4 @@
-import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point} from "@lucilor/utils";
+import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point, purgeObject} from "@lucilor/utils";
 import {cloneDeep, intersection, uniqWith} from "lodash";
 import {v4} from "uuid";
 import {
@@ -8,7 +8,6 @@ import {
   importObjProps,
   mergeArray,
   mergeObject,
-  purgeObject,
   separateArray,
   separateObject
 } from "../cad-utils";
