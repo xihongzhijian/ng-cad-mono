@@ -52,14 +52,19 @@ export class ChangelogComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.getData();
+    this.getUpdateTimeStamp();
   }
 
-  private async getData() {
-    const pageSize = this.pageSize();
-    const branch = this.branch();
+  async getUpdateTimeStamp() {
     const updateTime = await this.status.getUpdateTimeStamp();
     this.updateTime.set(updateTime);
+    console.log(1);
+  }
+
+  async getCommits() {
+    const pageSize = this.pageSize();
+    const branch = this.branch();
+    const updateTime = this.updateTime();
     const changelogRaw = await this.http.getChangelog({page: 1, pageSize, branch}, {spinner: this.loaderId});
     let updateDivideIndex = -1;
     const changelog: ReturnType<typeof this.changelog> = [];

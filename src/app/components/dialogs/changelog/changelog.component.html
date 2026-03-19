@@ -40,7 +40,10 @@
 <ng-template #updateTimeTemp>
   <mat-divider></mat-divider>
   <div class="time">更新时间：{{ updateTimeTitle() }}</div>
-  <div class="time">当前分支：{{ branch() }}</div>
+  <div class="time toolbar">
+    <div>当前分支：{{ branch() }}</div>
+    <button mat-button (click)="getCommits()">刷新分支内容</button>
+  </div>
   <mat-divider></mat-divider>
 </ng-template>
 
