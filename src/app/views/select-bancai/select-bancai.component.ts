@@ -9,6 +9,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
 import {getValueString} from "@app/utils/get-value";
+import {AboutComponent} from "@components/about/about.component";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
@@ -43,6 +44,7 @@ import {
   templateUrl: "./select-bancai.component.html",
   styleUrls: ["./select-bancai.component.scss"],
   imports: [
+    AboutComponent,
     FormsModule,
     InputComponent,
     MatButtonModule,
@@ -516,7 +518,8 @@ export class SelectBancaiComponent {
       type,
       getCadOptions,
       projectConfigOverride,
-      verbose: this.verbose()
+      verbose: this.verbose(),
+      testMode: this.config.getConfig("testMode")
     };
     url = await this.http.getData<string | string[]>(api, data);
     if (url) {

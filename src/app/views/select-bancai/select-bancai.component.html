@@ -1,5 +1,6 @@
-<div class="title">
-  <div>订单编号: {{ codesStr() }}</div>
+<div class="toolbar">
+  <div class="title">订单编号: {{ codesStr() }}</div>
+  <button mat-button class="plain"><app-about></app-about></button>
 </div>
 <div class="toolbar flex-row">
   @if (isShowXikong()) {
