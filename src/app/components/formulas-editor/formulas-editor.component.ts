@@ -277,6 +277,7 @@ export class FormulasEditorComponent {
     if (parseText) {
       const parseFormulasTextResult = this.parseFormulasText();
       if (!parseFormulasTextResult.data) {
+        parseFormulasTextResult.alertError(this.message);
         return;
       }
       list = parseFormulasTextResult.data;
@@ -284,7 +285,8 @@ export class FormulasEditorComponent {
       list = this.formulaList();
     }
     const submitResult = await this.submitFormulas(list);
-    if (submitResult.errors.length > 0) {
+    if (submitResult.hasError()) {
+      submitResult.alertError(this.message);
       return;
     }
     const result = await this.calc.calcFormulas(submitResult.data, this.vars());
