@@ -174,7 +174,7 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoButtonInfo extends StyledItem {
   name: string;
-  onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
+  onClick?: (info: InputInfo) => MaybePromise<{isValueChanged?: boolean} | void | null>;
   isDefault?: boolean;
 }
 export interface InputInfoTextInfo extends StyledItem {

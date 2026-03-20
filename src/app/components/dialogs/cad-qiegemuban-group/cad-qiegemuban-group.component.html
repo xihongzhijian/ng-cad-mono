@@ -1,0 +1,26 @@
+<mat-tab-group>
+  @for (item of items(); track i; let i = $index) {
+    @if (itemInfos()[i]; as itemInfo) {
+      <mat-tab>
+        <ng-scrollbar>
+          <ng-template mat-tab-label>
+            {{ item.name }}
+            @if (itemInfo.isEmpty) {
+              <mat-icon class="plain">bookmark</mat-icon>
+            } @else {
+              <mat-icon class="primary">bookmark_check</mat-icon>
+            }
+          </ng-template>
+          @for (info of itemInfo.inputInfos; track $index) {
+            <app-input [info]="info"></app-input>
+          }
+        </ng-scrollbar>
+      </mat-tab>
+    }
+  }
+</mat-tab-group>
+
+<div class="toolbar center">
+  <button mat-flat-button (click)="submit()">确定</button>
+  <button mat-flat-button (click)="cancel()">取消</button>
+</div>

@@ -135,6 +135,11 @@
         }
         <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
         <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+        @if (info.clearable) {
+          <button matSuffix mat-icon-button (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     }
@@ -691,7 +696,9 @@
     @case ("button") {
       <div class="buttons">
         @for (button of info.buttons; track $index) {
-          <button mat-flat-button [class]="button.class" [style]="button.style" (click)="button.onClick?.()">{{ button.name }}</button>
+          <button mat-flat-button [class]="button.class" [style]="button.style" (click)="clickInputInfoBtn(button)">
+            {{ button.name }}
+          </button>
         }
       </div>
       <ng-template [ngTemplateOutlet]="footer"></ng-template>
@@ -754,7 +761,7 @@
 
   <ng-template #suffixIconsTmp>
     @for (icon of info.suffixIcons; track $index) {
-      <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()" [disabled]="info.disabled">
+      <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="clickInputInfoBtn(icon)" [disabled]="info.disabled">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
     }

@@ -58,7 +58,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOptions, InputInfoString} from "./input.types";
 import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
 
 @Component({
@@ -773,7 +773,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const {type, suffixIcons} = info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
-      let result = defaultSuffixIcon.onClick?.();
+      let result = this.clickInputInfoBtn(defaultSuffixIcon);
       if (result instanceof Promise) {
         result = await result;
       }
@@ -790,8 +790,12 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         this.selectOptions(this.model.key);
       }
     }
-    info.onClick?.(this as any);
+    info.onClick?.(this.infoIn() as any);
     this.click.emit(event);
+  }
+
+  clickInputInfoBtn(btn: InputInfoButtonInfo) {
+    return btn.onClick?.(this.infoIn());
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
