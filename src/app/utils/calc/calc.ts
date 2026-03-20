@@ -5,17 +5,8 @@ import {CalcCircularReferenceError, CalcSelfReferenceError} from "./errors";
 import {ExpressionDeps, ExpressionInfo, FormulaInfo, Formulas} from "./types";
 
 export class Calc {
-  private static _builtins: [string[], any?][] = [
-    [
-      ["round", "四舍五入"],
-      (num: string | number, decimal = 0) => {
-        if (typeof num === "number" && isNaN(num)) {
-          return 0;
-        }
-        const res = toFixed(num, decimal);
-        return Number(res);
-      }
-    ],
+  private static _builtins: [string[], string?][] = [
+    [["round", "四舍五入"], "Math.round"],
     [["floor", "去除小数"], "Math.floor"],
     [["ceil", "小数进一"], "Math.ceil"],
     [["rand", "随机数"], "Math.random"],
@@ -29,13 +20,13 @@ export class Calc {
     [["=", "等于号"]],
     [
       ["strpos"],
-      (str: string, needle: string) => {
+      String((str: string, needle: string) => {
         const index = str.indexOf(needle);
         if (index === -1) {
           return false;
         }
         return index;
-      }
+      })
     ],
     [["asin"], "Math.asin"],
     [["acos"], "Math.acos"],
@@ -49,17 +40,17 @@ export class Calc {
     [["tanh"], "Math.tanh"],
     [["pi"], "Math.PI"],
     [["e"], "Math.E"],
-    [["in_array"], (needle: any, stack: any[]) => stack.includes(needle)],
-    [["有小数"], (num: number) => num - Math.floor(num) !== 0],
-    [["有整除余数"], (num: number, num2: number) => num % num2 !== 0],
-    [["是整数"], (num: number) => num - Math.floor(num) === 0],
-    [["是奇数"], (num: number) => num % 2 !== 0],
-    [["是偶数"], (num: number) => num % 2 === 0],
-    [["求整除余数"], (num: number, num2: number) => num % num2],
-    [["求小数"], (num: number) => num - Math.floor(num)],
+    [["in_array"], String((needle: any, stack: any[]) => stack.includes(needle))],
+    [["有小数"], String((num: number) => num - Math.floor(num) !== 0)],
+    [["有整除余数"], String((num: number, num2: number) => num % num2 !== 0)],
+    [["是整数"], String((num: number) => num - Math.floor(num) === 0)],
+    [["是奇数"], String((num: number) => num % 2 !== 0)],
+    [["是偶数"], String((num: number) => num % 2 === 0)],
+    [["求整除余数"], String((num: number, num2: number) => num % num2)],
+    [["求小数"], String((num: number) => num - Math.floor(num))],
     [
       ["包含"],
-      (str1: any, str2: any) => {
+      String((str1: any, str2: any) => {
         if (!str1 || !str2) {
           return false;
         }
@@ -67,11 +58,11 @@ export class Calc {
           return false;
         }
         return str1.includes(str2);
-      }
+      })
     ],
     [
       ["取子字符串"],
-      (str: string, start: number, length = 1) => {
+      String((str: string, start: number, length = 1) => {
         if (typeof str !== "string" || !str) {
           return "";
         }
@@ -79,11 +70,11 @@ export class Calc {
           start = 1;
         }
         return str.slice(start - 1, start - 1 + length);
-      }
+      })
     ],
     [
       ["取整或取一半"],
-      (num: number) => {
+      String((num: number) => {
         if (typeof num === "string") {
           num = Number(num);
         }
@@ -99,7 +90,7 @@ export class Calc {
         } else {
           return int + 1;
         }
-      }
+      })
     ]
   ];
   private static _opsReg = /[+\\\-x*/()|&!?:>< =,%]+/g;
@@ -121,13 +112,15 @@ export class Calc {
       if (val === undefined) {
         continue;
       }
-      const valStr = typeof val === "string" ? val : String(val);
       for (const [i, name] of names.entries()) {
         const nameLower = name.toLowerCase();
         if (i === 0) {
-          valsStr += `const ${nameLower} = ${valStr};\n`;
+          valsStr += `const ${name} = ${val};\n`;
+          if (nameLower !== name) {
+            valsStr += `const ${nameLower} = ${name};\n`;
+          }
         } else {
-          valsStr += `const ${nameLower} = ${names[0].toLowerCase()};\n`;
+          valsStr += `const ${nameLower} = ${names[0]};\n`;
         }
       }
     }
@@ -145,10 +138,10 @@ export class Calc {
       if (_builtins.some((list) => list[0].includes(strLower))) {
         return false;
       }
-      if (/[.]/.test(str)) {
+      if (!isNaN(Number(str)) || /[.]/.test(str)) {
         return false;
       }
-      return isNaN(Number(str)) && str.match(/^[^'^"]+/);
+      return str.match(/^[^'^"]+/);
     });
   }
 
@@ -320,7 +313,7 @@ export class Calc {
    * @returns
    */
   public static calcExpressDirect(expression: string) {
-    const fn = new Function(`${this._buildFnStr()}return ${expression};`);
+    const fn = new Function(`${this._buildFnStr()}return ${expression.toLocaleLowerCase()};`);
     try {
       return fn();
     } catch (e) {
