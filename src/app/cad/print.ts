@@ -1287,7 +1287,20 @@ const draw型材物料明细 = async (
       x = x0;
       for (const items of itemsGroup) {
         addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
-        addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+
+        const 横料 = items.filter((v) => v.是横料 === "是");
+        const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
+        const 竖料 = items.filter((v) => v.是横料 === "否");
+        const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
+        let 横料Y: number;
+        let 竖料Y: number;
+        if (横料Count > 0 && 竖料Count > 0) {
+          横料Y = y - lineHeight * 0.25;
+          竖料Y = y - lineHeight * 0.75;
+          addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+        } else {
+          横料Y = 竖料Y = y - lineHeight * 0.5;
+        }
 
         const img = new CadImage();
         img.position.set(x + widths[0] / 2, y - lineHeight / 2);
@@ -1302,31 +1315,31 @@ const draw型材物料明细 = async (
         addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
         x += widths[1];
 
-        addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
-        addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+        if (横料Count > 0) {
+          addText(widths[2], "横料", [x + widths[2] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
+        }
+        if (竖料Count > 0) {
+          addText(widths[2], "竖料", [x + widths[2] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
+        }
         x += widths[2];
 
-        const 横料 = items.filter((v) => v.是横料 === "是");
-        const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
         if (横料Count > 0) {
           const text = `${横料[0].型材长度}=${横料Count}`;
-          addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+          addText(widths[3], text, [x + widths[3] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
         }
-        const 竖料 = items.filter((v) => v.是横料 === "否");
-        const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
         if (竖料Count > 0) {
           const text = `${竖料[0].型材长度}=${竖料Count}`;
-          addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+          addText(widths[3], text, [x + widths[3] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
         }
         x += widths[3];
 
         const 横料切角Str = get切角Str(横料);
         if (横料切角Str) {
-          addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+          addText(widths[4], 横料切角Str, [x + widths[4] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
         }
         const 竖料切角Str = get切角Str(竖料);
         if (竖料切角Str) {
-          addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+          addText(widths[4], 竖料切角Str, [x + widths[4] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
         }
         x += widths[4];
 
