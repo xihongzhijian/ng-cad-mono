@@ -13,6 +13,7 @@ import {
   CadLine,
   CadLineLike,
   CadMtext,
+  CadStylizer,
   CadViewer,
   CadViewerConfig,
   Defaults,
@@ -903,38 +904,23 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
 };
 
 export const printCads = async (params: PrintCadsParams) => {
+  读取算料单项目配置(params);
   const cads = params.cads.map((v) => v.clone());
   const config = params.config || {};
   const extra = params.extra || {};
   const {width, height, scaleX, scaleY, scale} = getPrintInfo(210, 297);
   const errors: string[] = [];
 
-  const pdfPadding: number[] = [];
-  const 算料单页边距 = params.projectConfig.get("算料单页边距");
-  const defaultPadding = 18;
-  const 算料单页边距Num = Number(算料单页边距);
-  if (isNaN(算料单页边距Num)) {
-    const 算料单页边距Arr = 算料单页边距.split("+");
-    for (const char of "上右下左") {
-      const str = 算料单页边距Arr.find((v) => v.startsWith(char))?.slice(char.length);
-      const num = Number(str);
-      if (isNaN(num)) {
-        pdfPadding.push(defaultPadding);
-      } else {
-        pdfPadding.push(num);
-      }
-    }
-  } else {
-    pdfPadding.push(算料单页边距 ? 算料单页边距Num : defaultPadding);
-  }
   const config2: Partial<CadViewerConfig> = {
     backgroundColor: "white",
-    padding: pdfPadding.map((v) => v * scale),
     hideLineLength: true,
     hideLineGongshi: true,
     minLinewidth: 0,
     ...config
   };
+  if (config2.padding) {
+    config2.padding = config2.padding.map((v) => v * scale);
+  }
   const cad = new CadViewer(new CadData(), config2);
   cad.appendTo(document.body);
   cad.dom.style.opacity = "0";
@@ -1117,6 +1103,47 @@ export const printCads = async (params: PrintCadsParams) => {
   const name = params.codes?.join(",") || "print";
   const pdfFile = new File([blob], `${name}.pdf`, {type: "application/pdf"});
   return {url, errors, cad, pdfFile, imageContents};
+};
+
+const 读取算料单项目配置 = (params: PrintCadsParams) => {
+  const {projectConfig} = params;
+  params.linewidth = 1.5;
+  if (projectConfig.getBoolean("算料单CAD线宽加粗")) {
+    params.linewidth = 2;
+  }
+  const linewidth = projectConfig.getNumber("算料单CAD线宽");
+  if (linewidth > 0) {
+    params.linewidth = linewidth;
+  }
+
+  if (!params.config) {
+    params.config = {};
+  }
+
+  if (!params.config.fontStyle) {
+    params.config.fontStyle = {};
+  }
+  const fontFamily = projectConfig.get("算料单字体");
+  if (fontFamily) {
+    CadStylizer.mergeFontStyle(params.config.fontStyle, {family: fontFamily});
+  }
+  // fixme: 会被后续逻辑覆盖
+  const fontSize = projectConfig.getNumber("算料单字体大小", 0);
+  if (fontSize > 0) {
+    CadStylizer.mergeFontStyle(params.config.fontStyle, {size: fontSize});
+  }
+
+  if (!params.config.dimStyle) {
+    params.config.dimStyle = {};
+  }
+  const 算料单CAD隐藏尺寸线 = projectConfig.getBoolean("算料单CAD隐藏尺寸线");
+  if (算料单CAD隐藏尺寸线) {
+    CadStylizer.mergeDimStyle(params.config.dimStyle, {extensionLines: {hidden: true}});
+  }
+
+  const 算料单页边距 = params.projectConfig.getTrbl("算料单页边距", 18);
+  console.log(算料单页边距, params.projectConfig.get("算料单页边距"));
+  params.config.padding = 算料单页边距;
 };
 
 const draw型材物料明细 = async (

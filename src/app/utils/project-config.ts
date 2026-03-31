@@ -1,4 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
+import {getTrbl} from "./trbl";
 
 export class ProjectConfig {
   constructor(private raw: ProjectConfigRaw = {}) {}
@@ -24,6 +25,16 @@ export class ProjectConfig {
   getBoolean(key: string) {
     const value = this.get(key);
     return value === "是";
+  }
+
+  getNumber(key: string, defaultValue = 0) {
+    const value = this.get(key);
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+  }
+
+  getTrbl(key: string, defaultNum = 0) {
+    return getTrbl(this.get(key), defaultNum);
   }
 
   getIsEqual<T extends string>(key: string, value: T) {
