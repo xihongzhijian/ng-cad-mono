@@ -401,7 +401,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const copyInfo = tryParseJson(copyInfoStr);
     if (copyInfo?.key === "cad-viewer copy entities" && copyInfo.entities) {
       const cad = this.status.cad;
-      const entities = new CadEntities(copyInfo.entities);
+      const entities = new CadEntities(copyInfo.entities, true);
       if (cad.pointerPosition) {
         const {x: px, y: py} = cad.pointerPosition;
         const point2 = cad.getWorldPoint(px, py);
