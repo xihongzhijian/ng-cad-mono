@@ -37,6 +37,30 @@ export class ProjectConfig {
     return getTrbl(this.get(key), defaultNum);
   }
 
+  getArray(key: string, defaultValue: string[] = []) {
+    const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
+    return value.split("+").map((item) => item.trim());
+  }
+
+  getObject(key: string, defaultValue: ObjectOf<string> = {}) {
+    const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
+    const arr = this.getArray(key);
+    const obj: ObjectOf<string> = {};
+    for (const item of arr) {
+      const [k, v] = item.split("=").map((part) => part.trim());
+      if (k && v) {
+        obj[k] = v || "";
+      }
+    }
+    return obj;
+  }
+
   getIsEqual<T extends string>(key: string, value: T) {
     return this.get<T>(key) === value;
   }

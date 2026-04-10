@@ -5,5 +5,8 @@
 .tables {
   app-table {
     height: 100%;
+    &:not(:last-child) {
+      margin-right: 5px;
+    }
   }
 }
