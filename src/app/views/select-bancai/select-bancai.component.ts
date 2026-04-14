@@ -31,7 +31,6 @@ import {
   BancaisInfo,
   DakongSummary,
   guigePattern,
-  houduPattern,
   OrderBancaiInfo,
   PaiBanSummaryItem,
   SelectBancaiDlHistory,
@@ -378,15 +377,7 @@ export class SelectBancaiComponent {
                 onChange("houdu", value);
                 updateGuigeOptions();
               },
-              validators: [
-                Validators.required,
-                (control) => {
-                  if (!houduPattern.test(control.value)) {
-                    return {pattern: "厚度必须为数字"};
-                  }
-                  return null;
-                }
-              ],
+              validators: [Validators.required],
               style: {flex: "1"}
             },
             guigeInput,
