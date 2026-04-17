@@ -19,7 +19,7 @@ export const getLineTable = (data: CadLineLike[]) => {
         name: "展开方式",
         options: cadLineOptions.zhankaifangshi.values.slice(),
         editable: true,
-        width: "120px"
+        width: "140px"
       },
       {type: "string", field: "zidingzhankaichang", name: "指定展开长", editable: true, style: {flex: "1 1 120px"}}
     ]
