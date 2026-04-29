@@ -998,7 +998,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         .map((v) => v.name)
         .join(", ");
     } else if (info.type === "image" && files[0]) {
-      info.onChange?.(files[0], info);
+      await info.onChange?.(files[0], info);
+      this.cd.markForCheck();
     }
   }
 

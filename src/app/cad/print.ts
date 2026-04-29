@@ -1142,7 +1142,6 @@ const 读取算料单项目配置 = (params: PrintCadsParams) => {
   }
 
   const 算料单页边距 = params.projectConfig.getTrbl("算料单页边距", 18);
-  console.log(算料单页边距, params.projectConfig.get("算料单页边距"));
   params.config.padding = 算料单页边距;
 };
 

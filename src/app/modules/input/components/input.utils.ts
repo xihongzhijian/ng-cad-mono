@@ -297,12 +297,12 @@ export class InputInfoWithDataGetter<T> {
 
   image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage<T>>): InputInfoImage<T> {
     const data = getValue(this.data);
-    return {
+    const info: InputInfoImage<T> = {
       type: "image",
       label: String(key),
       value: data[key],
       prefix: filePathUrl,
-      onChange: async (val, info) => {
+      onChange: async (val) => {
         if (val) {
           const result = await http.uploadImage(val);
           if (result?.url) {
@@ -317,6 +317,7 @@ export class InputInfoWithDataGetter<T> {
       ...this.others,
       ...others
     };
+    return info;
   }
 
   coordinate(key: keyof T, others?: InputInfoWithDataPart<InputInfoCoordinate<T>>): InputInfoCoordinate<T> {
