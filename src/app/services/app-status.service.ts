@@ -589,6 +589,7 @@ export class AppStatusService {
     } else {
       generateLineTexts2(data);
     }
+    this.emitChangeCadSignal();
   }
 
   getCadPoints(map?: PointsMap | CadEntities, mid?: boolean) {

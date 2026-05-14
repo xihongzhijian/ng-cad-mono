@@ -786,10 +786,16 @@ export const exportCadData = (data: CadData) => {
             if (count > exportCadDataRemoveLengthTextCount) {
               delete mtexts[mtextId];
             } else {
-              const keys = ["type", "info", "insert", "lineweight", "anchor"];
+              const keys = ["type", "info", "insert", "lineweight", "anchor", "fontStyle"];
               for (const key of Object.keys(mtext)) {
                 if (!keys.includes(key)) {
                   delete mtext[key];
+                }
+                if (key === "fontStyle") {
+                  const val = mtext[key];
+                  if (isTypeOf(val, "object")) {
+                    delete val.size;
+                  }
                 }
               }
             }
