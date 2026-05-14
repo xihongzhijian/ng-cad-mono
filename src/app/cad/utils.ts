@@ -756,7 +756,15 @@ export const getCadPaokengText = (
   return arr;
 };
 
-export const exportCadDataRemoveLengthTextCount = 200;
+export let exportCadDataRemoveLengthTextCount = 200;
+export const setExportCadDataRemoveLengthTextCount = (count: number) => {
+  if (count >= 0) {
+    exportCadDataRemoveLengthTextCount = count;
+  } else {
+    exportCadDataRemoveLengthTextCount = Infinity;
+  }
+};
+
 export const exportCadData = (data: CadData) => {
   const exportData = data.export();
   const count = data.entities.line.length + data.entities.arc.length;

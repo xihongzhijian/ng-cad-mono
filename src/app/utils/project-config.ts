@@ -2,7 +2,10 @@ import {ObjectOf} from "@lucilor/utils";
 import {getTrbl} from "./trbl";
 
 export class ProjectConfig {
-  constructor(private raw: ProjectConfigRaw = {}) {}
+  constructor(
+    private raw: ProjectConfigRaw = {},
+    private onChange?: (projectConfig: ProjectConfig) => void
+  ) {}
 
   getRaw() {
     return {...this.raw};
@@ -10,6 +13,7 @@ export class ProjectConfig {
 
   setRaw(raw: ProjectConfigRaw = {}) {
     this.raw = {...raw};
+    this.onChange?.(this);
   }
 
   get<T extends string>(key: string): T;
@@ -29,6 +33,9 @@ export class ProjectConfig {
 
   getNumber(key: string, defaultValue = 0) {
     const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
     const num = Number(value);
     return isNaN(num) ? defaultValue : num;
   }
@@ -67,6 +74,7 @@ export class ProjectConfig {
 
   set<T extends string>(key: string, value: T) {
     this.raw[key] = value;
+    this.onChange?.(this);
   }
 
   setBoolean(key: string, value: boolean) {
@@ -75,6 +83,7 @@ export class ProjectConfig {
 
   remove(key: string) {
     delete this.raw[key];
+    this.onChange?.(this);
   }
 
   exists(key: string) {
