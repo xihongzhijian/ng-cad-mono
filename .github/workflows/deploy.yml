@@ -28,8 +28,8 @@ jobs:
           SERVER_TOKEN: ${{ secrets.SERVER_TOKEN }}
         run: |
           corepack enable
-          yarn install
-          yarn build:packages
-          yarn build
+          bun run install
+          bun run build:packages
+          bun run build
           cd scripts
-          yarn tsx ./upload.ts
+          bun run tsx ./upload.ts

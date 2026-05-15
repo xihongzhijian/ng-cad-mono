@@ -5,7 +5,7 @@
     "start": "ng serve",
     "build": "ng build --configuration=production",
     "build:beta": "ng build --configuration=beta",
-    "build:packages": "yarn workspaces foreach -Apt run lib",
+    "build:packages": "bun run --filter './packages/*' lib",
     "test": "ng test",
     "test:ci": "ng test --watch=false --progress=false --browsers=ChromeHeadless",
     "lint": "ng lint --fix",
@@ -24,19 +24,18 @@
   },
   "homepage": "https://github.com/Lucilor/ng-cad-mono#readme",
   "workspaces": [
-    "./packages/cad-viewer",
-    "./packages/utils"
+    "./packages/*"
   ],
   "dependencies": {
-    "@angular/cdk": "^21.2.8",
-    "@angular/common": "^21.2.10",
-    "@angular/compiler": "^21.2.10",
-    "@angular/core": "^21.2.10",
-    "@angular/forms": "^21.2.10",
-    "@angular/material": "^21.2.8",
-    "@angular/platform-browser": "^21.2.10",
-    "@angular/platform-browser-dynamic": "^21.2.10",
-    "@angular/router": "^21.2.10",
+    "@angular/cdk": "^21.2.11",
+    "@angular/common": "^21.2.13",
+    "@angular/compiler": "^21.2.13",
+    "@angular/core": "^21.2.13",
+    "@angular/forms": "^21.2.13",
+    "@angular/material": "^21.2.11",
+    "@angular/platform-browser": "^21.2.13",
+    "@angular/platform-browser-dynamic": "^21.2.13",
+    "@angular/router": "^21.2.13",
     "@lucilor/cad-viewer": "workspace:^",
     "@lucilor/utils": "workspace:^",
     "@viselect/vanilla": "^3.9.0",
@@ -63,16 +62,16 @@
     "vanilla-jsoneditor": "^3.12.0"
   },
   "devDependencies": {
-    "@angular-devkit/core": "^21.2.8",
-    "@angular-devkit/schematics": "^21.2.8",
+    "@angular-devkit/core": "^21.2.11",
+    "@angular-devkit/schematics": "^21.2.11",
     "@angular-eslint/builder": "^21.3.1",
     "@angular-eslint/eslint-plugin": "^21.3.1",
     "@angular-eslint/eslint-plugin-template": "^21.3.1",
     "@angular-eslint/schematics": "^21.3.1",
     "@angular-eslint/template-parser": "^21.3.1",
-    "@angular/build": "^21.2.8",
-    "@angular/cli": "^21.2.8",
-    "@angular/compiler-cli": "^21.2.10",
+    "@angular/build": "^21.2.11",
+    "@angular/cli": "^21.2.11",
+    "@angular/compiler-cli": "^21.2.13",
     "@eslint/compat": "^2.0.5",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
@@ -109,7 +108,6 @@
     "karma-jasmine-html-reporter": "^2.2.0",
     "minimist": "^1.2.8",
     "prettier": "^3.8.3",
-    "typescript": "~5.9.3"
-  },
-  "packageManager": "yarn@4.14.1"
+    "typescript": "~6.0.3"
+  }
 }
