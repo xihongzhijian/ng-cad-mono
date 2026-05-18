@@ -10,17 +10,18 @@ export const getLineTable = (data: CadLineLike[]) => {
     noScroll: true,
     rowSelection: {mode: "multiple"},
     columns: [
-      {type: "number", field: "length", name: "线长", ndigits: 2, editable: true, width: "80px"},
-      {type: "string", field: "mingzi", name: "线名字", editable: true, width: "120px"},
+      {type: "number", field: "length", name: "线长", ndigits: 2, editable: true, style: {flex: "0 1 60px"}},
+      {type: "string", field: "mingzi", name: "线名字", editable: true, style: {flex: "1 1 80px"}},
+      {type: "string", field: "gongshi", name: "线公式", editable: true, style: {flex: "1 1 120px"}},
       {
         type: "select",
         field: "zhankaifangshi",
         name: "展开方式",
         options: cadLineOptions.zhankaifangshi.values.slice(),
         editable: true,
-        width: "120px"
+        width: "140px"
       },
-      {type: "string", field: "zidingzhankaichang", name: "指定展开长", editable: true, width: "120px"}
+      {type: "string", field: "zidingzhankaichang", name: "指定展开长", editable: true, style: {flex: "1 1 120px"}}
     ]
   };
   return info;

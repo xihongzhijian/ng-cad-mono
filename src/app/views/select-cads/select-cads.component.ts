@@ -3,9 +3,9 @@ import {MatDialog} from "@angular/material/dialog";
 import {session} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
+import {environment} from "@env";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {environment} from "src/environments/environment";
 
 @Component({
   selector: "app-select-cads",

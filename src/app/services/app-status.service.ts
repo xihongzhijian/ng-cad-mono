@@ -13,6 +13,7 @@ import {
   isCadCollectionOfCad,
   prepareCadViewer,
   removeIntersections,
+  setExportCadDataRemoveLengthTextCount,
   showIntersections,
   suanliaodanZoomIn,
   suanliaodanZoomOut,
@@ -123,7 +124,9 @@ export class AppStatusService {
   zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
-  projectConfig = new ProjectConfig();
+  projectConfig = new ProjectConfig({}, (projectConfig: ProjectConfig) => {
+    setExportCadDataRemoveLengthTextCount(projectConfig.getNumber("CAD保存线长位置的实体数量限制", 200));
+  });
 
   constructor() {
     this.cad.setConfig(this.config.getConfig());
@@ -586,6 +589,7 @@ export class AppStatusService {
     } else {
       generateLineTexts2(data);
     }
+    this.emitChangeCadSignal();
   }
 
   getCadPoints(map?: PointsMap | CadEntities, mid?: boolean) {

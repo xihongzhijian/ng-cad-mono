@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./lib",
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "strict": true,
@@ -10,7 +12,9 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "lib": ["ESNext", "DOM"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{"path": "./tsconfig.node.json"}]
 }

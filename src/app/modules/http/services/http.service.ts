@@ -232,7 +232,8 @@ export class HttpService {
       let content = "";
       let errorData: any;
       if (error instanceof AxiosError && error.response) {
-        const {data: errData, status, statusText} = error.response;
+        console.log(error.response);
+        const {data: errData, status} = error.response;
         if (typeof errData === "string") {
           content = errData;
         } else if (errData instanceof Blob) {
@@ -244,7 +245,8 @@ export class HttpService {
           await this._waitForLogin();
           return this.request(url, method, rawData, options);
         }
-        content = `<span>${status} (${statusText})</span><br>${content}`;
+        const statusImg = `<img src="https://http.cat/${status}" onclick="window.open('https://http.cat/status/${status}')" style="width:50px;cursor:pointer" />`;
+        content = `<span>${status}</span>${statusImg}<br>${content}`;
       } else if (error instanceof HttpServiceResponseError) {
         errorData = error.response.data;
         content = error.message;

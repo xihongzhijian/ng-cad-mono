@@ -259,7 +259,7 @@ function onKeyDown(this: CadViewer, event: KeyboardEvent) {
   } else if (checkHotKey("unSelectAll")) {
     this.unselectAll();
   } else if (checkHotKey("copyEntities")) {
-    this.emit("entitiescopy", this.selected().clone(true));
+    this.emit("entitiescopy", this.selected());
   } else if (checkHotKey("pasteEntities")) {
     this.emit("entitiespastestart");
   } else if (checkHotKey("deleteEntities")) {
