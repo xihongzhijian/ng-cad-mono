@@ -1,16 +1,21 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./lib",
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "strict": true,
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "target": "ES6",
     "jsx": "react",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "lib": ["ESNext", "DOM"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{"path": "./tsconfig.node.json"}]
 }
