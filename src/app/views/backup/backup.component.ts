@@ -14,10 +14,10 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export interface BackupCadsSearchParams {
   name: string;

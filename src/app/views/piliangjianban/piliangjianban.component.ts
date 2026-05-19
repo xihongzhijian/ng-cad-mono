@@ -8,11 +8,11 @@ import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {cloneDeep, difference, union} from "lodash";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 
 export interface Bancai {
   data: {

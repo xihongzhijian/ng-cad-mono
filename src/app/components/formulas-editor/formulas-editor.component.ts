@@ -15,13 +15,13 @@ import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.types";
 
 @Component({
@@ -32,7 +32,7 @@ import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.type
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormulasComponent,
     forwardRef(() => InputComponent),
     KeyValuePipe,

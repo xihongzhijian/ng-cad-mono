@@ -11,8 +11,9 @@ import {timeout} from "@lucilor/utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode, findDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
-import {DataListModule} from "@modules/data-list/data-list.module";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {DataListItemsDirective} from "@modules/data-list/directives/data-list-items.directive";
+import {DataListToolbarDirective} from "@modules/data-list/directives/data-list-toolbar.directive";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -26,8 +27,10 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
 @Component({
   selector: "app-mokuaiku",
   imports: [
-    DataListModule,
-    FloatingDialogModule,
+    DataListComponent,
+    DataListItemsDirective,
+    DataListToolbarDirective,
+    FloatingDialogComponent,
     ImageComponent,
     MatButtonModule,
     MatCheckboxModule,

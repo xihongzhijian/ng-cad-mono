@@ -13,11 +13,11 @@ import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, debounce} from "lodash";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {MsbjCloseEvent, MsbjData, MsbjFenlei} from "./msbj.types";
 import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
 

@@ -4,10 +4,10 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {BatchUploadChecker} from "@views/import/import.utils";
-import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 export interface BbzhmkgzComponentData {

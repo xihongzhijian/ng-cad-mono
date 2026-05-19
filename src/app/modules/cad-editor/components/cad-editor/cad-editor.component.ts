@@ -29,7 +29,6 @@ import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -40,6 +39,8 @@ import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-
 import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {take} from "rxjs";
+import {ContextMenuComponent} from "../../../context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "../../../context-menu/directives/context-menu-trigger.directive";
 import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
 import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
@@ -70,7 +71,8 @@ import {CadEditorMenuName} from "./cad-editor.utils";
     CadPointsComponent,
     CadSplitComponent,
     CdkDrag,
-    ContextMenuModule,
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
     forwardRef(() => InputComponent),
     MatButtonModule,
     MatIconModule,

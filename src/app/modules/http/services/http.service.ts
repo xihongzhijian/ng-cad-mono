@@ -1,4 +1,4 @@
-import {inject, Injectable, Injector} from "@angular/core";
+import {inject, Injectable} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {publicKey, timer} from "@app/app.common";
@@ -14,24 +14,16 @@ import {CustomResponse, DataAndCount, HttpOptions, HttpServiceResponseError} fro
   providedIn: "root"
 })
 export class HttpService {
-  protected dialog: MatDialog;
-  protected message: MessageService;
-  protected snackBar: MatSnackBar;
-  protected spinner: SpinnerService;
+  protected dialog = inject(MatDialog);
+  protected message = inject(MessageService);
+  protected snackBar = inject(MatSnackBar);
+  protected spinner = inject(SpinnerService);
   baseURL = "";
   strict = true;
   private _loginPromise: ReturnType<typeof openLoginFormDialog> | null = null;
   lastResponse: CustomResponse<any> | null = null;
   offlineMode = false;
   token = "";
-
-  constructor() {
-    const injector = inject(Injector);
-    this.dialog = injector.get(MatDialog);
-    this.message = injector.get(MessageService);
-    this.snackBar = injector.get(MatSnackBar);
-    this.spinner = injector.get(SpinnerService);
-  }
 
   protected alert(msg: string, silent: boolean) {
     if (!silent) {

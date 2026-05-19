@@ -31,7 +31,6 @@ import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa
 import {TextInfoComponent} from "@components/text-info/text-info.component";
 import {TextInfo} from "@components/text-info/text-info.types";
 import {isTypeOf} from "@lucilor/utils";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -42,13 +41,14 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
 import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
+import {FloatingDialogComponent} from "../../../floating-dialog/components/floating-dialog/floating-dialog.component";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
 @Component({
   selector: "app-suanliaogongshi",
   imports: [
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormulasEditorComponent,
     MatButtonModule,
     MatCardModule,

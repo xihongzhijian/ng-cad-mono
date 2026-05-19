@@ -20,7 +20,6 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point, selectFiles} from "@lucilor/utils";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -31,6 +30,8 @@ import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
 import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
+import {ContextMenuComponent} from "../../../../context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "../../../../context-menu/directives/context-menu-trigger.directive";
 import {getCadInfoInputs2} from "../cad-info/cad-info.utils";
 import {MubanCadItemInfo} from "./sub-cads.types";
 
@@ -47,7 +48,8 @@ type ContextMenuCadField = "main" | "component";
   styleUrls: ["./sub-cads.component.scss"],
   imports: [
     CadItemComponent,
-    ContextMenuModule,
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
     forwardRef(() => CadImageComponent),
     MatButtonModule,
     MatCheckboxModule,

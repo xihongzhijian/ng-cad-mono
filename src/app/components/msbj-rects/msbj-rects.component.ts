@@ -17,11 +17,11 @@ import {setGlobal} from "@app/app.common";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
-import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
 import {MsbjRectInfo, MsbjRectInfoRaw, MsbjRectSelectType} from "./msbj-rects.types";
 
 @Component({

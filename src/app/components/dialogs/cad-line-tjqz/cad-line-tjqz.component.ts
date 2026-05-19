@@ -4,11 +4,11 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, ItemGetter, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
-import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 type RawData = CadLine;

@@ -4,7 +4,7 @@ import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 
 @Component({
   selector: "app-kailiaocanshu",

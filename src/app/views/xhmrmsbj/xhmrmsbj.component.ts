@@ -66,9 +66,12 @@ import {VarNameItem, VarNameItemNameItem} from "@components/var-names/var-names.
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickedClsDirective} from "@modules/directives/clicked-cls.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -99,9 +102,6 @@ import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
 import {MokuaiItemComponent} from "../../components/bujumokuai/mokuai-item/mokuai-item.component";
 import {MenfengPeizhiComponent} from "../../components/menfeng-peizhi/menfeng-peizhi.component";
-import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {
   MenshanFollowerKey,
   MenshanKey,
@@ -143,7 +143,7 @@ const table = "p_xinghaomorenmenshanbuju";
   styleUrls: ["./xhmrmsbj.component.scss"],
   imports: [
     ClickedClsDirective,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormsModule,
     FormulasComponent,
     ImageComponent,

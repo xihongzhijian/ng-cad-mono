@@ -18,6 +18,7 @@ import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty} from "lodash";
@@ -25,7 +26,6 @@ import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./import.types";
 import {BatchUploadChecker} from "./import.utils";
 

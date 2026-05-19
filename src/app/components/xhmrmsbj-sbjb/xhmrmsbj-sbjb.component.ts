@@ -19,7 +19,7 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -73,7 +73,7 @@ import {
   selector: "app-xhmrmsbj-sbjb",
   imports: [
     CadItemComponent,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     InputComponent,
     MatButtonModule,
     MatDividerModule,

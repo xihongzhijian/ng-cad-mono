@@ -6,13 +6,13 @@ import {MatDialog} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {DabiaoKey, dabiaoKeys, isDabiaoKey, Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
 
 @Component({

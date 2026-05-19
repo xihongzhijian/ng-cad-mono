@@ -7,7 +7,9 @@ import {MatIconModule} from "@angular/material/icon";
 import {filePathUrl, getFilepathUrl} from "@app/app.common";
 import {getCopyName} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {FloatingDialogBodyDirective} from "@modules/floating-dialog/directives/floating-dialog-body.directive";
+import {FloatingDialogTitleDirective} from "@modules/floating-dialog/directives/floating-dialog-title.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -24,7 +26,17 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
 
 @Component({
   selector: "app-lrsj-zuofas",
-  imports: [FloatingDialogModule, ImageComponent, LrsjZuofaComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
+  imports: [
+    FloatingDialogBodyDirective,
+    FloatingDialogComponent,
+    FloatingDialogTitleDirective,
+    ImageComponent,
+    LrsjZuofaComponent,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    NgScrollbarModule
+  ],
   templateUrl: "./lrsj-zuofas.component.html",
   styleUrl: "./lrsj-zuofas.component.scss"
 })

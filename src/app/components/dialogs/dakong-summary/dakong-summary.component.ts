@@ -10,10 +10,10 @@ import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {keysOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {
   DakongSummaryInput,

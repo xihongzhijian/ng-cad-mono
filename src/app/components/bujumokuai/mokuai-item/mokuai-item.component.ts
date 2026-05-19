@@ -34,7 +34,9 @@ import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, MaybePromise, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {FloatingDialogBodyDirective} from "@modules/floating-dialog/directives/floating-dialog-body.directive";
+import {FloatingDialogTitleDirective} from "@modules/floating-dialog/directives/floating-dialog-title.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -64,7 +66,9 @@ import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuai
     CadItemComponent,
     CdkDrag,
     CdkDropList,
-    FloatingDialogModule,
+    FloatingDialogBodyDirective,
+    FloatingDialogComponent,
+    FloatingDialogTitleDirective,
     FormulasEditorComponent,
     ImageComponent,
     InputComponent,
