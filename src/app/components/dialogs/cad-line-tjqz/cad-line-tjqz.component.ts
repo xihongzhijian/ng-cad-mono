@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, inject, signal, viewChild} from "@angular/core";
+import {Component, computed, inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
@@ -19,7 +19,7 @@ type RawDataRight = RawDataLeft["data"][0];
   selector: "app-cad-line-tjqz",
   templateUrl: "./cad-line-tjqz.component.html",
   styleUrls: ["./cad-line-tjqz.component.scss"],
-  imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)]
+  imports: [MatButtonModule, SpinnerComponent, TableComponent]
 })
 export class CadLineTjqzComponent {
   dialogRef = inject<MatDialogRef<CadLineTjqzComponent, RawData>>(MatDialogRef);

@@ -4,12 +4,12 @@ import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
 import {CadEntity, CadEventCallBack, CadLineLike, CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point, timeout} from "@lucilor/utils";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color, {ColorInstance} from "color";
 import {debounce} from "lodash";
-import {InputComponent} from "../../../../input/components/input.component";
 
 @Component({
   selector: "app-cad-mtext",

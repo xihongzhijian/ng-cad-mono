@@ -1,4 +1,4 @@
-import {Component, effect, forwardRef, HostBinding, inject, input, signal, viewChildren} from "@angular/core";
+import {Component, effect, HostBinding, inject, input, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -19,7 +19,7 @@ import {DabiaoKey, dabiaoKeys, isDabiaoKey, Klkwpz, KlkwpzItem, KlkwpzSource} fr
   selector: "app-klkwpz",
   templateUrl: "./klkwpz.component.html",
   styleUrls: ["./klkwpz.component.scss"],
-  imports: [forwardRef(() => InputComponent), MatButtonModule, MatCardModule, NgScrollbar]
+  imports: [InputComponent, MatButtonModule, MatCardModule, NgScrollbar]
 })
 export class KlkwpzComponent {
   private dialog = inject(MatDialog);

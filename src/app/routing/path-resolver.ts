@@ -13,13 +13,13 @@ export const pathResolver: ResolveFn<PathResolveData> = (route: ActivatedRouteSn
   }
   const typoPath = decodeURIComponent(url.slice(0, index));
   const threshold = typoPath.length < 5 ? 3 : 5;
-  const dictionary = routesInfo.filter(({path}) => Math.abs(path.length - typoPath.length) < threshold).map((v) => v.path);
+  const dictionary = routesInfo.filter(({path}) => path && Math.abs(path.length - typoPath.length) < threshold).map((v) => v.path ?? "");
 
   if (!dictionary.length) {
     return {path: "", queryParams: route.queryParams};
   }
 
-  const pathsDistance = {} as {[name: string]: number};
+  const pathsDistance: {[name: string]: number} = {};
   dictionary.sort((a, b) => {
     if (!(a in pathsDistance)) {
       pathsDistance[a] = levenshtein(a, typoPath);

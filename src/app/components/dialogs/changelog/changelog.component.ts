@@ -58,7 +58,6 @@ export class ChangelogComponent implements OnInit {
   async getUpdateTimeStamp() {
     const updateTime = await this.status.getUpdateTimeStamp();
     this.updateTime.set(updateTime);
-    console.log(1);
   }
 
   async getCommits() {

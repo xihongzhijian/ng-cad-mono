@@ -208,7 +208,7 @@ export type InputInfo<T = any> =
   | InputInfoColor<T>
   | InputInfoFile<T>
   | InputInfoImage<T>
-  | InputInfoFormulas<T>
+  // | InputInfoFormulas<T>
   | InputInfoButton<T>
   | InputInfoList<T>
   | InputInfoGroup<T>;

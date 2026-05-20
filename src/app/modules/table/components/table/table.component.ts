@@ -8,7 +8,6 @@ import {
   DoCheck,
   effect,
   ElementRef,
-  forwardRef,
   HostBinding,
   inject,
   input,
@@ -42,6 +41,7 @@ import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types
 import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, isTypeOf, queryString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -49,7 +49,6 @@ import {OpenCadOptions} from "@services/app-status.types";
 import {Properties} from "csstype";
 import {cloneDeep, debounce, intersection, isEmpty, isEqual, uniqueId} from "lodash";
 import {Subscription} from "rxjs";
-import {ImageComponent} from "../../../image/components/image/image.component";
 import {
   CellChangeEvent,
   CellEvent,
@@ -72,9 +71,9 @@ import {getCellMergeInfo, getInputInfosFromTableColumns} from "./table.utils";
   templateUrl: "./table.component.html",
   styleUrls: ["./table.component.scss"],
   imports: [
-    forwardRef(() => CadImageComponent),
-    forwardRef(() => InputComponent),
+    CadImageComponent,
     ImageComponent,
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,

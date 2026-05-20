@@ -21,10 +21,10 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {ObjectOf} from "@lucilor/utils";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {Properties} from "csstype";
 import {uniqueId} from "lodash";
-import {ContextMenuComponent} from "../../../context-menu/components/context-menu/context-menu.component";
-import {ContextMenuTriggerDirective} from "../../../context-menu/directives/context-menu-trigger.directive";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
 import {ResizeHandle} from "./floating-dialog.types";
 

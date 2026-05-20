@@ -656,7 +656,7 @@
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     }
-    @case ("formulas") {
+    <!-- @case ("formulas") {
       <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
@@ -687,7 +687,7 @@
         </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
-    }
+    } -->
     @case ("button") {
       <div class="buttons">
         @for (button of info.buttons; track $index) {

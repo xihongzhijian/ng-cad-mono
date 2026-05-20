@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {booleanAttribute, Component, computed, effect, forwardRef, HostBinding, inject, input, model, output, signal} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {FormControl, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -34,7 +34,7 @@ import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.type
     CdkDropList,
     FloatingDialogComponent,
     FormulasComponent,
-    forwardRef(() => InputComponent),
+    InputComponent,
     KeyValuePipe,
     MatButtonModule,
     MatIconModule,

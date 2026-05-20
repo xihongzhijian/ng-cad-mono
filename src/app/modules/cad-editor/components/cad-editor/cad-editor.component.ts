@@ -6,7 +6,6 @@ import {
   computed,
   effect,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
   input,
@@ -29,9 +28,12 @@ import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
@@ -39,9 +41,6 @@ import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-
 import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {take} from "rxjs";
-import {ContextMenuComponent} from "../../../context-menu/components/context-menu/context-menu.component";
-import {ContextMenuTriggerDirective} from "../../../context-menu/directives/context-menu-trigger.directive";
-import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
 import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
@@ -73,7 +72,7 @@ import {CadEditorMenuName} from "./cad-editor.utils";
     CdkDrag,
     ContextMenuComponent,
     ContextMenuTriggerDirective,
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,

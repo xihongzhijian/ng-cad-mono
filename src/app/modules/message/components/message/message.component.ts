@@ -6,7 +6,6 @@ import {
   computed,
   effect,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
   OnDestroy,
@@ -44,7 +43,7 @@ import {
   imports: [
     A11yModule,
     FormsModule,
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatDialogActions,
     MatDialogContent,

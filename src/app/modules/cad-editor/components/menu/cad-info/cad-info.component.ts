@@ -1,4 +1,4 @@
-import {Component, computed, effect, forwardRef, HostBinding, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatOptionModule} from "@angular/material/core";
@@ -23,6 +23,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
@@ -30,7 +31,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
 import {debounce, isEqual} from "lodash";
-import {InputComponent} from "../../../../input/components/input.component";
 import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
 
 @Component({
@@ -39,7 +39,7 @@ import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
   styleUrls: ["./cad-info.component.scss"],
   imports: [
     FormsModule,
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,

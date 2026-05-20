@@ -32,7 +32,7 @@ import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview.component";
 import {YahuabanTestComponent} from "@views/yahuaban-test/yahuaban-test.component";
 
-export const routesInfo: (Route & {path: string})[] = [
+export const routesInfo: Route[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
   {path: "布局模块", component: BujumokuaiIndexComponent, title: "模块库"},

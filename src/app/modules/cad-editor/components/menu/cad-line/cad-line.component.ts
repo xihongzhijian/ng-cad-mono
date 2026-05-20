@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostListener,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  untracked
-} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, HostListener, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -65,7 +53,7 @@ import {parseLineNames, stringifyLineNames} from "./cad-line.utils";
     CadLayerInputComponent,
     ColorCircleModule,
     FormsModule,
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
