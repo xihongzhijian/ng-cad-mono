@@ -26,7 +26,6 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getErrorMsgs, InputInfoWithDataGetter, validateForm, validateValue} from "@modules/input/components/input.utils";
 import {getMessageImportModeOptions, MessageImportMode, MessageService} from "@modules/message/services/message.service";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -79,7 +78,6 @@ import {
     MatDividerModule,
     NgScrollbarModule,
     NgTemplateOutlet,
-    SpinnerModule,
     TableComponent,
     TypedTemplateDirective
   ],

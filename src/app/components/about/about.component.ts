@@ -4,12 +4,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {local} from "@app/app.common";
 import {openChangelogDialog} from "@components/dialogs/changelog/changelog.component";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {AppStatusService} from "@services/app-status.service";
 
 @Component({
   selector: "app-about",
-  imports: [MatBadgeModule, MatButtonModule, SpinnerModule],
+  imports: [MatBadgeModule, MatButtonModule],
   templateUrl: "./about.component.html",
   styleUrl: "./about.component.scss"
 })

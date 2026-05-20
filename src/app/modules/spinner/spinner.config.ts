@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
 import {ListRandom} from "@lucilor/utils";
-import {NgxUiLoaderModule, SPINNER} from "ngx-ui-loader";
+import {NgxUiLoaderConfig, NgxUiLoaderModule, SPINNER} from "ngx-ui-loader";
 import {SpinnerComponent} from "./components/spinner/spinner.component";
 
 const spinnerTypes: SPINNER[] = [
@@ -28,6 +28,16 @@ const spinnerTypes: SPINNER[] = [
 ];
 
 const spinnerTypeList = new ListRandom(spinnerTypes);
+
+export const spinnerConfig: NgxUiLoaderConfig = {
+  fgsColor: "var(--mat-sys-primary)",
+  bgsColor: "var(--mat-sys-primary)",
+  pbColor: "var(--mat-sys-primary)",
+  fgsType: spinnerTypeList.next(),
+  bgsType: spinnerTypeList.next(),
+  bgsSize: 30,
+  minTime: 0
+};
 
 @NgModule({
   imports: [

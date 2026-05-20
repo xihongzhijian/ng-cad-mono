@@ -4,6 +4,7 @@ import {MAT_DIALOG_DEFAULT_OPTIONS, MatDialogConfig} from "@angular/material/dia
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions} from "@angular/material/form-field";
 import {MAT_ICON_DEFAULT_OPTIONS, MatIconDefaultOptions} from "@angular/material/icon";
 import {MatPaginatorIntl} from "@angular/material/paginator";
+import {MAT_SNACK_BAR_DEFAULT_OPTIONS} from "@angular/material/snack-bar";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from "@angular/material/tooltip";
 import {bootstrapApplication} from "@angular/platform-browser";
 import {provideRouter} from "@angular/router";
@@ -47,9 +48,11 @@ bootstrapApplication(AppComponent, {
   providers: [
     {provide: MatPaginatorIntl, useClass: MyMatPaginatorIntl},
     {provide: MAT_DATE_LOCALE, useValue: "zh-CN"},
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: "unset"}},
     {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: matDialogOptions},
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
+    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 1000, verticalPosition: "top"}},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
     provideBrowserGlobalErrorListeners(),
     provideScrollbarPolyfill("assets/scroll-timeline-polyfill.js"),
