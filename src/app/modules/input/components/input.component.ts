@@ -858,6 +858,10 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return {vid, name, label: v.label, img: v.img || "", disabled: false};
       });
     }
+    if (!optionKey && !hasOptions) {
+      this.message.snack("选项名字为空");
+      return;
+    }
     const dialogData: CadOptionsInput = {
       ...optionsDialog,
       data,
