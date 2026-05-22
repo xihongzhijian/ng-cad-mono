@@ -179,6 +179,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       const onChange = (val: string) => {
         form.set(fieldStr, val);
         this.filterTable();
+        this.cd.markForCheck();
       };
       const info2: InputInfo = {
         type: "string",
