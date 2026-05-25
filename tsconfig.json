@@ -27,6 +27,7 @@
       "@assets/*": ["./src/assets/*"],
       "@env": ["./src/environments/environment.ts"]
     },
+    "types": ["vitest/globals"],
     "allowJs": true,
     "resolveJsonModule": true,
     "useDefineForClassFields": false
