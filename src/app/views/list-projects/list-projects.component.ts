@@ -21,11 +21,12 @@ export class ListProjectsComponent implements OnInit {
 
   projects = signal<ProjectInfo[]>([]);
   async getProjects(updateCreateTime = false, projectId?: number) {
-    const projects = await this.http.getData<ProjectInfo[]>("ngcad/getProjectList", {
+    const result = await this.http.getData<GetProjectListResult>("ngcad/getProjectList", {
       updateCreateTime,
       updateCreateTimeWhere: typeof projectId === "number" ? {vid: projectId} : {}
     });
-    this.projects.set(projects ?? []);
+    this.projects.set(result?.projects ?? []);
+    this.advancedMode.set(result?.advanced ?? false);
   }
 
   advancedMode = signal(false);
@@ -52,7 +53,6 @@ export class ListProjectsComponent implements OnInit {
       toolbarButtons: {
         extra: [
           {event: "刷新", onClick: () => this.getProjects()},
-          {event: "更多功能", onClick: () => this.advancedMode.update((v) => !v), class: advancedMode ? "accent" : ""},
           {event: "全部更新创建时间", onClick: () => this.getProjects(true), hidden: !advancedMode}
         ]
       },
@@ -75,4 +75,9 @@ export interface ProjectInfo {
   nameCN: string;
   createTime: string;
   operation?: string;
+}
+
+export interface GetProjectListResult {
+  projects: ProjectInfo[];
+  advanced: boolean;
 }
