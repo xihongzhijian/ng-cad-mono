@@ -79,7 +79,10 @@
                 }
               ]
             },
-            "development": {
+            "serve":{
+              "optimization": false
+            },
+            "test": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -92,7 +95,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "ng-cad2:build",
+            "buildTarget": "ng-cad2:build:serve",
             "ssl": true,
             "sslCert": "ssl/localhost.crt",
             "sslKey": "ssl/localhost.key",
@@ -120,7 +123,10 @@
           }
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "ng-cad2:build:test"
+          }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
