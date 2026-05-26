@@ -32,7 +32,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
 import {getArray, getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
-import {getValueString} from "@app/utils/get-value";
+import {getValue, getValueString} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -842,10 +842,17 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
 
   getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
     let info: InputInfo = {type: "string", label: ""};
+    const {item, column} = event;
     const onChange = (value: any) => {
+      let descriptor = Object.getOwnPropertyDescriptor(item, column.field);
+      if (!descriptor && item instanceof Object) {
+        descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), column.field);
+      }
+      if (!descriptor || descriptor?.set || descriptor?.writable) {
+        item[column.field] = value;
+      }
       this.cellChange.emit({...event, value});
     };
-    const column = event.column;
     switch (column.type) {
       case "string":
       case "boolean":
@@ -858,16 +865,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       case "select":
         info = {type: column.type, label: "", options: column.options, onChange};
     }
-    const {item} = event;
-    let descriptor = Object.getOwnPropertyDescriptor(item, event.column.field);
-    if (!descriptor && item instanceof Object) {
-      descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), event.column.field);
-    }
-    if (!descriptor || descriptor?.set || descriptor?.writable) {
-      info.model = {data: item, key: column.field};
-    } else {
-      info.value = item[column.field];
-    }
+    info.value = item[column.field];
     const {rowIdx, colIdx} = event;
     info.validators = [
       ...getArray(column.validators),
@@ -876,6 +874,10 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       })
     ];
     info.style = {width: "0", flex: "1 1 0"};
+    if (column.inputInfoOverride) {
+      const override = getValue(column.inputInfoOverride, this.message, {column, item, rowIdx, colIdx});
+      Object.assign(info, override);
+    }
     return info;
   }
 

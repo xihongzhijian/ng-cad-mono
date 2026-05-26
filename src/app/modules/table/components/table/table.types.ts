@@ -1,7 +1,8 @@
 import {AbstractControlOptions, ValidationErrors} from "@angular/forms";
 import {MatTableDataSource} from "@angular/material/table";
+import {Value} from "@app/utils/get-value";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
-import {InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
 import {TableComponent} from "./table.component";
 
@@ -87,6 +88,7 @@ export interface ColumnInfoBase<T> {
   getString?: (value: T, index: number) => string;
   validators?: AbstractControlOptions["validators"];
   validators2?: TableItemValidator<T> | TableItemValidator<T>[];
+  inputInfoOverride?: Value<Partial<InputInfo<T>>, CellEvent<T>>;
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {

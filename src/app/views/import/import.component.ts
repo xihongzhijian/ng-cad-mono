@@ -638,7 +638,7 @@ export class ImportComponent implements OnInit {
       for (const error of data.info.errors) {
         if (isTypeOf(error, "string")) {
           dataErrors.addErrorStr(error);
-        } else if (isTypeOf(error, "object")) {
+        } else if (isTypeOf<ErrorItem>(error, "object")) {
           dataErrors.addError(error);
         }
       }

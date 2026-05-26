@@ -79,8 +79,9 @@
                 }
               ]
             },
-            "serve":{
-              "optimization": false
+            "serve": {
+              "optimization": false,
+              "sourceMap": true
             },
             "test": {
               "fileReplacements": [
