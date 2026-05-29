@@ -33,4 +33,4 @@ jobs:
           bun run build:packages
           bun run build:beta
           cd scripts
-          bun tsx ./upload.ts --beta
+          bun run ./upload.ts --beta
