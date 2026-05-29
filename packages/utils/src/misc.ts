@@ -1,4 +1,5 @@
 import {Rectangle} from "./geometry";
+import {MaybeArray, ObjectOf} from "./types";
 
 export const dataURLtoBlob = (dataURL: string) => {
   const arr = dataURL.split(",");
@@ -51,7 +52,21 @@ export const getTypeOf = (value: any) => {
   return type;
 };
 
-export const isTypeOf = (value: any, type: ReturnType<typeof getTypeOf> | ReturnType<typeof getTypeOf>[]) => {
+export const isTypeOf: {
+  (value: any, type: "string"): value is string;
+  (value: any, type: "number"): value is number;
+  (value: any, type: "bigint"): value is bigint;
+  (value: any, type: "boolean"): value is boolean;
+  (value: any, type: "symbol"): value is symbol;
+  (value: any, type: "array"): value is any[];
+  (value: any, type: "object"): value is ObjectOf<any>;
+  (value: any, type: "function"): value is (...args: any[]) => any;
+  (value: any, type: "undefined"): value is undefined;
+  (value: any, type: "null"): value is null;
+  (value: any, type: "NaN"): value is typeof NaN;
+  (value: any, type: MaybeArray<ReturnType<typeof getTypeOf>>): boolean;
+  <T>(value: any, type: MaybeArray<ReturnType<typeof getTypeOf>>): value is T;
+} = <T = any>(value: any, type: MaybeArray<ReturnType<typeof getTypeOf>>): value is T => {
   const valueType = getTypeOf(value);
   if (Array.isArray(type)) {
     return type.includes(valueType);

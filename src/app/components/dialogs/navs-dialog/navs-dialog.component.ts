@@ -7,11 +7,11 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
 import {session, setGlobal} from "@app/app.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {NavsData, NavsDataNode, NavsDialogInput, NavsDialogOutput, NavsResultItem} from "./navs-dialog.types";
 

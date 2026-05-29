@@ -42,6 +42,11 @@
     mat-footer-row {
       min-height: var(--row-min-height);
       max-height: var(--row-max-height);
+      transition: background-color 0.3s;
+      &:hover,
+      &.active {
+        background-color: var(--mat-sys-outline-variant);
+      }
     }
 
     .mat-mdc-header-cell,
@@ -67,12 +72,6 @@
         align-items: center;
         white-space: pre-wrap;
         padding: var(--cell-padding);
-
-        transition: 0.3s;
-        &:hover,
-        &.active {
-          background-color: var(--mat-sys-outline-variant);
-        }
 
         border-left: var(--border);
         border-bottom: var(--border);

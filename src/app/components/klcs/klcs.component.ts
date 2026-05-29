@@ -18,6 +18,7 @@ import {setGlobal} from "@app/app.common";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {exportObject, importObject, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageData} from "@modules/message/components/message/message.types";
@@ -25,7 +26,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, isObject, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {createJSONEditor, JSONContent, TextContent} from "vanilla-jsoneditor";
-import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-klcs",

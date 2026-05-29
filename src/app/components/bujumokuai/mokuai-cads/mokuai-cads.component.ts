@@ -29,7 +29,8 @@ import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent, DataListQueryItemField} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
-import {DataListModule} from "@modules/data-list/data-list.module";
+import {DataListItemsDirective} from "@modules/data-list/directives/data-list-items.directive";
+import {DataListToolbarDirective} from "@modules/data-list/directives/data-list-toolbar.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad, MongodbUpdateData} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -47,7 +48,9 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
   imports: [
     CadImageComponent,
     CadItemComponent,
-    DataListModule,
+    DataListComponent,
+    DataListItemsDirective,
+    DataListToolbarDirective,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,

@@ -1,14 +1,15 @@
 import {Component, computed, effect, ElementRef, inject, input, OnDestroy, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatMenuModule} from "@angular/material/menu";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
 import {FloatingDialogLimits} from "../../services/floating-dialogs-manager.types";
 import {FloatingDialogComponent} from "../floating-dialog/floating-dialog.component";
 
 @Component({
   selector: "app-floating-dialog-trays",
-  imports: [ContextMenuModule, MatButtonModule, MatMenuModule],
+  imports: [ContextMenuComponent, ContextMenuTriggerDirective, MatButtonModule, MatMenuModule],
   templateUrl: "./floating-dialog-trays.component.html",
   styleUrl: "./floating-dialog-trays.component.scss"
 })

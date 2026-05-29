@@ -1,25 +1,17 @@
-import {
-  enableProdMode,
-  importProvidersFrom,
-  Injectable,
-  provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection
-} from "@angular/core";
+import {enableProdMode, Injectable, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection} from "@angular/core";
 import {MAT_DATE_LOCALE} from "@angular/material/core";
 import {MAT_DIALOG_DEFAULT_OPTIONS, MatDialogConfig} from "@angular/material/dialog";
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions} from "@angular/material/form-field";
 import {MAT_ICON_DEFAULT_OPTIONS, MatIconDefaultOptions} from "@angular/material/icon";
 import {MatPaginatorIntl} from "@angular/material/paginator";
+import {MAT_SNACK_BAR_DEFAULT_OPTIONS} from "@angular/material/snack-bar";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from "@angular/material/tooltip";
 import {bootstrapApplication} from "@angular/platform-browser";
+import {provideRouter} from "@angular/router";
+import {appRoutes} from "@app/routing/app-routing";
 import {environment} from "@env";
-import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {provideScrollbarPolyfill} from "ngx-scrollbar";
 import {AppComponent} from "./app/app.component";
-import {AppRoutingModule} from "./app/routing/app-routing.module";
 
 @Injectable()
 class MyMatPaginatorIntl extends MatPaginatorIntl {
@@ -54,16 +46,18 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(AppRoutingModule, CadEditorModule, HttpModule, MessageModule, SpinnerModule),
     {provide: MatPaginatorIntl, useClass: MyMatPaginatorIntl},
     {provide: MAT_DATE_LOCALE, useValue: "zh-CN"},
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: "unset"}},
     {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: matDialogOptions},
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
+    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 1000, verticalPosition: "top"}},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
     provideBrowserGlobalErrorListeners(),
     provideScrollbarPolyfill("assets/scroll-timeline-polyfill.js"),
-    provideZonelessChangeDetection()
+    provideZonelessChangeDetection(),
+    provideRouter(appRoutes)
   ]
 }).catch((err) => {
   console.error(err);

@@ -44,7 +44,8 @@ export default [
       sourceType: "script",
 
       parserOptions: {
-        project: ["tsconfig.json", "scripts/tsconfig.scripts.json", "packages/*/tsconfig.json"],
+        tsconfigRootDir: __dirname,
+        project: ["tsconfig.json", "scripts/tsconfig.scripts.json", "packages/*/tsconfig*.json"],
         createDefaultProgram: true
       }
     },

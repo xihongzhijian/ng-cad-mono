@@ -6,7 +6,6 @@ import {
   computed,
   effect,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
   input,
@@ -29,10 +28,12 @@ import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
@@ -40,7 +41,6 @@ import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-
 import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {take} from "rxjs";
-import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
 import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
@@ -70,8 +70,9 @@ import {CadEditorMenuName} from "./cad-editor.utils";
     CadPointsComponent,
     CadSplitComponent,
     CdkDrag,
-    ContextMenuModule,
-    forwardRef(() => InputComponent),
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
+    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
@@ -401,7 +402,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const copyInfo = tryParseJson(copyInfoStr);
     if (copyInfo?.key === "cad-viewer copy entities" && copyInfo.entities) {
       const cad = this.status.cad;
-      const entities = new CadEntities(copyInfo.entities);
+      const entities = new CadEntities(copyInfo.entities, true);
       if (cad.pointerPosition) {
         const {x: px, y: py} = cad.pointerPosition;
         const point2 = cad.getWorldPoint(px, py);

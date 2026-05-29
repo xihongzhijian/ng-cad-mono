@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, forwardRef, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
+import {AfterViewInit, Component, computed, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -21,12 +21,12 @@ import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -37,9 +37,9 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   templateUrl: "./cad-list.component.html",
   styleUrls: ["./cad-list.component.scss"],
   imports: [
+    CadItemComponent,
     FormsModule,
-    forwardRef(() => CadItemComponent),
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,

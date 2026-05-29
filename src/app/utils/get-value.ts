@@ -1,17 +1,22 @@
 import {MessageService} from "@modules/message/services/message.service";
 import {DateTime, LocaleOptions} from "luxon";
 
-export type Value<T> = T | (() => T);
+export type Value<T, P = void> = T | ((params: P) => T);
 
 export const getValue: {
-  <T>(fromValue: Value<T>): T;
-  <T>(fromValue: Value<T>, message: MessageService): T | null;
-} = <T>(fromValue: Value<T>, message?: MessageService) => {
+  <T, P = void>(fromValue: Value<T, P>): T;
+  <T, P = void>(fromValue: Value<T, P>, message: null, params: P): T;
+  <T, P = void>(fromValue: Value<T, P>, message: MessageService): T | null;
+  <T, P = void>(fromValue: Value<T, P>, message: MessageService, params: P): T | null;
+} = <T, P = void>(fromValue: Value<T, P>, message?: MessageService | null, params?: P) => {
   let result: T;
+  if (params === undefined) {
+    params = undefined as P;
+  }
   if (fromValue instanceof Function) {
     if (message) {
       try {
-        result = fromValue();
+        result = fromValue(params);
       } catch (error) {
         if (error instanceof Error) {
           message.error(error.message);
@@ -21,7 +26,7 @@ export const getValue: {
         return null;
       }
     } else {
-      result = fromValue();
+      result = fromValue(params);
     }
   } else {
     result = fromValue;

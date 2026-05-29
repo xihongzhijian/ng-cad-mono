@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, effect, ElementRef, forwardRef, input, output, untracked, viewChildren} from "@angular/core";
+import {AfterViewInit, Component, effect, ElementRef, input, output, untracked, viewChildren} from "@angular/core";
 import {timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {Properties} from "csstype";
@@ -9,7 +9,7 @@ import {FormulaInfo} from "./formulas.types";
   selector: "app-formulas",
   templateUrl: "./formulas.component.html",
   styleUrls: ["./formulas.component.scss"],
-  imports: [forwardRef(() => InputComponent)]
+  imports: [InputComponent]
 })
 export class FormulasComponent implements AfterViewInit {
   formulaInfos = input.required<FormulaInfo[]>();

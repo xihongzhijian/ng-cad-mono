@@ -20,7 +20,8 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point, selectFiles} from "@lucilor/utils";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -47,7 +48,8 @@ type ContextMenuCadField = "main" | "component";
   styleUrls: ["./sub-cads.component.scss"],
   imports: [
     CadItemComponent,
-    ContextMenuModule,
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
     forwardRef(() => CadImageComponent),
     MatButtonModule,
     MatCheckboxModule,

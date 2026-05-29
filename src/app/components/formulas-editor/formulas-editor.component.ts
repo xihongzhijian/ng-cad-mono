@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {booleanAttribute, Component, computed, effect, forwardRef, HostBinding, inject, input, model, output, signal} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {FormControl, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -15,13 +15,13 @@ import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.types";
 
 @Component({
@@ -32,9 +32,9 @@ import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.type
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormulasComponent,
-    forwardRef(() => InputComponent),
+    InputComponent,
     KeyValuePipe,
     MatButtonModule,
     MatIconModule,
@@ -277,6 +277,7 @@ export class FormulasEditorComponent {
     if (parseText) {
       const parseFormulasTextResult = this.parseFormulasText();
       if (!parseFormulasTextResult.data) {
+        parseFormulasTextResult.alertError(this.message);
         return;
       }
       list = parseFormulasTextResult.data;
@@ -284,7 +285,8 @@ export class FormulasEditorComponent {
       list = this.formulaList();
     }
     const submitResult = await this.submitFormulas(list);
-    if (submitResult.errors.length > 0) {
+    if (submitResult.hasError()) {
+      submitResult.alertError(this.message);
       return;
     }
     const result = await this.calc.calcFormulas(submitResult.data, this.vars());

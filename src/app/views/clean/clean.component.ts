@@ -4,9 +4,9 @@ import {setGlobal} from "@app/app.common";
 import {ObjectOf, Timer} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {CustomResponse} from "@modules/http/services/http.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-clean",

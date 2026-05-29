@@ -32,7 +32,7 @@ export class AppComponent {
   isProd = environment.production;
   routesInfo = computed(() =>
     routesInfo.map((routeInfo) => {
-      const {title, path} = routeInfo;
+      const {title, path = ""} = routeInfo;
       let title2 = "";
       if (typeof title === "function") {
         const title3 = (title as ResolveFn<string>)(this.route.snapshot, this.router.routerState.snapshot);
@@ -50,7 +50,7 @@ export class AppComponent {
   );
 
   getRouteTitle(routeInfo: (typeof routesInfo)[number]) {
-    const {title, path} = routeInfo;
+    const {title, path = ""} = routeInfo;
     if (typeof title === "function") {
       return (title as ResolveFn<string>)(this.route.snapshot, this.router.routerState.snapshot);
     }

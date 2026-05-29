@@ -25,8 +25,10 @@ import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@com
 import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, timeout, waitFor} from "@lucilor/utils";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -37,8 +39,6 @@ import {nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {Properties} from "csstype";
 import {cloneDeep, isEmpty} from "lodash";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
-import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
   DdbqConfig,
   DdbqData,

@@ -2,14 +2,14 @@ import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@a
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
-import {CadEventCallBack, CadMtext, CadStylizer} from "@lucilor/cad-viewer";
+import {CadEntity, CadEventCallBack, CadLineLike, CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point, timeout} from "@lucilor/utils";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color, {ColorInstance} from "color";
 import {debounce} from "lodash";
-import {InputComponent} from "../../../../input/components/input.component";
 
 @Component({
   selector: "app-cad-mtext",
@@ -196,8 +196,20 @@ export class CadMtextComponent implements OnInit, OnDestroy {
       valueNum = 0;
     }
     const selected = this.selected();
-    selected.forEach((e) => (e.fontStyle.size = valueNum));
-    this.status.cad.render(selected);
+    const toRender: CadEntity[] = [];
+    selected.forEach((e) => {
+      e.fontStyle.size = valueNum;
+      let e2: CadEntity = e;
+      if (e.info.isLengthText) {
+        const parent = e.parent;
+        if (parent instanceof CadLineLike) {
+          parent.lengthTextSize = valueNum;
+          e2 = parent;
+        }
+      }
+      toRender.push(e2);
+    });
+    this.status.cad.render(toRender);
   }
 
   addMtext() {

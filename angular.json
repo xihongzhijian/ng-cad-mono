@@ -3,7 +3,7 @@
   "version": 1,
   "cli": {
     "analytics": false,
-    "packageManager": "yarn"
+    "packageManager": "bun"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -38,11 +38,19 @@
               }
             ],
             "styles": ["src/styles.scss", "src/mat-theme.scss"],
-            "scripts": [],
-            "extractLicenses": false,
-            "sourceMap": true,
-            "optimization": false,
-            "allowedCommonJsDependencies": ["*"]
+            "allowedCommonJsDependencies": ["*"],
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "6mb",
+                "maximumError": "10mb"
+              },
+              {
+                "type": "anyComponentStyle",
+                "maximumWarning": "6kb",
+                "maximumError": "100kb"
+              }
+            ]
           },
           "configurations": {
             "production": {
@@ -55,23 +63,6 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "6mb",
-                  "maximumError": "10mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "100kb"
                 }
               ]
             },
@@ -86,22 +77,17 @@
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.beta.ts"
                 }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "budgets": [
+              ]
+            },
+            "serve": {
+              "optimization": false,
+              "sourceMap": true
+            },
+            "test": {
+              "fileReplacements": [
                 {
-                  "type": "initial",
-                  "maximumWarning": "6mb",
-                  "maximumError": "10mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "100kb"
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.test.ts"
                 }
               ]
             }
@@ -110,7 +96,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "ng-cad2:build",
+            "buildTarget": "ng-cad2:build:serve",
             "ssl": true,
             "sslCert": "ssl/localhost.crt",
             "sslKey": "ssl/localhost.key",
@@ -138,28 +124,9 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "main": "src/test.ts",
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.cjs",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/ngx-scrollbar/assets/",
-                "output": "assets"
-              }
-            ],
-            "styles": ["src/styles.scss", "src/mat-theme.scss"],
-            "scripts": [],
-            "fileReplacements": [
-              {
-                "replace": "src/environments/environment.ts",
-                "with": "src/environments/environment.test.ts"
-              }
-            ]
+            "buildTarget": "ng-cad2:build:test"
           }
         },
         "lint": {

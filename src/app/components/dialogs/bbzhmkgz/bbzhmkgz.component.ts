@@ -1,13 +1,13 @@
 import {KeyValuePipe} from "@angular/common";
-import {Component, computed, forwardRef, HostBinding, inject} from "@angular/core";
+import {Component, computed, HostBinding, inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {BatchUploadChecker} from "@views/import/import.utils";
-import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 export interface BbzhmkgzComponentData {
@@ -19,7 +19,7 @@ export interface BbzhmkgzComponentData {
   selector: "app-bbzhmkgz",
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
-  imports: [FormsModule, forwardRef(() => InputComponent), KeyValuePipe, MatButtonModule]
+  imports: [FormsModule, InputComponent, KeyValuePipe, MatButtonModule]
 })
 export class BbzhmkgzComponent {
   dialogRef = inject<MatDialogRef<BbzhmkgzComponent, BbzhmkgzComponentData>>(MatDialogRef);

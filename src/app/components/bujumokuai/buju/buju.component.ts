@@ -1,7 +1,7 @@
 import {Component, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, setGlobal} from "@app/app.common";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MsbjComponent} from "@views/msbj/msbj.component";
 import {MsbjCloseEvent} from "@views/msbj/msbj.types";
@@ -12,7 +12,7 @@ import {BjmkStatusService} from "../services/bjmk-status.service";
 
 @Component({
   selector: "app-buju",
-  imports: [FloatingDialogModule, ImageComponent, MatTooltipModule, MsbjComponent, NgScrollbarModule],
+  imports: [FloatingDialogComponent, ImageComponent, MatTooltipModule, MsbjComponent, NgScrollbarModule],
   templateUrl: "./buju.component.html",
   styleUrl: "./buju.component.scss"
 })

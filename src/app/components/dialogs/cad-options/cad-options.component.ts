@@ -12,14 +12,14 @@ import {ClickStopPropagationDirective} from "@modules/directives/click-stop-prop
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParamsSingle, GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {DataAndCount} from "@modules/http/services/http.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoObject} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep, debounce, difference, differenceWith, isEmpty, unionWith} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ImageComponent} from "../../../modules/image/components/image/image.component";
-import {InputComponent} from "../../../modules/input/components/input.component";
-import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {CadOptionsInput, CadOptionsOutput} from "./cad-options.types";
 

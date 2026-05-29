@@ -10,7 +10,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {uniqueId} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -29,7 +29,7 @@ import {
   selector: "app-tongyongshuju-dialog",
   templateUrl: "./tongyongshuju-dialog.component.html",
   styleUrl: "./tongyongshuju-dialog.component.scss",
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule]
+  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerComponent]
 })
 export class TongyongshujuDialogComponent implements OnInit {
   dialogRef = inject<MatDialogRef<TongyongshujuDialogComponent, TongyongshujuOutput>>(MatDialogRef);

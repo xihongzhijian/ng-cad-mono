@@ -19,14 +19,13 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getErrorMsgs, InputInfoWithDataGetter, validateForm, validateValue} from "@modules/input/components/input.utils";
 import {getMessageImportModeOptions, MessageImportMode, MessageService} from "@modules/message/services/message.service";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -73,13 +72,12 @@ import {
   selector: "app-xhmrmsbj-sbjb",
   imports: [
     CadItemComponent,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     InputComponent,
     MatButtonModule,
     MatDividerModule,
     NgScrollbarModule,
     NgTemplateOutlet,
-    SpinnerModule,
     TableComponent,
     TypedTemplateDirective
   ],

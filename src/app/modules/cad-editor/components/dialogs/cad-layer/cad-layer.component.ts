@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, inject, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -18,7 +18,7 @@ import {NgScrollbar} from "ngx-scrollbar";
   selector: "app-cad-layer",
   templateUrl: "./cad-layer.component.html",
   styleUrls: ["./cad-layer.component.scss"],
-  imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule]
+  imports: [InputComponent, NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
   dialogRef = inject<MatDialogRef<CadLayerComponent, CadLayerOutput>>(MatDialogRef);
@@ -79,7 +79,7 @@ export class CadLayerComponent {
     return forms;
   });
 
-  inputComponents = viewChildren(forwardRef(() => InputComponent));
+  inputComponents = viewChildren(InputComponent);
   submit() {
     let valid = true;
     this.inputComponents().forEach((v) => {

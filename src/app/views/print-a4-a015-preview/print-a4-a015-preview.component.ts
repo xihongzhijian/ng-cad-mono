@@ -5,9 +5,9 @@ import {CadPreviewParams} from "@app/cad/cad-preview";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export type PreviewData = {
   CAD?: any;

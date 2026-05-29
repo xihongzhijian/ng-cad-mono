@@ -40,7 +40,6 @@ import {getValue} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
-import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -186,8 +185,6 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const type = this.info().type;
     if (type === "color") {
       this.setColor(val);
-    } else if (type === "formulas") {
-      this.updateFormulasStr();
     }
     this.updateDisplayValue();
   }
@@ -501,8 +498,6 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
       if (!isTypeOf(this.value, "array")) {
         this.value = [];
       }
-    } else if (type === "formulas") {
-      this.updateFormulasStr();
     }
     this.class = [type];
     if (typeof info.label === "string" && info.label && !info.label.includes(" ")) {
@@ -611,20 +606,16 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const copy = (str: string) => {
       this.message.copyText(str, {successText: `${info.label}已复制`});
     };
-    if (info.type === "formulas") {
-      copy(this.formulasStr);
-    } else {
-      const value = this.value;
-      switch (typeof value) {
-        case "string":
-          copy(value);
-          break;
-        case "number":
-          copy(String(value));
-          break;
-        default:
-          copy(JSON.stringify(value));
-      }
+    const value = this.value;
+    switch (typeof value) {
+      case "string":
+        copy(value);
+        break;
+      case "number":
+        copy(String(value));
+        break;
+      default:
+        copy(JSON.stringify(value));
     }
   }
 
@@ -871,6 +862,10 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return {vid, name, label: v.label, img: v.img || "", disabled: false};
       });
     }
+    if (!optionKey && !hasOptions) {
+      this.message.snack("选项名字为空");
+      return;
+    }
     const dialogData: CadOptionsInput = {
       ...optionsDialog,
       data,
@@ -1002,7 +997,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         .map((v) => v.name)
         .join(", ");
     } else if (info.type === "image" && files[0]) {
-      info.onChange?.(files[0], info);
+      await info.onChange?.(files[0], info);
+      this.cd.markForCheck();
     }
   }
 
@@ -1082,37 +1078,6 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
       }
     }
     return "";
-  }
-
-  updateFormulasStr() {
-    const info = this.info();
-    if (info.type !== "formulas") {
-      return;
-    }
-    const {value} = this;
-    if (!isTypeOf(value, "object")) {
-      return;
-    }
-    this.formulasStr = Object.entries(value)
-      .map(([k, v]) => `${k}=${v}`)
-      .join(";");
-  }
-
-  async editFormulas() {
-    const info = this.info();
-    if (info.type !== "formulas" || !this.editable()) {
-      return;
-    }
-    let {value} = this;
-    const params = getValue(info.params, this.message);
-    if (!isTypeOf(value, "object")) {
-      value = {};
-    }
-    const result = await openEditFormulasDialog(this.dialog, {data: {...params, formulas: value}});
-    if (result) {
-      this.value = result;
-      info.onChange?.(result, info);
-    }
   }
 
   displayValue = signal("");

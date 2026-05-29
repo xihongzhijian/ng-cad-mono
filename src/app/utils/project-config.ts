@@ -1,7 +1,11 @@
 import {ObjectOf} from "@lucilor/utils";
+import {getTrbl} from "./trbl";
 
 export class ProjectConfig {
-  constructor(private raw: ProjectConfigRaw = {}) {}
+  constructor(
+    private raw: ProjectConfigRaw = {},
+    private onChange?: (projectConfig: ProjectConfig) => void
+  ) {}
 
   getRaw() {
     return {...this.raw};
@@ -9,6 +13,7 @@ export class ProjectConfig {
 
   setRaw(raw: ProjectConfigRaw = {}) {
     this.raw = {...raw};
+    this.onChange?.(this);
   }
 
   get<T extends string>(key: string): T;
@@ -26,12 +31,50 @@ export class ProjectConfig {
     return value === "是";
   }
 
+  getNumber(key: string, defaultValue = 0) {
+    const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+  }
+
+  getTrbl(key: string, defaultNum = 0) {
+    return getTrbl(this.get(key), defaultNum);
+  }
+
+  getArray(key: string, defaultValue: string[] = []) {
+    const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
+    return value.split("+").map((item) => item.trim());
+  }
+
+  getObject(key: string, defaultValue: ObjectOf<string> = {}) {
+    const value = this.get(key);
+    if (!value) {
+      return defaultValue;
+    }
+    const arr = this.getArray(key);
+    const obj: ObjectOf<string> = {};
+    for (const item of arr) {
+      const [k, v] = item.split("=").map((part) => part.trim());
+      if (k && v) {
+        obj[k] = v || "";
+      }
+    }
+    return obj;
+  }
+
   getIsEqual<T extends string>(key: string, value: T) {
     return this.get<T>(key) === value;
   }
 
   set<T extends string>(key: string, value: T) {
     this.raw[key] = value;
+    this.onChange?.(this);
   }
 
   setBoolean(key: string, value: boolean) {
@@ -40,6 +83,7 @@ export class ProjectConfig {
 
   remove(key: string) {
     delete this.raw[key];
+    this.onChange?.(this);
   }
 
   exists(key: string) {

@@ -7,7 +7,7 @@ import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 
 @Component({
   selector: "app-kailiaokongweipeizhi",

@@ -5,9 +5,9 @@ import {joinOptions} from "@app/app.common";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {MaybePromise} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/input/components/input.utils";
-import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-bancai-form",

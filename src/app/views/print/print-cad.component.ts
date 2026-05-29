@@ -32,17 +32,17 @@ import {environment} from "@env";
 import {CadData, CadLine, CadMtext, CadViewer} from "@lucilor/cad-viewer";
 import {downloadByBlob, downloadByUrl, DownloadOptions, loadImage, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import imageCompression from "browser-image-compression";
 import {intersection} from "lodash";
 import {ContentImage} from "pdfmake/interfaces";
 import printJS from "print-js";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 const duration = 400;
 @Component({

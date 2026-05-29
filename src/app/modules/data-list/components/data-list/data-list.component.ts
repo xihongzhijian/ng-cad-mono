@@ -29,7 +29,8 @@ import {environment} from "@env";
 import {downloadByString, getElementVisiblePercentage, queryStringList, selectFiles, timeout, waitFor} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {FloatingDialogTitleDirective} from "@modules/floating-dialog/directives/floating-dialog-title.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
@@ -67,7 +68,8 @@ import {
   selector: "app-data-list",
   imports: [
     ClickStopPropagationDirective,
-    FloatingDialogModule,
+    FloatingDialogComponent,
+    FloatingDialogTitleDirective,
     InputComponent,
     MatButtonModule,
     MatCheckboxModule,

@@ -1,4 +1,4 @@
-import {Component, forwardRef, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
@@ -15,7 +15,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-cad-editor-dialog",
   templateUrl: "./cad-editor-dialog.component.html",
   styleUrls: ["./cad-editor-dialog.component.scss"],
-  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
+  imports: [CadEditorComponent, MatButtonModule]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
   dialogRef = inject<MatDialogRef<CadEditorDialogComponent, CadEditorOutput>>(MatDialogRef);
@@ -44,7 +44,7 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
     });
   }
 
-  cadEditor = viewChild<CadEditorComponent>(forwardRef(() => CadEditorComponent));
+  cadEditor = viewChild<CadEditorComponent>(CadEditorComponent);
   savedData = signal<CadData | null>(null);
   canClose = signal(true);
   cadEditorParams = signal<OpenCadOptions>({});

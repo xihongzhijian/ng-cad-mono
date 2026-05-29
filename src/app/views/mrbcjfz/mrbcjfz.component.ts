@@ -28,8 +28,10 @@ import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/banca
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -38,8 +40,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {clone, isEmpty, uniqueId, values} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, first, lastValueFrom} from "rxjs";
-import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
   ListItemKey,
   listItemKeys,

@@ -1,4 +1,4 @@
-import {Component, computed, effect, ElementRef, forwardRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {toFixed} from "@app/utils/func";
 import {environment} from "@env";
@@ -22,7 +22,7 @@ import {
 
 @Component({
   selector: "app-cad-fenti-config",
-  imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule],
+  imports: [InputComponent, MatButtonModule, NgScrollbarModule],
   templateUrl: "./cad-fenti-config.component.html",
   styleUrl: "./cad-fenti-config.component.scss"
 })

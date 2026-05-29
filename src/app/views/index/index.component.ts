@@ -2,13 +2,13 @@ import {Component, inject, OnInit, signal} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
+import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
-import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor/cad-editor.component";
 
 @Component({
   selector: "app-index",

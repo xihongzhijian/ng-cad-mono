@@ -1,9 +1,9 @@
 import {getValueString} from "@app/utils/get-value";
-import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import type {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData, CadLineLike, CadZhankai, intersectionKeysTranslate} from "@lucilor/cad-viewer";
 import {downloadByUrl, isTypeOf, keysOf, ObjectOf, queryString} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import type {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {importComponentConfigNames} from "@views/import/import.types";
 

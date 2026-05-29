@@ -12,7 +12,7 @@ import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijia
 import {environment} from "@env";
 import {getFileSize, ObjectOf} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogTraysComponent} from "@modules/floating-dialog/components/floating-dialog-trays/floating-dialog-trays.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -31,7 +31,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
   imports: [
     AboutComponent,
     ClickStopPropagationDirective,
-    FloatingDialogModule,
+    FloatingDialogTraysComponent,
     LrsjSuanliaoCadsComponent,
     LrsjSuanliaoDataComponent,
     LrsjXinghaosComponent,

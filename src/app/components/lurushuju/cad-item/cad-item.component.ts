@@ -5,7 +5,6 @@ import {
   computed,
   effect,
   ElementRef,
-  forwardRef,
   HostBinding,
   HostListener,
   inject,
@@ -58,8 +57,8 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
   selector: "app-cad-item",
   imports: [
     ClickStopPropagationDirective,
-    forwardRef(() => CadImageComponent),
-    forwardRef(() => InputComponent),
+    CadImageComponent,
+    InputComponent,
     KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
@@ -112,7 +111,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
 
   cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
   mubanContainer = viewChild<ElementRef<HTMLDivElement>>("mubanContainer");
-  inputComponents = viewChildren(forwardRef(() => InputComponent));
+  inputComponents = viewChildren(InputComponent);
   cadViewer = signal<CadViewer | null>(null);
   mubanViewer = signal<CadViewer | null>(null);
   showMubanViewer = signal(false);

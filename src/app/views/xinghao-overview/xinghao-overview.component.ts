@@ -15,9 +15,9 @@ import {MatIconModule} from "@angular/material/icon";
 import {NavsData, NavsDataNode, NavsResultItem} from "@components/dialogs/navs-dialog/navs-dialog.types";
 import {downloadByString, ObjectOf, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../modules/input/components/input.component";
 import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.types";
 
 @Component({
