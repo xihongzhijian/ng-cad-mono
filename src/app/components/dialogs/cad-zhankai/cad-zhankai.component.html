@@ -7,6 +7,15 @@
             <div class="toolbar">
               <mat-checkbox [checked]="checkedIndices().includes(i)" (click)="toggleItemSelected(i)"></mat-checkbox>
               <app-input [info]="info"></app-input>
+              <div class="sub-form-field" style="width: auto">
+                <div class="label">45度切角（填了{{ qiegemubanGroupInfos()[i]?.filledCount ?? 0 }}个）</div>
+                <div class="toolbar">
+                  <button mat-flat-button (click)="editQiegemuban(i)">配置</button>
+                  <button mat-flat-button (click)="copyQiegemuban(i)">复制</button>
+                  <button mat-flat-button (click)="pasteQiegemuban(i)">粘贴</button>
+                  <button mat-flat-button (click)="emptyQiegemuban(i)">删除</button>
+                </div>
+              </div>
             </div>
           } @else {
             <app-input [info]="info"></app-input>

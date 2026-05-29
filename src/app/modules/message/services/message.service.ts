@@ -163,11 +163,31 @@ export class MessageService {
   async copyText(text: string, config?: {successText?: string; errorText?: string}) {
     const {successText = "已复制", errorText = "复制失败"} = config || {};
     try {
-      navigator.clipboard.writeText(text);
-      this.snack(successText);
+      await navigator.clipboard.writeText(text);
+      if (successText) {
+        await this.snack(successText);
+      }
     } catch (e) {
       console.error(e);
-      this.snack(errorText);
+      if (errorText) {
+        await this.snack(errorText);
+      }
+    }
+  }
+  async pasteText(config?: {successText?: string; errorText?: string}) {
+    const {successText = "已粘贴", errorText = "粘贴失败"} = config || {};
+    try {
+      const text = await navigator.clipboard.readText();
+      if (successText) {
+        await this.snack(successText);
+      }
+      return text;
+    } catch (e) {
+      console.error(e);
+      if (errorText) {
+        await this.snack(errorText);
+      }
+      return null;
     }
   }
 

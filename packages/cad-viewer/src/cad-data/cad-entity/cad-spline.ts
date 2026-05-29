@@ -1,6 +1,6 @@
-import {MatrixLike, ObjectOf, Point, Rectangle, Spline} from "@lucilor/utils";
+import {MatrixLike, ObjectOf, Point, purgeObject, Rectangle, Spline} from "@lucilor/utils";
 import {CadLineLike} from "../..";
-import {getVectorsFromArray, purgeObject} from "../../cad-utils";
+import {getVectorsFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 
 export class CadSpline extends CadLineLike {
@@ -44,10 +44,10 @@ export class CadSpline extends CadLineLike {
     }
   }
 
-  export(): ObjectOf<any> {
+  export() {
     return {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         fitPoints: this.fitPoints.map((v) => v.toArray()),
         controlPoints: this.controlPoints.map((v) => v.toArray()),
         degree: this.degree

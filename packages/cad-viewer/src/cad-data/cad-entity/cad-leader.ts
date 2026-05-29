@@ -1,5 +1,5 @@
-import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
-import {getVectorsFromArray, purgeObject} from "../../cad-utils";
+import {Matrix, MatrixLike, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
+import {getVectorsFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -17,10 +17,10 @@ export class CadLeader extends CadEntity {
     this.size = data.size ?? 5;
   }
 
-  export(): ObjectOf<any> {
+  export() {
     return {
       ...super.export(),
-      ...purgeObject({vertices: this.vertices.map((v) => v.toArray()), size: this.size})
+      ...purgeObject<ObjectOf<any>>({vertices: this.vertices.map((v) => v.toArray()), size: this.size})
     };
   }
 

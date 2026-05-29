@@ -1,5 +1,5 @@
-import {Angle, Arc, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
-import {getVectorFromArray, purgeObject} from "../../cad-utils";
+import {Angle, Arc, MatrixLike, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
+import {getVectorFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
 
@@ -40,10 +40,10 @@ export class CadCircle extends CadLineLike {
     this.center.transform(matrix);
   }
 
-  export(): ObjectOf<any> {
+  export() {
     return {
       ...super.export(),
-      ...purgeObject({center: this.center.toArray(), radius: this.radius})
+      ...purgeObject<ObjectOf<any>>({center: this.center.toArray(), radius: this.radius})
     };
   }
 

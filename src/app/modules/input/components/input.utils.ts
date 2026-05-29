@@ -173,7 +173,7 @@ export const getUnifiedInputs = <T>(
   );
 };
 
-export type InputInfoWithDataPart<R extends InputInfo> = Omit<InputInfoPart<R>, "model" | "value">;
+export type InputInfoWithDataPart<R extends InputInfo> = InputInfoPart<R>;
 export class InputInfoWithDataGetter<T> {
   constructor(
     public data: Value<T>,

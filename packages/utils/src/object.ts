@@ -31,3 +31,30 @@ export const exportObject = <T extends ObjectOf<any>>(source: T, defaultObj: T) 
   }
   return source;
 };
+
+export const purgeObject = <T extends ObjectOf<any>>(obj: T, defaultObj?: Partial<T>): T => {
+  const result = cloneDeep(obj);
+  purgeObject2(result, defaultObj);
+  return result;
+};
+const purgeObject2 = <T extends ObjectOf<any>>(obj: T, defaultObj?: Partial<T>) => {
+  const isEmpty2 = (val: any) => val === undefined || val === null;
+  Object.keys(obj).forEach((key) => {
+    let value = obj[key];
+    if (isEmpty2(value) || key === "") {
+      delete obj[key];
+    } else if (defaultObj && key in defaultObj && isEqual(value, defaultObj[key])) {
+      delete obj[key];
+    } else if (Array.isArray(value)) {
+      value = value.filter((v) => !isEmpty2(v));
+      if (value.length < 1) {
+        delete obj[key];
+      }
+    } else if (typeof value === "object") {
+      purgeObject2(value, defaultObj);
+      if (Object.keys(value).length < 1) {
+        delete obj[key];
+      }
+    }
+  });
+};

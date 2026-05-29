@@ -1,7 +1,6 @@
-import {ObjectOf, Rectangle} from "@lucilor/utils";
+import {ObjectOf, purgeObject, Rectangle} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {CadStylizer} from "../../cad-stylizer";
-import {purgeObject} from "../../cad-utils";
 import {CadDimensionStyle} from "../cad-styles";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
@@ -86,10 +85,10 @@ export abstract class CadDimension extends CadEntity {
     this.活动标注显示扣数 = data.活动标注显示扣数;
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const result = {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         dimstyle: this.dimstyle,
         style: cloneDeep(this.style),
         mingzi: this.mingzi,

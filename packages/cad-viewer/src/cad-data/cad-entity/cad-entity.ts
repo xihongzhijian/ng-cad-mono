@@ -1,9 +1,9 @@
-import {getTypeOf, Matrix, MatrixLike, ObjectOf, Rectangle} from "@lucilor/utils";
+import {getTypeOf, Matrix, MatrixLike, ObjectOf, purgeObject, Rectangle} from "@lucilor/utils";
 import {G, Matrix as Matrix2, Svg} from "@svgdotjs/svg.js";
 import Color from "color";
 import {cloneDeep} from "lodash";
 import {v4} from "uuid";
-import {Defaults, lineweight2linewidth, linewidth2lineweight, purgeObject} from "../../cad-utils";
+import {Defaults, lineweight2linewidth, linewidth2lineweight} from "../../cad-utils";
 import {ColoredObject} from "../../colored-object";
 import {CadEntities} from "../cad-entities";
 import {EntityType} from "../cad-types";
@@ -271,9 +271,9 @@ export abstract class CadEntity extends ColoredObject {
     });
   }
 
-  export(): ObjectOf<any> {
+  export() {
     this.update();
-    return purgeObject(
+    return purgeObject<ObjectOf<any>>(
       {
         id: this.id,
         layer: this.layer,
