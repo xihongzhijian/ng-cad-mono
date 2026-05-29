@@ -3,14 +3,13 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
-import {CadQiegemuban, CadQiegemubanGroup, isQiegemubanEmpty} from "@app/cad/cad-qiegemuban";
+import {CadQiegemubanGroup, isQiegemubanEmpty, justifyQiegemubanGroup, QiegemubanGroupName} from "@app/cad/cad-qiegemuban";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {openCadListDialog} from "../cad-list/cad-list.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -29,7 +28,7 @@ export class CadQiegemubanGroupComponent {
 
   constructor() {
     if (this.data) {
-      this.group.set(cloneDeep(this.data.group));
+      this.group.set(justifyQiegemubanGroup(cloneDeep(this.data.group)));
     }
   }
 
@@ -39,36 +38,31 @@ export class CadQiegemubanGroupComponent {
     const items = this.items();
     const infos: {inputInfos: InputInfo[]; isEmpty: boolean}[] = [];
     for (const item of items) {
-      const getter = new InputInfoWithDataGetter(item, {clearable: true});
+      const getPositionOptions = () => {
+        const name = item.名字 as QiegemubanGroupName;
+        switch (name) {
+          case "顶框上":
+            return ["上"];
+          case "顶框下":
+            return ["下"];
+          default:
+            return ["上", "下"];
+        }
+      };
+      const isPositionEmpty = !item.位置;
+      const getter = new InputInfoWithDataGetter(item, {clearable: true, onChange: () => this.refreshGroup(), disabled: isPositionEmpty});
       infos.push({
         isEmpty: isQiegemubanEmpty(item),
         inputInfos: [
-          getter.string("cadId", {
-            label: "CAD",
-            value: item.cadId,
-            model: undefined,
-            onChange: (value) => {
-              item.cadId = value;
-              this.refreshGroup();
-            },
-            suffixIcons: [
-              {name: "open_in_new", onClick: () => this.status.openCadInNewTab(item.cadId, "cad")},
-              {name: "list", onClick: (info) => this.selectQiegemubanCad(item, info)}
-            ]
-          }),
-          getter.coordinate("destAnchor", {label: "开料模板锚点", compact: true}),
           getInputInfoGroup([
-            getter.selectSingle(
-              "startPoint",
-              [
-                {value: "left", label: "左边"},
-                {value: "right", label: "右边"}
-              ] satisfies InputInfoOption<CadQiegemuban["startPoint"]>[],
-              {label: "切割模板起点"}
-            ),
-            getter.string("heightOffset", {label: "高度余量"})
+            getter.selectSingle("位置", getPositionOptions(), {
+              disabled: false,
+              hint: isPositionEmpty ? "不选位置时其他选项不生效" : ""
+            }),
+            getter.string("高度余量")
           ]),
-          getInputInfoGroup([getter.string("cutStart", {label: "起点微连"}), getter.string("cutEnd", {label: "终点微连"})]),
+          getInputInfoGroup([getter.string("起点微连"), getter.string("终点微连")]),
+          getInputInfoGroup([getter.string("微连位置"), getter.string("微连长度")]),
           getInputInfoGroup([getter.boolean("依附板材边缘"), getter.boolean("删除标记线")])
         ]
       });
@@ -78,17 +72,6 @@ export class CadQiegemubanGroupComponent {
 
   refreshGroup() {
     this.group.update((g) => ({...g, qiegemubans: [...g.qiegemubans]}));
-  }
-
-  async selectQiegemubanCad(item: CadQiegemuban, info: InputInfo) {
-    const result = await openCadListDialog(this.dialog, {
-      data: {selectMode: "single", collection: "cad", checkedItems: [item.cadId], fixedSearch: {分类: "45度切割"}}
-    });
-    if (result) {
-      item.cadId = result[0]?.id ?? "";
-      info.value = item.cadId;
-      this.refreshGroup();
-    }
   }
 
   submit() {

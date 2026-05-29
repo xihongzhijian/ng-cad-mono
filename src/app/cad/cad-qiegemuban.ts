@@ -1,14 +1,13 @@
-import {Anchor} from "@components/klkwpz/klkwpz";
 import {purgeObject} from "@lucilor/utils";
 
 export interface CadQiegemuban {
-  name: string;
-  cadId: string;
-  destAnchor: Anchor;
-  startPoint: "left" | "right";
-  heightOffset?: string;
-  cutStart?: string;
-  cutEnd?: string;
+  名字: string;
+  位置?: "" | "上" | "下";
+  高度余量?: string;
+  起点微连?: string;
+  终点微连?: string;
+  微连位置?: string;
+  微连长度?: string;
   依附板材边缘?: boolean;
   删除标记线?: boolean;
 }
@@ -18,29 +17,36 @@ export interface CadQiegemubanGroup {
   qiegemubans: CadQiegemuban[];
 }
 
+export const qiegemubanGroupNames = ["锁框", "铰框", "顶框上", "顶框下"] as const;
+export type QiegemubanGroupName = (typeof qiegemubanGroupNames)[number];
+export const qiegemubanGroupNames2: string[] = [...qiegemubanGroupNames];
+
 export const initQiegemubanGroup = (groups: CadQiegemubanGroup[], index: number) => {
   let group = groups.find((g) => g.index === index);
   if (!group) {
     group = {index, qiegemubans: []};
     groups.push(group);
   }
+  return justifyQiegemubanGroup(group);
+};
+
+export const justifyQiegemubanGroup = (group: CadQiegemubanGroup) => {
   const items = group.qiegemubans;
-  const names = ["锁框", "铰框", "顶框上", "顶框下"];
-  for (const name of names) {
-    if (!items.find((i) => i.name === name)) {
-      items.push({name, cadId: "", destAnchor: [0, 0], startPoint: "left"});
+  for (const name of qiegemubanGroupNames) {
+    if (!items.find((i) => i.名字 === name)) {
+      items.push({名字: name});
     }
   }
   const indexsToRemove: number[] = [];
   for (const [i, item] of items.entries()) {
-    if (!names.includes(item.name)) {
+    if (!qiegemubanGroupNames2.includes(item.名字)) {
       indexsToRemove.push(i);
     }
   }
   for (let i = indexsToRemove.length - 1; i >= 0; i--) {
     items.splice(indexsToRemove[i], 1);
   }
-  items.sort((a, b) => names.indexOf(a.name) - names.indexOf(b.name));
+  items.sort((a, b) => qiegemubanGroupNames2.indexOf(a.名字) - qiegemubanGroupNames2.indexOf(b.名字));
   return group;
 };
 
@@ -60,21 +66,35 @@ export const replaceQiegemubanGroup = (groups: CadQiegemubanGroup[], group: CadQ
 };
 
 export const purgeQiegemuban = (item: CadQiegemuban) => {
-  purgeObject(item, {heightOffset: "", cutStart: "", cutEnd: "", 依附板材边缘: false, 删除标记线: false});
+  const emptyItem: Required<CadQiegemuban> = {
+    名字: "",
+    位置: "",
+    高度余量: "",
+    起点微连: "",
+    终点微连: "",
+    微连位置: "",
+    微连长度: "",
+    依附板材边缘: false,
+    删除标记线: false
+  };
+  return purgeObject(item, emptyItem);
 };
 
 export const purgeQiegemubanGroup = (groups: CadQiegemubanGroup[]) => {
   const indexsToRemove: number[] = [];
-  for (const [i, {qiegemubans}] of groups.entries()) {
-    let hasCadId = false;
-    for (const item of qiegemubans) {
-      if (item.cadId) {
-        hasCadId = true;
+  for (const [i, group] of groups.entries()) {
+    const qiegemubans: CadQiegemuban[] = [];
+    for (const item of group.qiegemubans) {
+      const item2 = purgeQiegemuban(item);
+      if (isQiegemubanEmpty(item2)) {
+        continue;
       }
-      purgeQiegemuban(item);
+      qiegemubans.push(item2);
     }
-    if (qiegemubans.length === 0 || !hasCadId) {
+    if (qiegemubans.length === 0) {
       indexsToRemove.push(i);
+    } else {
+      group.qiegemubans = qiegemubans;
     }
   }
   for (let i = indexsToRemove.length - 1; i >= 0; i--) {
@@ -84,7 +104,7 @@ export const purgeQiegemubanGroup = (groups: CadQiegemubanGroup[]) => {
 };
 
 export const isQiegemubanEmpty = (item: CadQiegemuban) => {
-  return !item.cadId;
+  return !item.位置;
 };
 
 export const getQiegemubanFilledCount = (group: CadQiegemubanGroup) => {
