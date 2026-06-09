@@ -163,7 +163,7 @@ export class CleanComponent implements OnInit {
   async step4() {
     this.pushMsgDivider();
     this.pushMsg("info", "获取要删除的文件");
-    let count = 0;
+    let count: number;
     let initial = true;
     if (this.deleteLimit() <= 0) {
       this.end();

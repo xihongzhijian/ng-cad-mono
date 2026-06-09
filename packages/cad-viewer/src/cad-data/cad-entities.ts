@@ -441,8 +441,8 @@ export class CadEntities {
           e.radius += distance;
         }
       } else if (e instanceof CadLine) {
-        let dx = 0;
-        let dy = 0;
+        let dx: number;
+        let dy: number;
         const theta = e.theta.rad;
         if (direction < 0) {
           dx = distance * Math.sin(theta);

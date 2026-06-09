@@ -499,7 +499,7 @@ export class DingdanbiaoqianComponent implements OnInit {
           order.info = null;
           delete order.shiyitus;
           let orderCurr: Order | null = null;
-          let orderPrev: Order | null = null;
+          let orderPrev: Order | null;
           const group1: Order["cads"][number][] = [];
           const group2: Order["cads"][number][] = [];
           for (const cad of cads) {

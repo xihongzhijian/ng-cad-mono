@@ -386,7 +386,7 @@ export class MokuaiCadsComponent {
     });
   }
   async exportCads(all: boolean) {
-    let ids: string[] = [];
+    let ids: string[];
     if (all) {
       ids = this.cadsAll().map((v) => v.id);
     } else {

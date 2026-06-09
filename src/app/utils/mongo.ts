@@ -50,7 +50,7 @@ export const isOptionOK = (value1: any, value2: any, exclusive: boolean) => {
     value1 = value1.replace(" ", "");
   }
   // 去掉空, '', 0, false, null
-  let values1: string[] = [];
+  let values1: string[];
   if (Array.isArray(value1)) {
     values1 = value1.filter((v) => v);
   } else {

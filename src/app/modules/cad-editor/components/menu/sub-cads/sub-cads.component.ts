@@ -392,12 +392,10 @@ export class SubCadsComponent implements OnInit, OnDestroy {
           components.push(cad);
         }
       }
-      let timerContent = "";
       data.updateComponents();
-      timerContent = "编辑装配CAD";
       const resData = this.status.closeCad();
       await this.status.openCad({data: resData});
-      timer.end(timerName, timerContent);
+      timer.end(timerName, "编辑装配CAD");
     }
   }
 

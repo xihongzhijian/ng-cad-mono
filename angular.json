@@ -3,7 +3,8 @@
   "version": 1,
   "cli": {
     "analytics": false,
-    "packageManager": "bun"
+    "packageManager": "bun",
+    "schematicCollections": ["angular-eslint"]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -28,6 +29,7 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "outputHashing": "all",
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -81,7 +83,8 @@
             },
             "serve": {
               "optimization": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "outputHashing": "none"
             },
             "test": {
               "fileReplacements": [

@@ -23,6 +23,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -40,6 +41,7 @@ import {getOpenDialogFunc} from "../dialog.common";
 export class CadZhankaiComponent extends Utils() {
   dialogRef = inject<MatDialogRef<CadZhankaiComponent, CadZhankaiDialogOutput>>(MatDialogRef);
   data = inject<CadZhankaiDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {zhankais: [], qiegemubanGroups: []};
+  private config = inject(AppConfigService);
   private dialog = inject(MatDialog);
 
   private message = inject(MessageService);
@@ -292,6 +294,7 @@ export class CadZhankaiComponent extends Utils() {
     });
   }
 
+  showQiegemuban = computed(() => this.status.projectConfig.getBoolean("开启45度切角"));
   qiegemubanGroupInfos = computed(() =>
     this.qiegemubanGroups().map((group) => {
       return {filledCount: getQiegemubanFilledCount(group)};

@@ -582,7 +582,7 @@ export class Calc {
           const replaceTo = "*****";
           for (const match_v of matches) {
             const expressionK = trim(match_v, "#");
-            let replaceV = "";
+            let replaceV: string;
 
             if (vars[expressionK] !== undefined) {
               // 直接替换, 这种情况是选项，选项里可能有#

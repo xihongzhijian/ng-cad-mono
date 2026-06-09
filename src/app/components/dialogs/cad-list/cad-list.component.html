@@ -11,10 +11,10 @@
     <button mat-flat-button (click)="addCad()">添加</button>
     <button mat-flat-button (click)="deleteCads()">删除</button>
     @if (data.yaoqiu?.["有帮助文档"]) {
-      <button mat-flat-button (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
+      <button mat-flat-button (click)="data.yaoqiu['打开帮助文档']()">帮助文档</button>
     }
     @if (data.yaoqiu?.["有导入参考dxf模板"]) {
-      <button mat-flat-button (click)="data.yaoqiu?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
+      <button mat-flat-button (click)="data.yaoqiu['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
     }
     <button mat-flat-button (click)="openImportPage()">导入CAD</button>
     <button mat-flat-button (click)="openExportPage()">导出CAD</button>

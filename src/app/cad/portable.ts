@@ -819,7 +819,7 @@ export class CadPortable {
           mtext = new CadMtext();
           mtext.anchor.set(0, 0);
           mtext.insert.set(offsetX, rect.top);
-          offsetX -= offsetXStep;
+          // offsetX -= offsetXStep;
           mtext.fontStyle.size = 50;
           result.entities.add(mtext);
         }

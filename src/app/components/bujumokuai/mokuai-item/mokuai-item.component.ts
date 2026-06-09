@@ -152,7 +152,7 @@ export class MokuaiItemComponent {
   morenbancaiInputInfos = computed(() => {
     const infos: InputInfo[] = [];
     for (const [i, {key, val}] of this.morenbancais().entries()) {
-      let str = "";
+      let str: string;
       if (isMrbcjfzInfoEmpty2(key, val)) {
         continue;
       } else {
