@@ -161,4 +161,20 @@ export class Line extends Curve {
     }
     return [];
   }
+
+  isHorizontal(tol = DEFAULT_TOLERANCE) {
+    return isNearZero(this.start.y - this.end.y, tol);
+  }
+
+  isVertical(tol = DEFAULT_TOLERANCE) {
+    return isNearZero(this.start.x - this.end.x, tol);
+  }
+
+  isHorizontalOrVertical(tol = DEFAULT_TOLERANCE) {
+    return this.isHorizontal(tol) || this.isVertical(tol);
+  }
+
+  isOblique(tol = DEFAULT_TOLERANCE) {
+    return !this.isHorizontalOrVertical(tol);
+  }
 }
