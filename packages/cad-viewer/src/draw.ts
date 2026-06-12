@@ -8,7 +8,7 @@ const setLineStyle = (el: Element, style: LineStyle) => {
   const {color, width, dashArray} = style;
   el.stroke({width, color});
   if (dashArray) {
-    el.css("stroke-dasharray" as any, dashArray.join(", "));
+    el.css("stroke-dasharray", dashArray.join(", "));
   }
 };
 
@@ -90,7 +90,15 @@ export const drawArc = (
   return [el];
 };
 
-export const drawText = (draw: Container, text: string, position: Point, anchor: Point, style?: FontStyle, i = 0) => {
+export const drawText = (
+  draw: Container,
+  text: string,
+  position: Point,
+  anchor: Point,
+  transformMatrix?: Matrix,
+  style?: FontStyle,
+  i = 0
+) => {
   const {size, family, weight, color, vertical, vertical2} = style || {};
   if (!text || !size || !(size > 0)) {
     draw.remove();
@@ -98,22 +106,9 @@ export const drawText = (draw: Container, text: string, position: Point, anchor:
   }
   let el = draw.children()[i] as Text;
   if (el instanceof Text) {
-    el.text(text).font({size});
+    el.text(text);
   } else {
-    el = draw.text(text).addClass("fill").stroke("none");
-    el.font({size}).leading(1);
-  }
-  el.css("transform-box" as any, "fill-box");
-  el.css("white-space" as any, "pre");
-  el.css("transform-origin" as any, `${anchor.x * 100}% ${anchor.y * 100}%`);
-  const {width, height} = el.bbox();
-  let tx = -width * anchor.x;
-  let ty = -height * anchor.y;
-  let deg = 0;
-  if (vertical) {
-    tx += height / 2;
-    ty -= width / 2;
-    deg = 90;
+    el = draw.text(text);
   }
   const getStr = (val: any) => {
     switch (getTypeOf(val)) {
@@ -125,14 +120,42 @@ export const drawText = (draw: Container, text: string, position: Point, anchor:
         return "";
     }
   };
-  if (vertical2) {
-    el.css("writing-mode" as any, "vertical-lr");
-  } else {
-    el.css("writing-mode" as any, "");
+  el.font({size}).leading(1);
+  el.addClass("fill").stroke("none");
+  el.css({
+    "transform-origin": `${anchor.x * 100}% ${anchor.y * 100}%`,
+    "transform-box": "fill-box",
+    "white-space": "pre",
+    "font-family": getStr(family),
+    "font-weight": getStr(weight)
+  });
+  el.font({size}).leading(1);
+  const {width, height} = el.bbox();
+  let tx = -width * anchor.x;
+  let ty = height * anchor.y;
+  let rotate = 0;
+  if (vertical) {
+    tx += height / 2;
+    ty += width / 2;
+    rotate = Math.PI / 2;
   }
-  el.css("transform", `translate(${tx}px, ${ty}px) scale(1, -1) rotate(${deg}deg)`);
-  el.css("font-family" as any, getStr(family));
-  el.css("font-weight" as any, getStr(weight));
+  if (vertical2) {
+    el.css("writing-mode", "vertical-lr");
+  } else {
+    el.css("writing-mode", "");
+  }
+  const matrix = new Matrix({scale: [1, -1], translate: [tx, ty], rotate});
+  if (text == "新建文本") {
+    console.log(new Angle(matrix.rotate()).deg);
+  }
+  if (transformMatrix) {
+    const matrix2 = new Matrix(transformMatrix);
+    matrix2.rotate(-matrix2.rotate() * 2);
+    matrix.transform(matrix2);
+  }
+  const [scaleX, scaleY] = matrix.scale();
+  const deg = new Angle(matrix.rotate()).deg;
+  el.css("transform", `scale(${scaleX}, ${scaleY}) translate(${tx}px, ${ty}px) rotate(${deg}deg)`);
   if (color) {
     el.fill(color);
   } else {
@@ -298,10 +321,10 @@ export const drawDimensionLinear = (
     }
     const middle = p3.clone().add(p4).divide(2);
     if (axis === "x") {
-      textEls = drawText(draw, text, middle, new Point(0.5, 1), textStyle, i);
+      textEls = drawText(draw, text, middle, new Point(0.5, 1), undefined, textStyle, i);
     } else if (axis === "y") {
       textStyle.vertical = true;
-      textEls = drawText(draw, text, middle, new Point(1, 0.5), textStyle, i);
+      textEls = drawText(draw, text, middle, new Point(1, 0.5), undefined, textStyle, i);
     }
     textEls.forEach((el) => el.addClass("dim-text"));
     // i += textEls.length;
@@ -333,12 +356,12 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
       transform: "scale(1, -1)",
       "transform-origin": "50% 50%",
       "transform-box": "fill-box"
-    } as any);
+    });
     imageEl = imageContainer.image();
     imageEl.css({
       "transform-origin": `${anchor.x * 100}% ${anchor.y * 100}%`,
       "transform-box": "fill-box"
-    } as any);
+    });
   }
   if (url && imageEl.attr("href") !== url) {
     imageEl.load(url);

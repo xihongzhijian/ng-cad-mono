@@ -39,8 +39,8 @@ export const generatePointsMap = (entities?: CadEntities, tol = DEFAULT_TOLERANC
   return map;
 };
 
-export const findAdjacentLines = (map: PointsMap, entity: CadLineLike, point: Point, tol = DEFAULT_TOLERANCE): CadLineLike[] => {
-  if (!point && entity instanceof CadLine) {
+export const findAdjacentLines = (map: PointsMap, entity: CadLineLike, point?: Point | null, tol = DEFAULT_TOLERANCE): CadLineLike[] => {
+  if (!point) {
     const adjStart = findAdjacentLines(map, entity, entity.start);
     const adjEnd = findAdjacentLines(map, entity, entity.end);
     return [...adjStart, ...adjEnd];

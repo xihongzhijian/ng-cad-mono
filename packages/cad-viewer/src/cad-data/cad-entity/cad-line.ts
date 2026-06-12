@@ -85,11 +85,19 @@ export class CadLine extends CadLineLike {
     return this.curve.equals(entity.curve);
   }
 
-  isVertical(accuracy = DEFAULT_TOLERANCE) {
-    return Math.abs(this.start.x - this.end.x) <= accuracy;
+  isHorizontal(tol = DEFAULT_TOLERANCE) {
+    return this.curve.isHorizontal(tol);
   }
 
-  isHorizontal(accuracy = DEFAULT_TOLERANCE) {
-    return Math.abs(this.start.y - this.end.y) <= accuracy;
+  isVertical(tol = DEFAULT_TOLERANCE) {
+    return this.curve.isVertical(tol);
+  }
+
+  isHorizontalOrVertical(tol = DEFAULT_TOLERANCE) {
+    return this.curve.isHorizontalOrVertical(tol);
+  }
+
+  isOblique(tol = DEFAULT_TOLERANCE) {
+    return this.curve.isOblique(tol);
   }
 }

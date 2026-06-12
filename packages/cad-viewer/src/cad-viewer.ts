@@ -561,7 +561,7 @@ export class CadViewer extends EventEmitter {
           }
         }
       }
-      drawResult = drawText(el, entity.text, insert, anchor, fontStyle);
+      drawResult = drawText(el, entity.text, insert, anchor, entity.transformMatrix, fontStyle);
     } else if (entity instanceof CadSpline) {
       drawResult = await drawSpline(el, entity, lineStyle);
     } else if (entity instanceof CadLeader) {

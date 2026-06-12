@@ -18,6 +18,7 @@ export class CadMtext extends CadEntity {
   insert: Point;
   text: string;
   anchor: Point;
+  transformMatrix: Matrix;
   fontStyle: FontStyle;
   info: CadMtextInfo;
 
@@ -38,6 +39,7 @@ export class CadMtext extends CadEntity {
     if (data.font_size) {
       this.fontStyle.size = data.font_size;
     }
+    this.transformMatrix = new Matrix(data.transformMatrix);
     this.info = data.info ?? {};
   }
 
@@ -45,19 +47,18 @@ export class CadMtext extends CadEntity {
     const anchor = this.anchor.toArray();
     return {
       ...super.export(),
-      ...purgeObject<ObjectOf<any>>({insert: this.insert.toArray(), fontStyle: this.fontStyle, text: this.text, anchor})
+      ...purgeObject<ObjectOf<any>>({
+        insert: this.insert.toArray(),
+        fontStyle: this.fontStyle,
+        text: this.text,
+        anchor,
+        transformMatrix: this.transformMatrix.toArray()
+      })
     };
   }
 
   protected _transform(matrix: MatrixLike, isFromParent?: boolean) {
-    this.insert.transform(matrix);
-    const scale = new Matrix(matrix).scale();
-    if (scale[0] < 0) {
-      this.anchor.x = 1 - this.anchor.x;
-    }
-    if (scale[1] < 0) {
-      this.anchor.y = 1 - this.anchor.y;
-    }
+    this.transformMatrix.transform(matrix);
     const m = new Matrix(matrix);
     if (this.info.isLengthText || this.info.isGongshiText) {
       if (!isFromParent) {
