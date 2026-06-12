@@ -14,8 +14,8 @@ export const dataURLtoBlob = (dataURL: string) => {
 };
 
 export const getDPI = () => {
-  let dpiX = 0;
-  let dpiY = 0;
+  let dpiX: number;
+  let dpiY: number;
   const tmpNode = document.createElement("div");
   tmpNode.style.cssText = "width:1in;height:1in;position:absolute;left:0px;top:0px;z-index:99;visibility:hidden";
   document.body.appendChild(tmpNode);

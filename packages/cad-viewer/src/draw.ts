@@ -304,7 +304,7 @@ export const drawDimensionLinear = (
       textEls = drawText(draw, text, middle, new Point(1, 0.5), textStyle, i);
     }
     textEls.forEach((el) => el.addClass("dim-text"));
-    i += textEls.length;
+    // i += textEls.length;
   }
 
   return [...dimLine, ...extLine1, ...extLine2, ...arrow1, ...arrow2, ...textEls].filter((v) => v);
@@ -314,7 +314,7 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
   const line = drawLine(draw, start, end, {color}, i);
   i += line.length;
   const triangle = drawTriangle(draw, start, end, size, color, i);
-  i += triangle.length;
+  // i += triangle.length;
   return [...line, ...triangle];
 };
 

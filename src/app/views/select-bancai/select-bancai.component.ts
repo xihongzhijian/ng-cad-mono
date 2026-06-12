@@ -499,7 +499,6 @@ export class SelectBancaiComponent {
     if (noPaiban) {
       projectConfigOverride.激光开料结果不用排版 = "是";
     }
-    let url: string | string[] | null = null;
     const data: ObjectOf<any> = {
       codes,
       bancaiCadsArr,
@@ -512,7 +511,7 @@ export class SelectBancaiComponent {
       verbose: this.verbose(),
       testMode: this.config.getConfig("testMode")
     };
-    url = await this.http.getData<string | string[]>(api, data);
+    const url = await this.http.getData<string | string[]>(api, data);
     if (url) {
       await this.refreshDownloadHistory();
       this.xikongData.set(null);

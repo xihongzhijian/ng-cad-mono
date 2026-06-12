@@ -6,7 +6,13 @@ import {ExpressionDeps, ExpressionInfo, FormulaInfo, Formulas} from "./types";
 
 export class Calc {
   private static _builtins: [string[], string?][] = [
-    [["round", "四舍五入"], "Math.round"],
+    [
+      ["round", "四舍五入"],
+      String((num: number, fractionDigits = 0) => {
+        const factor = Math.pow(10, fractionDigits);
+        return Math.round(num * factor) / factor;
+      })
+    ],
     [["floor", "去除小数"], "Math.floor"],
     [["ceil", "小数进一"], "Math.ceil"],
     [["rand", "随机数"], "Math.random"],
@@ -582,7 +588,7 @@ export class Calc {
           const replaceTo = "*****";
           for (const match_v of matches) {
             const expressionK = trim(match_v, "#");
-            let replaceV = "";
+            let replaceV: string;
 
             if (vars[expressionK] !== undefined) {
               // 直接替换, 这种情况是选项，选项里可能有#

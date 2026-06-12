@@ -33,4 +33,4 @@ jobs:
           bun run build:packages
           bun run build
           cd scripts
-          bun tsx ./upload.ts
+          bun run ./upload.ts

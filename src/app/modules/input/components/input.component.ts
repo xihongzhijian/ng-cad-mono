@@ -345,7 +345,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const {filterValuesGetter} = info;
     let sortOptions: boolean;
     const getFilterValues = (option: (typeof this.options)[number]) => {
-      let values: string[] = [];
+      let values: string[];
       if (typeof filterValuesGetter === "function") {
         values = filterValuesGetter(option);
       } else {

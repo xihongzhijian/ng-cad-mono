@@ -632,7 +632,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     const cad = this.status.cad;
     data.bancaihoudufangxiang = value;
     this.status.emitChangeCadSignal();
-    let direction = 0;
+    let direction: number;
     if (value === "gt0") {
       direction = 1;
     } else if (value === "lt0") {

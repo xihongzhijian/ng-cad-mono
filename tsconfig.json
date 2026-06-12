@@ -32,7 +32,7 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": false
   },
-  "include": ["src"],
+  "include": ["src", "./eslint.config.ts"],
   "exclude": ["node_modules", "packages"],
   "references": [{"path": "./scripts/tsconfig.scripts.json"}],
   "angularCompilerOptions": {

@@ -1,6 +1,7 @@
 <div class="toolbar">
   <button mat-flat-button (click)="selectAllXinghaos()">全选</button>
   <button mat-flat-button (click)="selectXinghaosGongyi()">批量选择工艺</button>
+  <button mat-flat-button (click)="copyXinghaos()">批量复制型号</button>
   <button mat-flat-button (click)="addXinghao()">新建型号</button>
   @for (info of xinghaoFilterForm(); track $index) {
     <app-input [info]="info"></app-input>

@@ -389,7 +389,7 @@ export const getErrorMsgs = (errors: ValidationErrors | null) => {
   const msgs: string[] = [];
   for (const key in errors) {
     const value = errors[key];
-    let msg = "";
+    let msg: string;
     if (typeof value === "string") {
       msg = value;
     } else {

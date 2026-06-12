@@ -331,7 +331,7 @@ export class CadOptionsComponent implements AfterViewInit {
     return info;
   });
   async getOptions(params: GetOptionsParamsSingle, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
-    let data: DataAndCount<GetOptionsResultItem[]> | null = null;
+    let data: DataAndCount<GetOptionsResultItem[]> | null;
     const {options} = this.data;
     const activeOptionTypes = this.activeOptionTypes();
     const typesMap = this.optionTypesManager.data().map;

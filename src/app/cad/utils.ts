@@ -152,7 +152,7 @@ export const validateLines = (
   }
   const typeCheck = cadTypes1.includes(data.type) || collection === "peijianCad";
   let has自动识别上下折 = false;
-  let has上下折 = false;
+  let has上下折: boolean;
   let shuangxiangzhewan = data.shuangxiangzhewan;
   if (cadTypes2.includes(data.type)) {
     has自动识别上下折 = !!data.entities.find((e) => e instanceof CadLineLike && e.双向折弯附加值.includes("上下折程序自动识别"));

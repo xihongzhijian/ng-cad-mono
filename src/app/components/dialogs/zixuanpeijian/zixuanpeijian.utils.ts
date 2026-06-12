@@ -1119,7 +1119,7 @@ export const step3FetchData = async (
   lingsanOptions?: ZixuanpeijianInput["lingsanOptions"] | null,
   noCache = false
 ) => {
-  let responseData: {cads: CadData[]} | null = null;
+  let responseData: {cads: CadData[]} | null;
   const {getAll, useTypePrefix, xinghao} = lingsanOptions || {};
   const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, useTypePrefix, xinghao}));
   if (noCache || !(window as any)[cacheKey]) {

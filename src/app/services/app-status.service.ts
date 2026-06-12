@@ -503,7 +503,7 @@ export class AppStatusService {
       }
     }
 
-    let resData: CadData | null = null;
+    let resData: CadData | null;
     const result = this.validate(true);
     const blockError = "不能包含块";
     if (result.errors.some((v) => v.content === blockError)) {

@@ -149,7 +149,7 @@ export class FormulasEditorComponent {
         v = replaceChars(v);
         const index1 = v.indexOf("=");
         const index2 = v.indexOf(":");
-        let index = -1;
+        let index: number;
         if (index1 > -1 && index2 > -1) {
           index = Math.min(index1, index2);
         } else if (index1 === -1) {

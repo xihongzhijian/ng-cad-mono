@@ -613,8 +613,8 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   private async _onStep({value, refresh, noCache, preserveImgs}: ReturnType<ZixuanpeijianComponent["step"]>) {
-    let isRefreshed = false;
     if (value === 1) {
+      let isRefreshed = false;
       if (refresh || !this._step1Fetched) {
         await this.step1Fetch();
         isRefreshed = true;
@@ -626,14 +626,12 @@ export class ZixuanpeijianComponent implements OnInit {
     } else if (value === 2) {
       if (refresh || !this._step2Fetched) {
         await this.step2Fetch();
-        isRefreshed = true;
       }
     } else if (value === 3) {
       const scrollTop = this.lingsanLeftScrollbar()?.nativeElement.scrollTop;
       const lingsanCadTypePrev = this.lingsanCadType;
       if (refresh || !this._step3Fetched) {
         await this.step3Fetch(false, noCache, preserveImgs);
-        isRefreshed = true;
       }
       await timeout(500);
       if (lingsanCadTypePrev === this.lingsanCadType) {

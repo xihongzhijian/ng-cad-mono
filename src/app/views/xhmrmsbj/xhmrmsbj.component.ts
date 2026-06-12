@@ -2148,7 +2148,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.wmm.postMessage("updateFloatingDialogInputsStart", this.getFloatingDialogInputs());
   });
   floatingDialogInputChangeStart(data: {value: any; oldValue: string; info: {type: string; index: number}}) {
-    let infos: InputInfo[] = [];
+    let infos: InputInfo[];
     switch (data.info.type) {
       case "模块选项":
         infos = this.mokuaiOptionInfos().map((v) => v.inputInfo);

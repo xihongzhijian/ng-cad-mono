@@ -25,7 +25,7 @@ export abstract class CustomStorage {
   }
 
   load<T = any>(key: string): T | null {
-    let data = null;
+    let data: any;
     try {
       data = JSON.parse(this.storage.getItem(this._field) || "null");
     } catch {

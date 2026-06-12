@@ -45,13 +45,7 @@ export const getOptionsAll2InputInfo = (
   if (!optionsInfo) {
     return {type: "select", label: key, options: []};
   }
-  let info: InputInfoSelect | InputInfoString = {
-    type: "select",
-    label: key,
-    options: convertOptions(optionsInfo.options),
-    disabled: optionsInfo.disabled,
-    multiple: optionsInfo.multiple
-  };
+  let info: InputInfoSelect | InputInfoString;
   if (canSearch) {
     info = {
       type: "string",

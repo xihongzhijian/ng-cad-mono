@@ -583,12 +583,12 @@ export class CadData {
           for (const child of children) {
             if (!cad1Changed && child.findEntity(e.entity1.id)) {
               e.cad1 = child.name;
-              cad1Changed = true;
+              // cad1Changed = true;
               break;
             }
             if (!cad2Changed && child.findEntity(e.entity2.id)) {
               e.cad2 = child.name;
-              cad2Changed = true;
+              // cad2Changed = true;
               break;
             }
           }
