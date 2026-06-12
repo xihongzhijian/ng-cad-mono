@@ -9,20 +9,25 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
+import {toFixed} from "@app/utils/func";
 import {CustomValidators} from "@app/utils/input-validators";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
+  CadArc,
   CadEntities,
   CadEventCallBack,
   CadLine,
   CadLineLike,
   cadLineOptions,
+  CadMtext,
   Defaults,
+  findAdjacentLines,
+  generatePointsMap,
   lineweight2linewidth,
   linewidth2lineweight,
   PointsMap
 } from "@lucilor/cad-viewer";
-import {Point} from "@lucilor/utils";
+import {Angle, Line, Point} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {
   InputInfo,
@@ -43,7 +48,13 @@ import {debounce} from "lodash";
 import {ColorCircleModule} from "ngx-color/circle";
 import {convertToCadFentiLine, getCadFentiInfo} from "../cad-fenti-config/cad-fenti-config.utils";
 import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
-import {parseLineNames, stringifyLineNames} from "./cad-line.utils";
+import {
+  addCadEntityAngularDimension,
+  getCadEntityAngularDimension,
+  isCadEntityHasAngularDimension,
+  parseLineNames,
+  stringifyLineNames
+} from "./cad-line.utils";
 
 @Component({
   selector: "app-cad-line",
@@ -909,11 +920,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       return false;
     }
     const line = selected[0];
-    if (line instanceof CadLineLike) {
-      const {deltaX, deltaY} = line;
-      return deltaX !== 0 && deltaY !== 0;
-    }
-    return false;
+    return line instanceof CadLine && line.isOblique();
   }
 
   toggleWHDashedLines() {
@@ -976,6 +983,93 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       this.WHDashedLines = null;
       this.status.clearCadPoints();
+    }
+  }
+
+  canAddAngularDimension = computed(() => {
+    const selected = this.selected();
+    const lines = selected.filter((v) => v instanceof CadLine && v.isOblique());
+    return lines.some((v) => !isCadEntityHasAngularDimension(v));
+  });
+  canRemoveAngularDimension = computed(() => {
+    const selected = this.selected();
+    const lines = selected.filter((v) => v instanceof CadLine && v.isOblique());
+    return lines.some((v) => isCadEntityHasAngularDimension(v));
+  });
+  async addAngularDimension() {
+    const lines = this.selected();
+    const pointsMap = generatePointsMap(this.data().entities);
+    const toRemove = new CadEntities();
+    const toRender = new CadEntities();
+    for (const line of lines) {
+      if (!(line instanceof CadLine && line.isOblique())) {
+        continue;
+      }
+      const adjLines = findAdjacentLines(pointsMap, line);
+      if (adjLines.length < 1) {
+        continue;
+      }
+      toRemove.merge(getCadEntityAngularDimension(line));
+      toRender.add(line);
+      for (const adjLine of adjLines) {
+        if (!(adjLine instanceof CadLine)) {
+          continue;
+        }
+        const p1 = line.start;
+        const p2 = line.end;
+        const p3 = adjLine.start;
+        const p4 = adjLine.end;
+        let pts: [Point, Point, Point];
+        if (p1.equals(p3)) {
+          pts = [p2, p1, p4];
+        } else if (p1.equals(p4)) {
+          pts = [p2, p1, p3];
+        } else if (p2.equals(p3)) {
+          pts = [p1, p2, p4];
+        } else if (p2.equals(p4)) {
+          pts = [p1, p2, p3];
+        } else {
+          continue;
+        }
+        const arc = new CadArc();
+        arc.center.copy(pts[1]);
+        arc.radius = Math.min(15, line.length, adjLine.length) / 3;
+        const l1 = new Line(pts[1], pts[0]);
+        const l2 = new Line(pts[1], pts[2]);
+        arc.start_angle = l1.theta.deg;
+        arc.end_angle = l2.theta.deg;
+        const angle = Angle.fromPoints(...pts);
+        if (!arc.curve.totalAngle.equals(angle)) {
+          arc.clockwise = !arc.clockwise;
+        }
+        const arcCurve = arc.curve;
+        const arcMidLine = new Line(pts[1], arcCurve.getPoint(0.5));
+        const angleText = new CadMtext();
+        angleText.text = `${toFixed(angle.deg, 2)}°`;
+        angleText.insert.copy(arcMidLine.end);
+        angleText.anchor.set(0.5, 1);
+        angleText.fontStyle.size = arc.radius * 0.8;
+        angleText.transform({rotate: arcMidLine.theta.rad - Math.PI / 2}, true);
+        addCadEntityAngularDimension(line, [arc, angleText]);
+      }
+    }
+    if (toRemove.length) {
+      await this.status.cad.remove(toRemove);
+    }
+    if (toRender.length) {
+      await this.status.cad.render(toRender);
+    }
+    if (toRemove.length < 1 && toRender.length > 0) {
+      this._onEntitiesChange();
+    }
+  }
+  async removeAngularDimension() {
+    const lines = this.selected();
+    for (const line of lines) {
+      const toRemove = getCadEntityAngularDimension(line);
+      if (toRemove.length > 0) {
+        await this.status.cad.remove(toRemove);
+      }
     }
   }
 }

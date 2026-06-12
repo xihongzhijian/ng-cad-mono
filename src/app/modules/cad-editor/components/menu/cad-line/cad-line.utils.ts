@@ -1,7 +1,7 @@
 import {CadCollection} from "@app/cad/collections";
 import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadEntity, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoArray} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -221,4 +221,18 @@ export const openCadLineForm = async (
     data.info.vars = vars;
   }
   return result;
+};
+
+const angularDimensionInfoKey = "角度标注";
+export const isCadEntityHasAngularDimension = (entity: CadEntity) => {
+  return entity.children.filter((child) => child.info[angularDimensionInfoKey]).length > 0;
+};
+export const addCadEntityAngularDimension = (entity: CadEntity, dim: CadEntity[]) => {
+  for (const d of dim) {
+    d.info[angularDimensionInfoKey] = true;
+    entity.addChild(d);
+  }
+};
+export const getCadEntityAngularDimension = (entity: CadEntity) => {
+  return entity.children.filter((child) => child.info[angularDimensionInfoKey]);
 };
