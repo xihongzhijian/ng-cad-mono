@@ -458,6 +458,9 @@ export const configCadDataForPrint = async (
     if (isZxpj || colorNumber === 0x333333 || e.layer !== "0") {
       e.linewidth = linewidth;
     }
+    if (e.info.hasAngularDimension) {
+      console.log(e);
+    }
   };
 
   if (isZxpj && data instanceof CadData) {

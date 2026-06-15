@@ -8,7 +8,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
-import {getValueString} from "@app/utils/get-value";
+import {getBooleanStr, getValueString} from "@app/utils/get-value";
 import {AboutComponent} from "@components/about/about.component";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
@@ -499,6 +499,10 @@ export class SelectBancaiComponent {
     if (noPaiban) {
       projectConfigOverride.激光开料结果不用排版 = "是";
     }
+    if (this.showQiegemuban()) {
+      projectConfigOverride["开启45度切角"] = getBooleanStr(this.enable45duQiejiao());
+      projectConfigOverride["45度切角微连"] = getBooleanStr(this.enable45duQiejiaoWeilian());
+    }
     const data: ObjectOf<any> = {
       codes,
       bancaiCadsArr,
@@ -589,6 +593,10 @@ export class SelectBancaiComponent {
     this.verbose.update((v) => !v);
     this.config.setConfig("kailiaoVerbose", this.verbose());
   }
+
+  showQiegemuban = computed(() => this.status.projectConfig.getBoolean("开启45度切角"));
+  enable45duQiejiao = signal(true);
+  enable45duQiejiaoWeilian = signal(true);
 
   @HostBinding("class.verbose")
   verboseClass = false;

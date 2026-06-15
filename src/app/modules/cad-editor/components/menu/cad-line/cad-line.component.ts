@@ -1011,6 +1011,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       toRemove.merge(getCadEntityAngularDimension(line));
       toRender.add(line);
+      line.info.hasAngularDimension = true;
       for (const adjLine of adjLines) {
         if (!(adjLine instanceof CadLine)) {
           continue;
@@ -1049,7 +1050,14 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         angleText.insert.copy(arcMidLine.end);
         angleText.anchor.set(0.5, 1);
         angleText.fontStyle.size = arc.radius * 0.8;
-        angleText.transform({rotate: arcMidLine.theta.rad - Math.PI / 2}, true);
+        const rotate = arcMidLine.theta.clone();
+        rotate.deg -= 90;
+        rotate.constrain();
+        if (rotate.deg > 180) {
+          rotate.deg -= 180;
+          angleText.anchor.y = 0;
+        }
+        angleText.transform({rotate: rotate.rad}, true);
         addCadEntityAngularDimension(line, [arc, angleText]);
       }
     }
@@ -1070,6 +1078,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       if (toRemove.length > 0) {
         await this.status.cad.remove(toRemove);
       }
+      delete line.info.hasAngularDimension;
     }
   }
 }
