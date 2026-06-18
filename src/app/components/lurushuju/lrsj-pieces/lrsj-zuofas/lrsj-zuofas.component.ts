@@ -110,7 +110,9 @@ export class LrsjZuofasComponent extends LrsjPiece {
     }
     const 型号 = xinghao.名字;
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字: zuofa.名字, 型号, 产品分类: fenleiName});
-    await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
+    if (xinghaoRaw) {
+      await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw.产品分类);
+    }
   }
   async copyZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const xinghao = this.xinghao();
