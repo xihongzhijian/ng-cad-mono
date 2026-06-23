@@ -1011,7 +1011,6 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       toRemove.merge(getCadEntityAngularDimension(line));
       toRender.add(line);
-      line.info.hasAngularDimension = true;
       for (const adjLine of adjLines) {
         if (!(adjLine instanceof CadLine)) {
           continue;
