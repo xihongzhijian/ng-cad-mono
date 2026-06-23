@@ -239,7 +239,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   parseOptionString = computed(() => false);
   infoGroup1 = computed(() => {
     const infos = getCadInfoInputs(
-      ["id", "名字", "唯一码", "显示名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
+      ["id", "名字", "唯一码", "显示名字", "排版序号名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
       this.data(),
       this.dialog,
       this.status,
