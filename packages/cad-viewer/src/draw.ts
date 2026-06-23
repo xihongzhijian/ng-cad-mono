@@ -155,13 +155,14 @@ export const drawText = (
   }
   const [scaleX, scaleY] = matrix.scale();
   const deg = new Angle(matrix.rotate()).deg;
-  el.css("transform", `scale(${scaleX}, ${scaleY}) translate(${tx}px, ${ty}px) rotate(${deg}deg)`);
+  el.css("transform", `scale(${scaleX}, ${scaleY}) rotate(${deg}deg)`);
   if (color) {
     el.fill(color);
   } else {
     el.fill("");
   }
-  el.move(position.x, position.y);
+  const [translateX, translateY] = matrix.translate();
+  el.move(position.x + translateX, position.y - translateY);
   return [el];
 };
 
