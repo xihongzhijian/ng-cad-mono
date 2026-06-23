@@ -212,6 +212,7 @@ export const getCadInfoInputs = (
       case "指定下单板材":
       case "指定下单材料":
       case "指定下单厚度":
+      case "排版序号名字":
         info = getter2.string(key);
         break;
       case "激光开料折弯标记长直线":
