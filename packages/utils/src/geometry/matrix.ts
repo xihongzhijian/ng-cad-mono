@@ -103,14 +103,14 @@ export class Matrix {
           matrixs.push(translate(...getPoint(source.translate)));
         }
         if (source.scale !== undefined) {
-          matrixs.push(scale(...getPoint(source.scale, 1), ...this.origin));
+          matrixs.push(scale(...getPoint(source.scale, 1)));
         }
         if (source.skew !== undefined) {
           matrixs.push(skew(...getPoint(source.skew, 0)));
         }
         const rotateNum = Number(source.rotate);
         if (!isNaN(rotateNum)) {
-          matrixs.push(rotate(rotateNum, ...this.origin));
+          matrixs.push(rotate(rotateNum));
         }
       }
       this._setMatrix(compose(this, ...matrixs));
@@ -125,6 +125,11 @@ export class Matrix {
     return result;
   }
 
+  decomposeTSR() {
+    const {a, d} = this;
+    return decomposeTSR(this, d < 0, a < 0);
+  }
+
   toArray() {
     const result: number[] = [];
     matrixKeys.forEach((k) => {
@@ -134,7 +139,8 @@ export class Matrix {
   }
 
   transform(matrix: MatrixLike) {
-    this._setMatrix(compose(this, new Matrix(matrix)));
+    matrix = new Matrix(matrix);
+    this._setMatrix(compose(this, matrix));
     return this;
   }
 
@@ -142,17 +148,17 @@ export class Matrix {
   scale(x: number, y?: number): this;
   scale(x?: number, y = x) {
     if (typeof x !== "number" || typeof y !== "number") {
-      const {sx, sy} = decomposeTSR(this).scale;
+      const {sx, sy} = this.decomposeTSR().scale;
       return [sx, sy];
     }
-    return this.transform(scale(x, y, ...this.origin));
+    return this.transform(scale(x, y));
   }
 
   translate(): [number, number];
   translate(x: number, y?: number): this;
   translate(x?: number, y = x) {
     if (typeof x !== "number" || typeof y !== "number") {
-      const {tx, ty} = decomposeTSR(this).translate;
+      const {tx, ty} = this.decomposeTSR().translate;
       return [tx, ty];
     }
     return this.transform(translate(x, y));
@@ -171,9 +177,9 @@ export class Matrix {
   rotate(rad: number): this;
   rotate(rad?: number) {
     if (typeof rad === "number") {
-      return this.transform(rotate(rad, ...this.origin));
+      return this.transform(rotate(rad));
     }
-    return decomposeTSR(this).rotation.angle;
+    return this.decomposeTSR().rotation.angle;
   }
 
   equals(matrix: MatrixLike) {
