@@ -13,8 +13,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {Jiaowei, jiaoweiAnchorOptions, JiaoweiDataItem, JiaoweiTableData} from "./jiaowei";
 
-const table = "p_menjiao";
-
 @Component({
   selector: "app-jiaowei",
   templateUrl: "./jiaowei.component.html",
@@ -37,7 +35,15 @@ export class JiaoweiComponent {
 
   queryParams = toSignal(this.route.queryParams);
   refreshEff = effect(async () => {
-    const {id} = this.queryParams() || {};
+    const {id, table} = this.queryParams() || {};
+    if (!id) {
+      await this.message.error("缺少id参数");
+      return;
+    }
+    if (!table) {
+      await this.message.error("缺少table参数");
+      return;
+    }
     const data = await this.http.queryMySql<JiaoweiTableData>({table, filter: {where: {vid: id}}});
     let jiaowei: Jiaowei | undefined;
     try {
@@ -119,7 +125,10 @@ export class JiaoweiComponent {
   });
 
   submit() {
-    const {id} = this.route.snapshot.queryParams;
+    const {id, table} = this.queryParams() || {};
+    if (!id || !table) {
+      return;
+    }
     const data: TableUpdateParams<JiaoweiTableData>["data"] = {vid: id};
     data.jiaowei = JSON.stringify(this.jiaowei().export());
     this.http.tableUpdate({table, data});
