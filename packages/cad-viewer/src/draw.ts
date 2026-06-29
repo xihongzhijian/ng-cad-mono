@@ -132,37 +132,28 @@ export const drawText = (
   el.font({size}).leading(1);
   const {width, height} = el.bbox();
   let tx = -width * anchor.x;
-  let ty = height * anchor.y;
-  let rotate = 0;
+  let ty = -height * anchor.y;
+  let deg = 0;
   if (vertical) {
     tx += height / 2;
-    ty += width / 2;
-    rotate = Math.PI / 2;
+    ty -= width / 2;
+    deg = 90;
   }
   if (vertical2) {
     el.css("writing-mode", "vertical-lr");
   } else {
     el.css("writing-mode", "");
   }
-  const matrix = new Matrix({scale: [1, -1], translate: [tx, ty], rotate});
-  if (text == "新建文本") {
-    console.log(new Angle(matrix.rotate()).deg);
-  }
   if (transformMatrix) {
-    const matrix2 = new Matrix(transformMatrix);
-    matrix2.rotate(-matrix2.rotate() * 2);
-    matrix.transform(matrix2);
+    deg -= (transformMatrix.rotate() / Math.PI) * 180;
   }
-  const [scaleX, scaleY] = matrix.scale();
-  const deg = new Angle(matrix.rotate()).deg;
-  el.css("transform", `scale(${scaleX}, ${scaleY}) rotate(${deg}deg)`);
+  el.css("transform", `translate(${tx}px, ${ty}px) scale(1, -1) rotate(${deg}deg)`);
   if (color) {
     el.fill(color);
   } else {
     el.fill("");
   }
-  const [translateX, translateY] = matrix.translate();
-  el.move(position.x + translateX, position.y - translateY);
+  el.move(position.x, position.y);
   return [el];
 };
 

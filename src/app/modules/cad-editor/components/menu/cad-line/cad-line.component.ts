@@ -1060,7 +1060,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           const dy = offset * Math.sin(arcMidRad);
           angleText.insert.add(dx, dy);
         }
-        angleText.transform({rotate: rotateText.rad}, true);
+        angleText.transformMatrix.transform({rotate: rotateText.rad});
         addCadEntityAngularDimension(line, [arc, angleText]);
       }
     }

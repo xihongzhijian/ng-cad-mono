@@ -18,6 +18,9 @@ export class CadMtext extends CadEntity {
   insert: Point;
   text: string;
   anchor: Point;
+  /**
+   * additional transform matrix for text rotation and scaling, not applied to insert point
+   */
   transformMatrix: Matrix;
   fontStyle: FontStyle;
   info: CadMtextInfo;
@@ -58,7 +61,14 @@ export class CadMtext extends CadEntity {
   }
 
   protected _transform(matrix: MatrixLike, isFromParent?: boolean) {
-    this.transformMatrix.transform(matrix);
+    this.insert.transform(matrix);
+    const scale = new Matrix(matrix).scale();
+    if (scale[0] < 0) {
+      this.anchor.x = 1 - this.anchor.x;
+    }
+    if (scale[1] < 0) {
+      this.anchor.y = 1 - this.anchor.y;
+    }
     const m = new Matrix(matrix);
     if (this.info.isLengthText || this.info.isGongshiText) {
       if (!isFromParent) {
@@ -67,6 +77,14 @@ export class CadMtext extends CadEntity {
         }
         this.info.offset[0] += m.e;
         this.info.offset[1] += m.f;
+      }
+      if (this.info.offset) {
+        if (scale[0] < 0) {
+          this.info.offset[0] = -this.info.offset[0];
+        }
+        if (scale[1] < 0) {
+          this.info.offset[1] = -this.info.offset[1];
+        }
       }
     }
   }
