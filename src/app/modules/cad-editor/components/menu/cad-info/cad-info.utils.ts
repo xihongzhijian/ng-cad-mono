@@ -11,12 +11,13 @@ import {openSuanliaodanFlipDialog} from "@components/dialogs/suanliaodan-flip/su
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
-import {CadData, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadLineLike, CadZhankai} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {getLineNames} from "../cad-line/cad-line.utils";
 import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
 export const cadFields = {
@@ -173,6 +174,24 @@ export const getCadInfoInputs = (
       case "企料包边类型":
       case "装配示意图自动拼接锁边铰边":
         info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values);
+        if (key === "板材厚度方向") {
+          const data2 = getData(data);
+          let hasStartLine = false;
+          data2.entities.forEach((e) => {
+            if (e instanceof CadLineLike && getLineNames(e).includes("起始线")) {
+              hasStartLine = true;
+            }
+          });
+          if (hasStartLine) {
+            const val = data2[cadFields[key]];
+            if (val && val !== "none") {
+              info.hint = "修改起始线后请确认板材厚度方向是否正确";
+            }
+          } else {
+            info.disabled = true;
+            info.hint = "请先选择起始线再修改板材厚度方向";
+          }
+        }
         break;
       case "指定板材分组":
         info = getter.string(cadFields[key], {options: cadOptions[cadFields[key]].values});

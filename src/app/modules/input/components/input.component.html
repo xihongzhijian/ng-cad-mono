@@ -172,6 +172,10 @@
               @if (keyLabel) {
                 <mat-label>{{ keyLabel }}</mat-label>
               }
+              @let keyHint = getObjectKeyHint(item.key, item.value);
+              @if (keyHint) {
+                <mat-hint>{{ keyHint }}</mat-hint>
+              }
               <input
                 type="text"
                 matInput
@@ -213,6 +217,10 @@
               @let valueLabel = getObjectValueLabel(item.key, item.value);
               @if (valueLabel) {
                 <mat-label>{{ valueLabel }}</mat-label>
+              }
+              @let valueHint = getObjectValueHint(item.key, item.value);
+              @if (valueHint) {
+                <mat-hint>{{ valueHint }}</mat-hint>
               }
               <input
                 type="text"
@@ -280,6 +288,10 @@
             @let valueLabel = getArrayValueLabel(j, c);
             @if (valueLabel) {
               <mat-label>{{ valueLabel }}</mat-label>
+            }
+            @let valueHint = getArrayValueHint(j, c);
+            @if (valueHint) {
+              <mat-hint>{{ valueHint }}</mat-hint>
             }
             <input
               matInput

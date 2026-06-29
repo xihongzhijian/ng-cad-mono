@@ -745,6 +745,13 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "array",
         label: "",
         valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+        valueHint: (_, value) => {
+          const bancaihoudufangxiang = data.bancaihoudufangxiang;
+          if (value === "起始线" && bancaihoudufangxiang && bancaihoudufangxiang !== "none") {
+            return "修改起始线后请确认板材厚度方向是否正确";
+          }
+          return "";
+        },
         disabled: isMultiple || isZero,
         hint: isMultiple ? "选中多根线时无法编辑" : "",
         sortable: true,

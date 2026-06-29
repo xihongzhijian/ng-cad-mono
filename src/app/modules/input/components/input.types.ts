@@ -80,7 +80,9 @@ export interface InputInfoObject<T = any, K = string, R = any> extends InputInfo
   optionMultiple?: boolean;
   optionSeparator?: OptionSeparator;
   keyLabel?: string | ((key: K, value: R, info: this) => string);
+  keyHint?: string | ((key: K, value: R, info: this) => string);
   valueLabel?: string | ((key: K, value: R, info: this) => string);
+  valueHint?: string | ((key: K, value: R, info: this) => string);
   keyValidators?: KeyValidatorFn | KeyValidatorFn[] | null;
   valueValidators?: ValueValidatorFn | ValueValidatorFn[] | null;
   keysReadonly?: boolean;
@@ -94,6 +96,7 @@ export interface InputInfoArray<T = any, R = any> extends InputInfoBase<T> {
   type: "array";
   value?: Value<R[]>;
   valueLabel?: string | ((i: number, value: R, info: this) => string);
+  valueHint?: string | ((i: number, value: R, info: this) => string);
   valueValidators?: AbstractControlOptions["validators"];
   sortable?: boolean;
   onChange?: (val: R[], info: this) => MaybePromise<void>;

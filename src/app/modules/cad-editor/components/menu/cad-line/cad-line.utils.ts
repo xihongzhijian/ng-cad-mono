@@ -41,6 +41,45 @@ export const parseLineNames = (mingzi: string, mingzi2: string) => {
   return names;
 };
 
+export const getLineNames = (line: CadLineLike) => {
+  const names: string[] = [];
+  if (line.mingzi) {
+    names.push(line.mingzi);
+  }
+  if (line.mingzi2) {
+    const names2 = line.mingzi2.split("*").filter((v) => !!v && v !== line.mingzi);
+    names.push(...new Set(names2));
+  }
+  return names;
+};
+export const addLineName = (line: CadLineLike, name: string) => {
+  if (!name) {
+    return;
+  }
+  if (!line.mingzi) {
+    line.mingzi = name;
+  } else if (line.mingzi !== name) {
+    if (line.mingzi2) {
+      const names = line.mingzi2.split("*");
+      if (!names.includes(name)) {
+        line.mingzi2 = [...names, name].join("*");
+      }
+    } else {
+      line.mingzi2 = name;
+    }
+  }
+};
+export const removeLineName = (line: CadLineLike, name: string) => {
+  if (line.mingzi === name) {
+    line.mingzi = "";
+  } else if (line.mingzi2) {
+    const names = line.mingzi2.split("*");
+    if (names.includes(name)) {
+      line.mingzi2 = names.filter((v) => v !== name).join("*");
+    }
+  }
+};
+
 export const getCadLineInputs = (
   keys: string[],
   data: CadData | (() => CadData),
@@ -72,6 +111,14 @@ export const getCadLineInputs = (
             type: "array",
             label: "",
             valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+            valueHint: (_, value) => {
+              const data2 = getData(data);
+              const bancaihoudufangxiang = data2.bancaihoudufangxiang;
+              if (value === "起始线" && bancaihoudufangxiang && bancaihoudufangxiang !== "none") {
+                return "修改起始线后请确认板材厚度方向是否正确";
+              }
+              return "";
+            },
             sortable: true,
             value: parseLineNames(line.mingzi, line.mingzi2),
             onChange: (val) => {
@@ -216,6 +263,7 @@ export const openCadLineForm = async (
         setLinesLength(data, [line], result.线长);
       }
     }
+    status.emitChangeCadSignal();
     await cad.render(toChange);
   } else {
     data.info.vars = vars;

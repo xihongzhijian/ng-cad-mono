@@ -48,7 +48,7 @@
         <div style="color: blue">{{ intersectionKeysTranslate[key] }}</div>
         <button mat-button [class.accent]="isMultiSelectingIntersection(key)" (click)="selectPointMulti(key)">批量编辑</button>
       </div>
-      @if (data()[key].length === 0) {
+      @if (data().data[key].length === 0) {
         <div>
           <button mat-icon-button (click)="addIntersectionValue(key)">
             <mat-icon>add_circle</mat-icon>
@@ -67,7 +67,7 @@
   @for (key of intersectionKeys2; track $index) {
     <div class="sub-form-field" [class]="[key]">
       <div class="label">{{ key }}</div>
-      @if (!(data().info[key]?.length > 0)) {
+      @if (!(data().data.info[key]?.length > 0)) {
         <div>
           <button mat-icon-button (click)="addIntersectionValue2(key)">
             <mat-icon>add_circle</mat-icon>
@@ -85,14 +85,14 @@
   }
   <div class="sub-form-field">
     <div class="label">激光开料标记线</div>
-    @if (data().info["激光开料标记线"]?.length === 0) {
+    @if (data().data.info["激光开料标记线"]?.length === 0) {
       <div>
         <button mat-icon-button (click)="addBjxItem()">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
     }
-    @for (v of data().info["激光开料标记线"]; track $index; let j = $index) {
+    @for (v of data().data.info["激光开料标记线"]; track $index; let j = $index) {
       <div>
         <mat-form-field>
           <mat-select [(ngModel)]="v.type" [ngModelOptions]="{standalone: true}">

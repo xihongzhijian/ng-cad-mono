@@ -1025,13 +1025,24 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const value = target.value;
     this._filterXuanxiangOptions(i, value);
   }
-  getObjectKeyLabel(key: string, label: any) {
+  getObjectKeyLabel(key: string, value: any) {
     const info = this.info();
     if (info.type === "object" && info.keyLabel) {
       if (typeof info.keyLabel === "function") {
-        return info.keyLabel(key, label, info);
+        return info.keyLabel(key, value, info);
       } else if (typeof info.keyLabel === "string") {
         return info.keyLabel;
+      }
+    }
+    return "";
+  }
+  getObjectKeyHint(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.keyHint) {
+      if (typeof info.keyHint === "function") {
+        return info.keyHint(key, value, info);
+      } else if (typeof info.keyHint === "string") {
+        return info.keyHint;
       }
     }
     return "";
@@ -1043,6 +1054,17 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return info.valueLabel(key, value, info);
       } else if (typeof info.valueLabel === "string") {
         return info.valueLabel;
+      }
+    }
+    return "";
+  }
+  getObjectValueHint(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.valueHint) {
+      if (typeof info.valueHint === "function") {
+        return info.valueHint(key, value, info);
+      } else if (typeof info.valueHint === "string") {
+        return info.valueHint;
       }
     }
     return "";
@@ -1075,6 +1097,17 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return info.valueLabel(i, value, info);
       } else if (typeof info.valueLabel === "string") {
         return info.valueLabel;
+      }
+    }
+    return "";
+  }
+  getArrayValueHint(i: number, value: any) {
+    const info = this.info();
+    if (info.type === "array" && info.valueHint) {
+      if (typeof info.valueHint === "function") {
+        return info.valueHint(i, value, info);
+      } else if (typeof info.valueHint === "string") {
+        return info.valueHint;
       }
     }
     return "";

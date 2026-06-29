@@ -484,6 +484,9 @@ export class AppStatusService {
 
   async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
     await timeout(100); // 等待input事件触发
+    if (this.saveCadLocked$.value) {
+      return null;
+    }
     const {http, message, spinner} = this;
     const collection = this.collection();
 

@@ -15,7 +15,7 @@
     <div class="menu left" [style.width.px]="leftMenuWidth()" [class.closed]="!showLeftMenu()">
       <div class="toolbar" style="width: 100%">
         @if (!openCadOptions().isLocal) {
-          <button mat-flat-button class="accent" (click)="save()">保存</button>
+          <button mat-flat-button class="accent" [disabled]="saveLocked()" (click)="save()">保存</button>
         }
         <div class="flex-110"></div>
         <button mat-icon-button class="menu-icon left" [class.closed]="!showLeftMenu()" (click)="toggleLeftMenu()">

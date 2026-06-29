@@ -22,6 +22,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
+import {timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -120,11 +121,13 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   componentsSelected = this.status.components.selected;
   data = computed(() => {
     const components = this.componentsSelected();
+    let data: CadData;
     if (components.length === 1) {
-      return components[0];
+      data = components[0];
     } else {
-      return this.status.cadData();
+      data = this.status.cadData();
     }
+    return {data};
   });
 
   cadPointsEff = effect(() => {
@@ -134,7 +137,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this._cadPointsLock = false;
       return;
     }
-    const data = this.data();
+    const data = this.data().data;
     const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
     const intersectionStatus = this.status.findCadStatus(
       (v): v is CadStatusIntersection => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
@@ -240,7 +243,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   infoGroup1 = computed(() => {
     const infos = getCadInfoInputs(
       ["id", "名字", "唯一码", "显示名字", "排版序号名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
-      this.data(),
+      this.data().data,
       this.dialog,
       this.status,
       this.parseOptionString()
@@ -281,7 +284,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
         "自动生成双折宽双折高公式",
         "算料单显示"
       ],
-      this.data(),
+      this.data().data,
       this.dialog,
       this.status,
       this.parseOptionString()
@@ -335,7 +338,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
         "门缝配置",
         "门缝"
       ],
-      this.data(),
+      this.data().data,
       this.dialog,
       this.status,
       this.parseOptionString()
@@ -349,7 +352,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   });
 
   private _onEntityClick: CadEventCallBack<"entityclick"> = (_, entity) => {
-    const data = this.data();
+    const data = this.data().data;
     const selectBaseLineStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectBaseline);
     if (selectBaseLineStatus) {
       if (entity instanceof CadLine) {
@@ -387,7 +390,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this._updateCadPoints();
   };
   private _updateCadPoints = () => {
-    const data = this.data();
+    const data = this.data().data;
     const key = this.cadStatusIntersectionInfo;
     const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
     const intersectionStatus = this.status.findCadStatus((v) => v instanceof CadStatusIntersection);
@@ -433,7 +436,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   baseLineInfos = signal<{data: CadBaseLine; class: string}[]>([]);
   updateBaseLineInfos() {
     this.baseLineInfos.set(
-      this.data().baseLines.map((baseLine, i) => {
+      this.data().data.baseLines.map((baseLine, i) => {
         let cls = "";
         if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectBaseline && i === v.index)) {
           cls = "accent";
@@ -446,13 +449,13 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.updateBaseLineInfos();
   });
   addBaseLine(index: number) {
-    const arr = this.data().baseLines;
+    const arr = this.data().data.baseLines;
     arr.splice(index + 1, 0, new CadBaseLine());
     this.updateBaseLineInfos();
   }
   async removeBaseLine(index: number) {
     if (await this.message.confirm("是否确定删除？")) {
-      const arr = this.data().baseLines;
+      const arr = this.data().data.baseLines;
       if (arr.length === 1) {
         arr[0] = new CadBaseLine();
       } else {
@@ -468,7 +471,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   jointPointInfos = signal<{data: CadJointPoint; class: string}[]>([]);
   updateJointPointInfos() {
     this.jointPointInfos.set(
-      this.data().jointPoints.map((jointPoint, i) => {
+      this.data().data.jointPoints.map((jointPoint, i) => {
         let cls = "";
         if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectJointpoint && i === v.index)) {
           cls = "accent";
@@ -481,13 +484,13 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.updateJointPointInfos();
   });
   addJointPoint(index: number) {
-    const arr = this.data().jointPoints;
+    const arr = this.data().data.jointPoints;
     arr.splice(index + 1, 0, new CadJointPoint());
     this.updateJointPointInfos();
   }
   async removeJointPoint(index: number) {
     if (await this.message.confirm("是否确定删除？")) {
-      const arr = this.data().jointPoints;
+      const arr = this.data().data.jointPoints;
       if (arr.length === 1) {
         arr[0] = new CadJointPoint();
       } else {
@@ -505,7 +508,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   intersectionInputs = signal<Partial<Record<IntersectionKey, InputInfo[][]>>>({});
   updateIntersectionInputs() {
     const inputs: ReturnType<typeof this.intersectionInputs> = {};
-    const data = this.data();
+    const data = this.data().data;
     for (const key of intersectionKeys) {
       const arr = data[key];
       inputs[key] = [];
@@ -578,7 +581,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   intersectionInputs2 = signal<Partial<Record<string, InputInfo[][]>>>({});
   updateIntersectionInputs2() {
     const inputs: ReturnType<typeof this.intersectionInputs2> = {};
-    const data = this.data();
+    const data = this.data().data;
     for (const key of this.intersectionKeys2) {
       const arr: Intersection2Item[] = data.info[key] || [];
       inputs[key] = [];
@@ -627,8 +630,8 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.intersectionInputs2.set(inputs);
   }
 
-  offset(value: string) {
-    const data = this.data();
+  async offset(value: string) {
+    const data = this.data().data;
     const cad = this.status.cad;
     data.bancaihoudufangxiang = value;
     this.status.emitChangeCadSignal();
@@ -642,36 +645,46 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
     const distance = 2;
     const lines = sortLines(data.entities);
-    lines.forEach((v) => (v[0].mingzi = "起始线"));
-    const entities = data.getAllEntities().clone(true);
+    const entities = new CadEntities();
+    for (const group of lines) {
+      for (const e of group) {
+        let e2: CadEntity;
+        if (e instanceof CadLine) {
+          const e3 = new CadLine();
+          e3.setColor(e.getColor());
+          e3.start.copy(e.start);
+          e3.end.copy(e.end);
+          e2 = e3;
+        } else {
+          e2 = e.clone(true);
+        }
+        e2.selectable = false;
+        e2.calcBoundingRectForce = false;
+        entities.add(e2);
+      }
+    }
     entities.offset(direction, distance);
-    cad.add(entities);
+    await cad.add(entities);
 
     const blinkInterval = 500;
     const blinkCount = 3;
-    const blink = (el: CadEntity["el"]) => {
-      if (el) {
-        el.css("opacity", "1");
-        setTimeout(() => el.css("opacity", "0"), blinkInterval);
+    this.status.saveCadLocked$.next(true);
+    try {
+      for (let i = 0; i < blinkCount; i++) {
+        entities.forEach(async (e) => {
+          const el = e.el;
+          if (el) {
+            el.css({opacity: "1", transition: `${blinkInterval}ms ease-in-out`});
+            await timeout(blinkInterval);
+            el.css({opacity: "0"});
+          }
+        });
+        await timeout(blinkInterval * 2);
       }
-    };
-    entities.forEach((e) => {
-      const el = e.el;
-      if (el) {
-        el.css("transition", blinkInterval + "ms");
-        blink(el);
-      }
-    });
-    let count = 1;
-    const id = setInterval(() => {
-      entities.forEach((e) => {
-        blink(e.el);
-      });
-      if (++count > blinkCount) {
-        clearInterval(id);
-        cad.remove(entities);
-      }
-    }, blinkInterval * 2);
+      cad.remove(entities);
+    } finally {
+      this.status.saveCadLocked$.next(false);
+    }
   }
 
   async editZhankai(data: CadData) {
@@ -680,7 +693,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
 
   setCadName(value: string) {
     this.status.updateTitle();
-    const zhankai = this.data().zhankai[0];
+    const zhankai = this.data().data.zhankai[0];
     if (zhankai) {
       zhankai.name = value;
     }
@@ -728,7 +741,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   }
 
   addIntersectionValue(key: IntersectionKey, i?: number) {
-    const data = this.data();
+    const data = this.data().data;
     this.arrayAdd(data[key], [], i);
     if (key === "zhidingweizhipaokeng") {
       if (!Array.isArray(data.info.刨坑深度)) {
@@ -739,7 +752,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.updateIntersectionInputs();
   }
   removeIntersectionValue(key: IntersectionKey, i: number) {
-    const data = this.data();
+    const data = this.data().data;
     this.arrayRemove(data[key], i);
     if (key === "zhidingweizhipaokeng") {
       this.arrayRemove(data.info.刨坑深度, i);
@@ -748,7 +761,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   }
 
   addIntersectionValue2(key: string, i?: number) {
-    const data = this.data();
+    const data = this.data().data;
     let arr: Intersection2Item[] | undefined = data.info[key];
     if (!Array.isArray(arr)) {
       arr = [];
@@ -758,7 +771,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.updateIntersectionInputs2();
   }
   removeIntersectionValue2(key: string, i: number) {
-    const data = this.data();
+    const data = this.data().data;
     const arr: Intersection2Item[] | undefined = data.info[key];
     if (!Array.isArray(arr)) {
       return;
@@ -769,10 +782,10 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
 
   addBjxItem(i?: number, event?: PointerEvent) {
     event?.stopPropagation();
-    this.arrayAddEnsure(this.data().info, "激光开料标记线", {type: "短直线", ids: []}, i);
+    this.arrayAddEnsure(this.data().data.info, "激光开料标记线", {type: "短直线", ids: []}, i);
   }
   removeBjxItem(i: number, event?: PointerEvent) {
     event?.stopPropagation();
-    this.arrayRemoveEnsure(this.data().info, "激光开料标记线", i);
+    this.arrayRemoveEnsure(this.data().data.info, "激光开料标记线", i);
   }
 }

@@ -15,6 +15,7 @@ import {
   viewChild,
   viewChildren
 } from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -506,6 +507,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     return true;
   }
 
+  saveLocked = toSignal(this.status.saveCadLocked$, {initialValue: false});
   async save() {
     const {extraData, query} = this.params() || {};
     const data = this.status.cad.data;
