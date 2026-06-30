@@ -3,12 +3,14 @@ import {MaybePromise} from "@lucilor/utils";
 import {FetchManager} from "./fetch-manager";
 
 export class ItemsManager<T> {
+  fetchManager: FetchManager<T[]>;
   constructor(
     public fetchFn: () => MaybePromise<T[]>,
     public compareFn: (item1: T, item2: T) => boolean
-  ) {}
+  ) {
+    this.fetchManager = new FetchManager([], fetchFn);
+  }
 
-  fetchManager = new FetchManager([], this.fetchFn);
   items = computed(() => this.fetchManager.data());
 
   async fetch(force?: boolean) {

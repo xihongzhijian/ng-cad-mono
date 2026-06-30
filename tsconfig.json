@@ -29,8 +29,7 @@
     },
     "types": ["vitest/globals"],
     "allowJs": true,
-    "resolveJsonModule": true,
-    "useDefineForClassFields": false
+    "resolveJsonModule": true
   },
   "include": ["src", "./eslint.config.ts"],
   "exclude": ["node_modules", "packages"],
