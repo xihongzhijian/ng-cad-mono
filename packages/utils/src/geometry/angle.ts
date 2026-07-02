@@ -116,4 +116,12 @@ export class Angle {
     const cos = (ab ** 2 + bc ** 2 - ac ** 2) / (2 * ab * bc);
     return new Angle(Math.acos(cos), "rad");
   }
+
+  static radToDeg(rad: number) {
+    return (rad / Math.PI) * 180;
+  }
+
+  static degToRad(deg: number) {
+    return (deg / 180) * Math.PI;
+  }
 }
