@@ -88,7 +88,6 @@ export interface BancaiCad {
     mingzi: string;
     cailiao: string | null;
     houdu: string | null;
-    kailiaohoudu: string | null;
     guige: number[] | null;
     gas?: string;
     激光开料留边?: string;
