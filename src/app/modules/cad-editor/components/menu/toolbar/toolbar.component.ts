@@ -260,7 +260,7 @@ export class ToolbarComponent {
       }
     }
     const rotateDimension = Math.round(angle / 90) % 2 !== 0;
-    this.transform({rotate: new Angle(angle, "deg").rad}, rotateDimension);
+    this.transform({rotate: Angle.degToRad(angle)}, rotateDimension);
   }
 
   assembleCads() {

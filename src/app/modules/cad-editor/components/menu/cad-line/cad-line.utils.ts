@@ -24,8 +24,6 @@ export const cadLineFields = {
   指定展开长: "zidingzhankaichang"
 } as const satisfies ObjectOf<keyof CadLineLike>;
 
-export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
-
 export const stringifyLineNames = (list: string[]) => {
   const mingzi = list[0]?.trim() ?? "";
   const mingzi2 = list.slice(1).join("*");
@@ -88,6 +86,7 @@ export const getCadLineInputs = (
   gongshis: 算料公式[] | null | undefined
 ) => {
   const result: InputInfo<CadLineLike>[] = [];
+  const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
   line = getLine(line);
   const isLine = line instanceof CadLine;
   const lineLength = Number(line.length.toFixed(2));

@@ -1,6 +1,7 @@
 import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
+import {toFixed} from "@app/utils/func";
 import {environment} from "@env";
 import {CadEntity, CadEventCallBack, CadLineLike, CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point, timeout} from "@lucilor/utils";
@@ -10,6 +11,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color, {ColorInstance} from "color";
 import {debounce} from "lodash";
+import {getCadMtextRotate, setCadMtextRotate} from "./cad-mtext.utils";
 
 @Component({
   selector: "app-cad-mtext",
@@ -77,9 +79,17 @@ export class CadMtextComponent implements OnInit, OnDestroy {
         disabled,
         value: this.getColor(),
         options: validColors.map((v) => new Color(v)),
-        optionsOnly: true,
         onChange: (val) => {
           this.setColor(val);
+        }
+      },
+      {
+        type: "string",
+        label: "旋转角度",
+        disabled,
+        value: this.getRotate(),
+        onChange: (val) => {
+          this.setRotate(val);
         }
       },
       {
@@ -245,6 +255,29 @@ export class CadMtextComponent implements OnInit, OnDestroy {
     this.status.cad.render(selected);
   }
 
+  getRotate() {
+    const selected = this.selected();
+    const anlges = new Set(selected.map((v) => getCadMtextRotate(v)));
+    if (anlges.size === 1) {
+      const ndigits = this.status.cadNumberDigits();
+      return toFixed(Array.from(anlges)[0], ndigits);
+    } else if (anlges.size > 1) {
+      return "多个值";
+    }
+    return "";
+  }
+  setRotate(value: string) {
+    let valueNum = Number(value);
+    if (isNaN(valueNum)) {
+      valueNum = 0;
+    }
+    const selected = this.selected();
+    selected.forEach((e) => {
+      setCadMtextRotate(e, valueNum);
+    });
+    this.status.cad.render(selected);
+  }
+
   getIsVertical(key: "vertical" | "vertical2") {
     const selected = this.selected();
     if (selected.length === 1) {
@@ -260,7 +293,7 @@ export class CadMtextComponent implements OnInit, OnDestroy {
   }
   setIsVertical(key: "vertical" | "vertical2", value: boolean) {
     const selected = this.selected();
-    this.selected().forEach((e) => {
+    selected.forEach((e) => {
       if (value) {
         e.fontStyle[key] = true;
       } else {

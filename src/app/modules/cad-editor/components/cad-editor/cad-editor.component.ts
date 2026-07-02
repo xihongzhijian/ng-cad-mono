@@ -51,6 +51,7 @@ import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
 import {CadLineComponent} from "../menu/cad-line/cad-line.component";
 import {openCadLineForm} from "../menu/cad-line/cad-line.utils";
 import {CadMtextComponent} from "../menu/cad-mtext/cad-mtext.component";
+import {openCadMtextForm} from "../menu/cad-mtext/cad-mtext.utils";
 import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
 import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
 import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
@@ -428,8 +429,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const collection = this.status.collection();
     const cad = this.status.cad;
     const gongshis = this.status.openCadOptions().gongshis;
-    if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
-      openCadLineForm(collection, this.status, this.message, cad, entity.parent, gongshis);
+    if (entity instanceof CadMtext) {
+      const parent = entity.parent;
+      if (parent instanceof CadLineLike && (entity.info.isLengthText || entity.info.isGongshiText || entity.info.isBianhuazhiText)) {
+        openCadLineForm(collection, this.status, this.message, cad, parent, gongshis);
+      } else {
+        openCadMtextForm(collection, this.status, this.message, cad, entity);
+      }
     } else if (entity instanceof CadLineLike) {
       openCadLineForm(collection, this.status, this.message, cad, entity, gongshis);
     } else if (entity instanceof CadDimensionLinear) {

@@ -1055,7 +1055,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         angleText.text = `${toFixed(angle.deg, 2)}°`;
         angleText.insert.copy(arcMidLine.end);
         angleText.anchor.set(0.5, 1);
-        angleText.fontStyle.size = arc.radius * 0.8;
+        angleText.fontStyle.size = Math.round(arc.radius * 0.8);
         const {rad: arcMidRad, deg: arcMidDeg} = arcMidLine.theta.constrain();
         const rotateText = new Angle(arcMidDeg - 90, "deg");
         rotateText.constrain();

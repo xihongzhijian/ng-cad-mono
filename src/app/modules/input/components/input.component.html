@@ -619,7 +619,13 @@
             ></color-circle>
           }
           @if (!info.optionsOnly) {
-            <color-chrome #colorChrome [class.accent]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop>
+            <color-chrome
+              #colorChrome
+              [class.accent]="colorStr"
+              [color]="colorStr2"
+              (onChangeComplete)="onColorChange($event.color)"
+              appClickStop
+            >
             </color-chrome>
           }
         </mat-menu>
