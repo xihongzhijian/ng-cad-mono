@@ -144,10 +144,15 @@ export const drawText = (
   } else {
     el.css("writing-mode", "");
   }
+  let scaleX = 1;
+  let scaleY = -1;
   if (transformMatrix) {
-    deg -= (transformMatrix.rotate() / Math.PI) * 180;
+    deg -= Angle.radToDeg(transformMatrix.rotate());
+    const scale = transformMatrix.scale();
+    scaleX *= scale[0];
+    scaleY *= scale[1];
   }
-  el.css("transform", `translate(${tx}px, ${ty}px) scale(1, -1) rotate(${deg}deg)`);
+  el.css("transform", `translate(${tx}px, ${ty}px) scale(${scaleX}, ${scaleY}) rotate(${deg}deg)`);
   if (color) {
     el.fill(color);
   } else {

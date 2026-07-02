@@ -42,7 +42,7 @@ export class ColoredObject {
       if (rgb) {
         this._color = new Color(rgb);
       } else {
-        this._color = new Color();
+        this._color = new Color(index);
       }
     }
     return this;

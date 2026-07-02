@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/cad-viewer",
-  "version": "3.32.2",
+  "version": "3.32.3",
   "description": "cad-viewer",
   "type": "module",
   "main": "lib/index.js",
