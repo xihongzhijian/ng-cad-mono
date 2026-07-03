@@ -14,7 +14,7 @@ import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiCad, BancaiList, ExcelSheet} from "@modules/http/services/cad-data.service.types";
+import {BancaiCad, BancaiList, ExcelSheet, HouduInfo} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/input/components/input.utils";
@@ -94,6 +94,7 @@ export class SelectBancaiComponent {
     {value: "H-N2", label: "高压氮气"}
   ] as const;
   bancaiList: ObjectOf<BancaiList> = {};
+  houduInfos: ObjectOf<HouduInfo[]> = {};
   xikongStrings = signal<[string, string][][][]>([]);
   xikongData = signal<XikongData | null>(null);
   hiddenCadNames = ["左包边", "右包边", "顶包边", "锁框", "铰框", "顶框"];
@@ -116,6 +117,14 @@ export class SelectBancaiComponent {
           const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
           const errMsgs: string[] = [];
           const orderBancaiInfos: ReturnType<typeof this.orderBancaiInfos> = [];
+          this.houduInfos = {};
+          for (const bancai of result.bancaiList) {
+            for (const [key, group] of Object.entries(bancai.houduInfos || {})) {
+              if (!this.houduInfos[key]) {
+                this.houduInfos[key] = group;
+              }
+            }
+          }
           for (const orderBancai of result.orderBancais) {
             const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
             let hiddenCadNames = this.hiddenCadNames;
@@ -293,10 +302,17 @@ export class SelectBancaiComponent {
           console.warn("缺少板材数据：", bancai.mingzi);
           continue;
         }
-        const cailiaos = bancaiList?.cailiaoList || [];
+        const cailiaos = bancaiList?.cailiaoList.slice() ?? [];
         cailiaos.sort((a, b) => a.localeCompare(b));
-        const houdus = bancaiList?.houduList || [];
-        houdus.sort((a, b) => a.localeCompare(b));
+        const houdus = bancaiList?.houduList.slice() ?? [];
+        houdus.sort((a, b) => {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (isNaN(numA) || isNaN(numB) || numA === numB) {
+            return a.localeCompare(b);
+          }
+          return numA - numB;
+        });
         const gasOptions = this.gasOptions.slice();
         const guigeInput: InputInfo = {
           label: "规格",
@@ -506,6 +522,7 @@ export class SelectBancaiComponent {
     const data: ObjectOf<any> = {
       codes,
       bancaiCadsArr,
+      houduInfos: this.houduInfos,
       table,
       autoGuige,
       expandGuige,

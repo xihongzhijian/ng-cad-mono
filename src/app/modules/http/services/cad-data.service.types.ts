@@ -71,6 +71,7 @@ export interface BancaiList {
   mingzi: string;
   cailiaoList: string[];
   houduList: string[];
+  houduInfos?: ObjectOf<HouduInfo[]>;
   guigeList: number[][];
   kailiaoGuiges?: ObjectOf<ObjectOf<number[][]>>;
   zidingyi?: string;
@@ -95,6 +96,9 @@ export interface BancaiCad {
     index?: number;
   };
   hidden?: boolean;
+}
+export interface HouduInfo extends TableDataBase {
+  kailiaohoudu: string;
 }
 
 export type Changelog = ObjectOf<any>[];
