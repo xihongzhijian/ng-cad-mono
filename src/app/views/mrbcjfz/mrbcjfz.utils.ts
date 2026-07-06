@@ -3,12 +3,15 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {Properties} from "csstype";
 import {difference, isEqual} from "lodash";
 import {
   MrbcjfzHuajian,
   MrbcjfzInfo,
   MrbcjfzInfoShowItem,
   mrbcjfzInfoShowItems,
+  MrbcjfzMkmsItem,
+  mrbcjfzMkmsItems,
   MrbcjfzMsxzItem,
   mrbcjfzMsxzItems,
   MrbcjfzXinghao
@@ -107,12 +110,36 @@ export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
       if (!value.门扇使用限制 || !mrbcjfzMsxzItems.includes(value.门扇使用限制)) {
         value.门扇使用限制 = "无限制";
       }
+      if (!value.属于门框门扇) {
+        switch (this.table) {
+          case "p_xinghao":
+            switch (key) {
+              case "门框板材":
+              case "底框板材":
+                value.属于门框门扇 = "属于门框";
+                break;
+              default:
+                value.属于门框门扇 = "属于门扇";
+            }
+            break;
+          case "p_luomatou":
+          case "p_luomazhu":
+          case "p_luomatouNew":
+          case "p_luomazhuNew":
+          case "p_yimenyijing":
+            value.属于门框门扇 = "属于门框";
+            break;
+          default:
+            value.属于门框门扇 = "属于门扇";
+        }
+      }
+      const styleBase: Properties = {flexGrow: 1};
       const 显示内容InputInfo: InputInfoSelect = {
         type: "select",
         label: "显示内容",
         options: showItemOptions.slice(),
         value: 显示内容,
-        style: {flex: "16 16 0"},
+        style: {...styleBase, width: "235px"},
         onChange: (val: string) => {
           switch (val) {
             case "全都显示":
@@ -144,10 +171,11 @@ export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
         [this.get板材分组别名InputInfo(key)],
         [getter.string("算料单分组标题附加信息")],
         [
-          getter.boolean("允许修改", {style: {flex: "8 8 0"}}),
-          getter.boolean("独立变化", {style: {flex: "8 8 0"}, readonly: key === "底框板材"}),
+          getter.boolean("允许修改", {style: {...styleBase, width: "90px"}}),
+          getter.boolean("独立变化", {style: {...styleBase, width: "90px"}, readonly: key === "底框板材"}),
           显示内容InputInfo,
-          getter.selectSingle<MrbcjfzMsxzItem>("门扇使用限制", mrbcjfzMsxzItems, {style: {flex: "12 12 0"}})
+          getter.selectSingle<MrbcjfzMsxzItem>("门扇使用限制", mrbcjfzMsxzItems, {style: {...styleBase, width: "140px"}}),
+          getter.selectSingle<MrbcjfzMkmsItem>("属于门框门扇", mrbcjfzMkmsItems, {style: {...styleBase, width: "140px"}})
         ]
       ];
       if (this.raw.编辑默认对应板材分组) {
@@ -231,7 +259,7 @@ export const filterHuajian = (data: MrbcjfzHuajian, table = "") => {
     newName = newName.replace(/无上下板|有上下板|\+压条|加压条|无压条|拉手板/g, "");
     return newName;
   };
-  if (!["p_luomatou", "p_luomazhu"].includes(table)) {
+  if (!["p_luomatou", "p_luomazhu", "p_luomatouNew", "p_luomazhuNew"].includes(table)) {
     const mingziReg = /压条|压边|门徽|猫眼|LOGO|商标|花件|木板|门铰|拉手|企料开槽饰条/;
     if (mingziReg.test(getProperHuajianName(data.mingzi))) {
       return false;
