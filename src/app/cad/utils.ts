@@ -302,12 +302,12 @@ export const autoFixLine = (cad: CadViewer, line: CadLine, tol = DEFAULT_TOLERAN
   const {start, end} = line;
   const dx = start.x - end.x;
   const dy = start.y - end.y;
-  const [min, max] = LINE_LIMIT;
+  const dx2 = Math.abs(dx);
+  const dy2 = Math.abs(dy);
   const translate = new Point();
-  if (isBetween(Math.abs(dx), min, max)) {
+  if (dx2 < dy2) {
     translate.x = dx;
-  }
-  if (isBetween(Math.abs(dy), min, max)) {
+  } else {
     translate.y = dy;
   }
   const map = generatePointsMap(cad.data.getAllEntities(), tol);
