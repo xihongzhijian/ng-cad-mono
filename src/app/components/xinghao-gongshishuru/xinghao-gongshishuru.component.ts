@@ -40,6 +40,9 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     this.isFromIFrame.set(isFromIFrame);
     if (isFromIFrame) {
       this.wmm = new WindowMessageManager("型号公式输入", this, window.parent);
+      this.wmm.postMessage("queryLayerOpenedStart");
+      await this.wmm.waitForMessage("layerOpened");
+      session.save("型号公式输入layerOpened", true);
       this.wmm.postMessage("getItemStart");
       const {xinghao, field} = await this.wmm.waitForMessage("getItemEnd");
       this.xinghao.set(xinghao);
