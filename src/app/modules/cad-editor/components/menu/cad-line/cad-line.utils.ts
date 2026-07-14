@@ -238,10 +238,11 @@ export const openCadLineForm = async (
   const data = cad.data;
   const yaoqiu = await status.fetchAndGetCadYaoqiu(data.type);
   const vars = cloneDeep(data.info.vars);
-  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], data, line2, status, gongshis);
-  if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {
-    form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
+  const keys = yaoqiu?.线段弹窗修改属性 || [];
+  if (collection === "kailiaocadmuban" && !keys.includes("关联变化公式")) {
+    keys.push("关联变化公式");
   }
+  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], data, line2, status, gongshis);
   let title = "编辑线";
   const name = line.mingzi || line.mingzi2;
   if (name) {
