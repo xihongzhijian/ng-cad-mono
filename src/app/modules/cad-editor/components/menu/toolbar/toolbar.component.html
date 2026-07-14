@@ -69,6 +69,7 @@
     @if (collection() === "kailiaocadmuban") {
       <button mat-button class="plain" (click)="searchCadsUsingMuban()">使用模板的CAD</button>
     }
+    <button mat-button class="plain" (click)="openCadPreviewGenerator()">生成预览图</button>
 
     @if (canLeave()) {
       <button mat-flat-button class="accent" (click)="leaveCadStatus()">
@@ -101,3 +102,10 @@
     <button mat-button class="plain" (click)="focusZhuangpeixinxi()">装配信息</button>
   </div>
 </div>
+
+@if (openedCadPreviewGenerator()) {
+  <app-floating-dialog (close)="closeCadPreviewGenerator()" noPin noMinimize width="50%" height="80%" left="25%" top="10%">
+    <div appFloatingDialogTitle>生成预览图</div>
+    <app-cad-preview-generator [collection]="collection()" [data]="data()"></app-cad-preview-generator>
+  </app-floating-dialog>
+}

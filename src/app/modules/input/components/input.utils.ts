@@ -12,6 +12,7 @@ import {
   InputInfo,
   InputInfoArray,
   InputInfoBoolean,
+  InputInfoColor,
   InputInfoCommon,
   InputInfoCoordinate,
   InputInfoGroup,
@@ -322,6 +323,10 @@ export class InputInfoWithDataGetter<T> {
 
   coordinate(key: keyof T, others?: InputInfoWithDataPart<InputInfoCoordinate<T>>): InputInfoCoordinate<T> {
     return {type: "coordinate", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  color(key: keyof T, others?: InputInfoWithDataPart<InputInfoColor<T>>): InputInfoColor<T> {
+    return {type: "color", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 }
 

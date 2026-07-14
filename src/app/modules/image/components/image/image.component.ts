@@ -16,12 +16,10 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
+import {imgEmpty, imgLoading} from "@app/app.common";
 import {getElementVisiblePercentage, timeout} from "@lucilor/utils";
 import {Property} from "csstype";
 import {ImageEvent} from "./image.component.types";
-
-const imgEmpty = "assets/images/empty.jpg";
-const imgLoading = "assets/images/loading.gif";
 
 @Component({
   selector: "app-image",
@@ -39,7 +37,8 @@ export class ImageComponent implements AfterViewInit {
   bigPicSrc = input<string>();
   bigPicClickShowDisabled = input(false, {transform: booleanAttribute});
   prefix = input<string>();
-  control = input<boolean>();
+  control = input(false, {transform: booleanAttribute});
+  controlBigPic = input(false, {transform: booleanAttribute});
   loadingSrc = input<string>(imgLoading);
   emptySrc = input<string>(imgEmpty);
   objectFit = input<Property.ObjectFit>("contain");
@@ -185,59 +184,121 @@ export class ImageComponent implements AfterViewInit {
   private _getDomMatrix(el: HTMLElement) {
     return new DOMMatrix(getComputedStyle(el).transform);
   }
+  private _pointerTargetScale = 1;
+  private _pointerTargetPressed = false;
+  private _pointerTargetMoved = false;
   onWheel(event: WheelEvent) {
-    if (!this.control()) {
+    const {target} = event;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
     event.stopPropagation();
-    const img = event.target as HTMLImageElement;
-    const matrix = this._getDomMatrix(img);
+    const matrix = this._getDomMatrix(target);
     const scale = event.deltaY < 0 ? 1.1 : 0.9;
-    const {left, top, width, height} = img.getBoundingClientRect();
+    const {left, top, width, height} = target.getBoundingClientRect();
     const offsetX = ((event.clientX - left) / width) * 100;
     const offsetY = ((event.clientY - top) / height) * 100;
     matrix.scaleSelf(scale);
-    img.style.transform = matrix.toString();
-    img.style.transformOrigin = `${offsetX}% ${offsetY}%`;
+    target.style.transform = matrix.toString();
+    target.style.transformOrigin = `${offsetX}% ${offsetY}%`;
+    this._pointerTargetScale *= scale;
   }
   onPointerDown(event: PointerEvent) {
-    if (!this.control()) {
+    const {target} = event;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
     event.stopPropagation();
-    const img = event.target as HTMLImageElement;
-    img.setAttribute("x", event.clientX.toString());
-    img.setAttribute("y", event.clientY.toString());
+    target.setAttribute("x", event.clientX.toString());
+    target.setAttribute("y", event.clientY.toString());
     const lastX = 0;
     const lastY = 0;
-    const matrix = this._getDomMatrix(img);
+    const matrix = this._getDomMatrix(target);
     matrix.translateSelf(event.clientX - lastX, event.clientY - lastY);
+    this._pointerTargetPressed = true;
+    this._pointerTargetMoved = false;
   }
   onPointerMove(event: PointerEvent) {
-    if (!this.control()) {
+    const {target} = event;
+    if (!(target instanceof HTMLElement) || !this._pointerTargetPressed) {
       return;
     }
     event.stopPropagation();
-    const img = event.target as HTMLImageElement;
-    if (!img.hasAttribute("x") || !img.hasAttribute("y")) {
-      return;
-    }
-    const x = parseFloat(img.getAttribute("x") || "0");
-    const y = parseFloat(img.getAttribute("y") || "0");
-    const matrix = this._getDomMatrix(img);
-    matrix.translateSelf(event.clientX - x, event.clientY - y);
-    img.style.transform = matrix.toString();
-    img.setAttribute("x", event.clientX.toString());
-    img.setAttribute("y", event.clientY.toString());
+    const x = parseFloat(target.getAttribute("x") || "0");
+    const y = parseFloat(target.getAttribute("y") || "0");
+    const scale = this._pointerTargetScale;
+    const dx = (event.clientX - x) / scale;
+    const dy = (event.clientY - y) / scale;
+    const matrix = this._getDomMatrix(target);
+    matrix.translateSelf(dx, dy);
+    target.style.transform = matrix.toString();
+    target.setAttribute("x", event.clientX.toString());
+    target.setAttribute("y", event.clientY.toString());
+    this._pointerTargetMoved = true;
   }
   onPointerUp(event: PointerEvent) {
-    if (!this.control()) {
+    const {target} = event;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
     event.stopPropagation();
-    const img = event.target as HTMLImageElement;
-    img.removeAttribute("x");
-    img.removeAttribute("y");
+    target.removeAttribute("x");
+    target.removeAttribute("y");
+    this._pointerTargetPressed = false;
+    this._pointerTargetMoved = false;
+  }
+
+  onSmallPicWheel(event: WheelEvent) {
+    if (!this.control()) {
+      return;
+    }
+    this.onWheel(event);
+  }
+  onSmallPicPointerDown(event: PointerEvent) {
+    if (!this.control()) {
+      return;
+    }
+    this.onPointerDown(event);
+  }
+  onSmallPicPointerMove(event: PointerEvent) {
+    if (!this.control()) {
+      return;
+    }
+    this.onPointerMove(event);
+  }
+  onSmallPicPointerUp(event: PointerEvent) {
+    if (!this.control()) {
+      return;
+    }
+    this.onPointerUp(event);
+  }
+
+  onBigPicWheel(event: WheelEvent) {
+    if (!this.controlBigPic()) {
+      return;
+    }
+    this.onWheel(event);
+  }
+  onBigPicPointerDown(event: PointerEvent) {
+    if (!this.controlBigPic()) {
+      return;
+    }
+    this.onPointerDown(event);
+  }
+  onBigPicPointerMove(event: PointerEvent) {
+    if (!this.controlBigPic()) {
+      return;
+    }
+    this.onPointerMove(event);
+  }
+  onBigPicPointerUp(event: PointerEvent) {
+    if (!this.controlBigPic()) {
+      return;
+    }
+    if (!this._pointerTargetMoved) {
+      this.hideBigPic();
+    }
+    this.onPointerUp(event);
   }
 
   clickImgContainer() {

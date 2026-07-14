@@ -609,14 +609,13 @@
         />
         <mat-menu #colorPicker="matMenu">
           @if (info.options) {
-            <color-circle
+            <color-github
               [width]="202"
-              [circleSpacing]="10"
               [class.accent]="colorStr"
               [colors]="colorOptions"
               (onChangeComplete)="onColorChange($event.color)"
               appClickStop
-            ></color-circle>
+            ></color-github>
           }
           @if (!info.optionsOnly) {
             <color-chrome

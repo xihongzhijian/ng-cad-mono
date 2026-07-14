@@ -52,7 +52,7 @@ import {Properties} from "csstype";
 import {intersectionWith, isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
-import {ColorCircleModule} from "ngx-color/circle";
+import {ColorGithubModule} from "ngx-color/github";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
@@ -71,7 +71,7 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
     CdkDropList,
     ClickStopPropagationDirective,
     ColorChromeModule,
-    ColorCircleModule,
+    ColorGithubModule,
     FormsModule,
     ImageComponent,
     KeyValuePipe,

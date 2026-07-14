@@ -14,7 +14,6 @@ import {
   prepareCadViewer,
   removeIntersections,
   setExportCadDataRemoveLengthTextCount,
-  showIntersections,
   suanliaodanZoomIn,
   suanliaodanZoomOut,
   validateCad,
@@ -417,9 +416,6 @@ export class AppStatusService {
     await cad.reset().render();
     if (data) {
       setCadData(data, this.project, collection, this.config.getConfig());
-      if (!environment.production) {
-        showIntersections(data, this.projectConfig);
-      }
       for (const key in replaceMap) {
         this._replaceText(data, key, replaceMap[key]);
       }

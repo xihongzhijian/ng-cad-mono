@@ -12,6 +12,7 @@ export interface CadPreviewRawParams {
   autoSize?: boolean;
   maxZoom?: number;
   showFenti?: boolean;
+  showIntersections?: boolean;
 }
 export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>): Partial<CadViewerConfig> => ({
   width: 300,

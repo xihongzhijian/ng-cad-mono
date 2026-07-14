@@ -151,7 +151,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
       this._windowResizeNum();
       let maximizedMargin = this.maximizedMargin();
       if (maximizedMargin === "default") {
-        maximizedMargin = 50;
+        maximizedMargin = 10;
       }
       const margin = getTrbl(maximizedMargin);
       style.left = "50%";
