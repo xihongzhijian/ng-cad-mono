@@ -1,14 +1,21 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, effect, ElementRef, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
+import {getOrderBarcode, imgCadEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {configCadDataForPrint} from "@app/cad/print";
-import {generateLineTexts2, setDimensionText, setShuangxiangLineRects, shouldShowIntersection, splitShuangxiangCad} from "@app/cad/utils";
+import {
+  getIsCadSuanliaoxianshi,
+  setDimensionText,
+  setShuangxiangLineRects,
+  shouldShowIntersection,
+  showIntersections,
+  splitShuangxiangCad
+} from "@app/cad/utils";
 import {Formulas} from "@app/utils/calc";
 import {getDateTimeString} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
@@ -17,9 +24,11 @@ import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@co
 import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, timeout, waitFor} from "@lucilor/utils";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -27,11 +36,21 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
+import {Properties} from "csstype";
 import {cloneDeep, isEmpty} from "lodash";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
-import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
+import {
+  DdbqConfig,
+  DdbqData,
+  DdbqType,
+  Form,
+  FormItem,
+  Order,
+  SectionCell,
+  SectionConfig,
+  ShiyituCadInfo,
+  ShiyituInfo
+} from "./dingdanbiaoqian.types";
 
 @Component({
   selector: "app-dingdanbiaoqian",
@@ -50,6 +69,7 @@ import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig}
 })
 export class DingdanbiaoqianComponent implements OnInit {
   private calc = inject(CalcService);
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -57,14 +77,18 @@ export class DingdanbiaoqianComponent implements OnInit {
   private spinner = inject(SpinnerService);
   private status = inject(AppStatusService);
 
+  @HostBinding("class") cls = [this.status.project];
+
   type = signal<DdbqType | null>(null);
   cadsRowNum = computed(() => (this.type() === "配件模块" ? 3 : 4));
   cadsColNum = computed(() => (this.type() === "配件模块" ? 4 : 5));
   pageSize = [1122, 792] as const;
   pagePadding = [17, 17, 5, 17] as const;
   cadsSizes = signal<{container: [number, number]; cads: {container: [number, number]; img: [number, number]}[]}[]>([]);
-  开启锁向示意图Size = [207, 280] as const;
-  配合框Size = [150, 90] as const;
+  shiyituSize: ObjectOf<[number, number]> = {
+    开启锁向示意图: [150, 300],
+    背框示意图: [100, 100]
+  };
   sectionConfig = signal<SectionConfig>({
     rows: [
       {
@@ -75,15 +99,22 @@ export class DingdanbiaoqianComponent implements OnInit {
       },
       {cells: [{key: "款式"}, {key: "开启锁向", label: "开式"}]},
       {cells: [{key: "拉手信息", label: "锁型", class: "text-left"}]},
-      {cells: [{key: "底框"}, {key: "门铰信息", label: "铰型"}, {key: "商标"}]},
       {
         cells: [
-          {key: "猫眼", isBoolean: true},
-          {key: "安装孔", isBoolean: true},
-          {key: "拉片", isBoolean: true}
+          {key: "底框信息", label: "底框", autoWidth: true},
+          {key: "门铰信息", label: "铰型", autoWidth: true},
+          {key: "商标", autoWidth: true}
         ]
       },
-      {cells: [{key: "套门信息", label: "内门类型"}]},
+      {
+        cells: [
+          {key: "猫眼", autoWidth: true, isBoolean: true},
+          {key: "安装孔", autoWidth: true, isBoolean: true},
+          {key: "拉片", autoWidth: true, isBoolean: true},
+          {key: "", class: "flex-110"}
+        ]
+      },
+      {cells: [{key: "套门类型", label: "内门类型", class: "text-left"}]},
       {
         cells: [
           {key: "套门拉手信息", label: "锁型"},
@@ -160,7 +191,17 @@ export class DingdanbiaoqianComponent implements OnInit {
   orders = signal<Order[]>([]);
   materialResult = signal<Formulas>({});
   forms = signal<Form[]>([]);
+  formsStyle = signal<Properties>({});
+  formTitleTplType = {$implicit: "" as Form["title"]};
+  formItemTplType = {$implicit: {} as FormItem};
   isLvxingcai = signal(false);
+
+  ordersEff = effect(async () => {
+    this.orders();
+    await timeout(0);
+    this.updateBarcodes();
+  });
+
   async getOrders() {
     const url = "order/order/dingdanbiaoqian";
     const params = this.route.snapshot.queryParams;
@@ -188,17 +229,19 @@ export class DingdanbiaoqianComponent implements OnInit {
     if (ddbqData) {
       const cadsRowNum = this.cadsRowNum();
       const cadsColNum = this.cadsColNum();
-      const {开启锁向示意图Size, 配合框Size} = this;
+      const {shiyituSize} = this;
       const orders = ddbqData.map<Order>((order) => {
         const maxLength = 80;
         const orderCads = order.cads || [];
-        const cads = orderCads.map<Order["cads"][0]>((cad) => {
+        const cads = orderCads.map((cad) => {
           const img = imgLoading;
           const imgLarge = imgLoading;
           const data = new CadData(cad);
           data.entities.line.forEach((e) => {
             e.显示线长格式 = "{0}";
-            if (e.gongshi) {
+            if (typeof e.info.线长 === "number") {
+              e.显示线长 = String(e.info.线长);
+            } else if (e.gongshi) {
               const vars = {...order.materialResult};
               vars.总宽 = cad.calcW;
               vars.总高 = cad.calcH;
@@ -226,7 +269,7 @@ export class DingdanbiaoqianComponent implements OnInit {
 
           const isLarge = this.config().showBarcode || !!data.info.isLarge;
           const forceBreak = !!data.info.forceBreak;
-          return {
+          const result: Order["cads"][number] = {
             houtaiId: cad.houtaiId,
             data,
             img,
@@ -238,27 +281,21 @@ export class DingdanbiaoqianComponent implements OnInit {
             style: {},
             imgStyle: {}
           };
-        });
-        this.sectionConfig().rows.forEach((row) => {
-          row.cells.forEach(({key, isBoolean}) => {
-            if (isBoolean && order.materialResult) {
-              order.materialResult[key] = order.materialResult[key] ? "✔" : "✖";
-            }
-          });
+          this.updateCadZhankaiDisplayInfos(result);
+          showIntersections(data, this.status.projectConfig);
+          return result;
         });
         return {
           code: order.code,
           materialResult: order.materialResult,
-          开启锁向示意图: {
-            data: new CadData(order.开启锁向示意图),
-            img: imgEmpty,
-            style: {width: 开启锁向示意图Size[0] + "px", height: 开启锁向示意图Size[1] + "px"}
-          },
-          配合框: order.配合框?.map((v) => ({
-            data: new CadData(v),
-            img: imgEmpty,
-            style: {width: 配合框Size[0] + "px", height: 配合框Size[1] + "px"}
-          })),
+          shiyitus: order.shiyitus?.map((shiyitu) => {
+            const [w, h] = shiyituSize[shiyitu.name] ?? [0, 0];
+            const info: ShiyituInfo = {
+              name: shiyitu.name,
+              cads: shiyitu.cads.map<ShiyituCadInfo>((v) => ({data: new CadData(v), img: "", style: {width: w + "px", height: h + "px"}}))
+            };
+            return info;
+          }),
           cads,
           positions: Array.from(Array(cadsRowNum), () => Array(cadsColNum).fill(0)),
           style: {},
@@ -267,6 +304,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         };
       });
       this.orders.set(orders);
+      this.formsStyle.set(ddbqData[0]?.formsStyle || {});
       document.title = `${orders[0].code}_${getDateTimeString()}`;
       await this.splitOrders();
       const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});
@@ -281,13 +319,21 @@ export class DingdanbiaoqianComponent implements OnInit {
       await this.updateImgs(false);
     }
   }
+
   async updateImgs(configForPrint: boolean) {
-    const {开启锁向示意图Size, 配合框Size} = this;
     this.spinner.show(this.spinner.defaultLoaderId, {text: "生成中..."});
+    const page = await waitFor(() => document.querySelector(".page"));
+    let backgroundColor = "white";
+    if (page) {
+      const style = getComputedStyle(page);
+      if (style.backgroundColor) {
+        backgroundColor = style.backgroundColor;
+      }
+    }
     const configBase: Partial<CadViewerConfig> = {
       hideLineLength: false,
       hideLineGongshi: true,
-      backgroundColor: "white",
+      backgroundColor,
       fontStyle: {family: "宋体"},
       dimStyle: {
         dimensionLine: {color: "#505050", dashArray: Defaults.DASH_ARRAY},
@@ -298,10 +344,11 @@ export class DingdanbiaoqianComponent implements OnInit {
     };
     const collection = this.status.collection();
     let tmpCadViewer: CadViewer | undefined;
-    const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>) => {
+    const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>, hasLarge?: boolean) => {
       const previewParams2: CadPreviewParams = {
-        maxZoom: 1.3,
         showFenti: true,
+        fixedLengthTextSize: 16,
+        fixedDimTextSize: 16,
         ...previewParams,
         config: {...configBase, ...previewParams.config}
       };
@@ -314,71 +361,73 @@ export class DingdanbiaoqianComponent implements OnInit {
         previewParams2.fixedMtextSize = 28;
         delete previewParams2.maxZoom;
       }
-      return await getCadPreview(collection, data, previewParams2);
+      const small = await getCadPreview(collection, data, previewParams2);
+      let large = "";
+      if (hasLarge) {
+        const previewParams3: CadPreviewParams = {
+          ...previewParams2,
+          config: {...previewParams2.config, width: innerWidth * 0.85, height: innerHeight * 0.85},
+          maxZoom: undefined,
+          autoSize: false,
+          fixedLengthTextSize: undefined,
+          fixedDimTextSize: undefined
+        };
+        large = await getCadPreview(collection, data, previewParams3);
+      }
+      return {small, large};
     };
     const {showCadSmallImg, showCadLargeImg} = this.config();
-    const imgLargeSize = [innerWidth * 0.85, innerHeight * 0.85] as [number, number];
     const setData = (data: CadData, materialResult: Formulas = {}) => {
+      const m = {...materialResult, ...data.info.materialResult};
       for (const e of data.entities.dimension) {
-        setDimensionText(e, materialResult);
+        setDimensionText(e, m);
         e.setStyle({text: {color: "black"}});
       }
       for (const e of data.entities.mtext) {
         const match = e.text.match(/^#(.*)#$/);
-        if (match && match[1] && match[1] in materialResult) {
-          e.text = String(materialResult[match[1]]);
+        if (match && match[1] && match[1] in m) {
+          e.text = String(m[match[1]]);
         }
       }
     };
-    for (const [i, {cads, 开启锁向示意图, 配合框, materialResult}] of this.orders().entries()) {
-      if (开启锁向示意图) {
-        开启锁向示意图.data.type = "";
-        开启锁向示意图.data.type2 = "";
-        setData(开启锁向示意图.data, materialResult);
-        for (const e of 开启锁向示意图.data.entities.line) {
-          e.linewidth = 5;
-        }
-        const previewParams: Partial<CadPreviewParams> = {
-          config: {width: 开启锁向示意图Size[0], height: 开启锁向示意图Size[1], hideLineLength: true},
-          autoSize: true,
-          fixedDimTextSize: 100,
-          fixedMtextSize: 100
-        };
-        开启锁向示意图.img = await getImg(开启锁向示意图.data, previewParams);
-      }
-      if (配合框) {
-        for (const v of 配合框) {
-          for (const e of v.data.entities.line) {
-            if (e.mingzi !== "背框线") {
-              e.hideLength = true;
-            }
-          }
-          if (v.data.name === "顶框") {
-            v.data.transform({rotate: -Math.PI / 2}, true);
-            generateLineTexts2(v.data);
-          }
-          v.img = await getImg(v.data, {
-            config: {width: 配合框Size[0], height: 配合框Size[1], hideLineLength: false},
-            autoSize: true
-          });
+    await timeout(0);
+    for (const [i, {cads, shiyitus, materialResult}] of this.orders().entries()) {
+      for (const shiyitu of shiyitus ?? []) {
+        for (const cadInfo of shiyitu.cads) {
+          setData(cadInfo.data, materialResult);
+          const [w, h] = this.shiyituSize[shiyitu.name] ?? [0, 0];
+          const previewParams: Partial<CadPreviewParams> = {
+            config: {width: w, height: h, hideLineLength: true},
+            autoSize: true,
+            fixedMtextSize: undefined,
+            fixedDimTextSize: undefined
+          };
+          const {small, large} = await getImg(cadInfo.data, previewParams, true);
+          cadInfo.img = small;
+          cadInfo.imgLarge = large;
         }
       }
-      const cadsSizes = this.cadsSizes();
-      for (const [j, cad] of cads.entries()) {
-        cad.imgSize = cadsSizes.at(i)?.cads.at(j)?.container || [0, 0];
-        setData(cad.data, materialResult);
+      let showCads = true;
+      if (this.type() === "生产流程单") {
+        showCads = false;
       }
-      if (showCadSmallImg) {
-        await Promise.all(cads.map(async (v) => (v.img = await getImg(v.data, {config: {width: v.imgSize[0], height: v.imgSize[1]}}))));
-      } else {
-        await Promise.all(cads.map(async (v) => (v.img = imgCadEmpty)));
-      }
-      if (showCadLargeImg) {
-        await Promise.all(
-          cads.map(async (v) => (v.imgLarge = await getImg(v.data, {config: {width: imgLargeSize[0], height: imgLargeSize[1]}})))
-        );
-      } else {
-        await Promise.all(cads.map(async (v) => delete v.imgLarge));
+      if (showCads) {
+        const cadsSizes = this.cadsSizes();
+        for (const [j, cad] of cads.entries()) {
+          cad.imgSize = cadsSizes.at(i)?.cads.at(j)?.img || [0, 0];
+          setData(cad.data, materialResult);
+        }
+        if (showCadSmallImg) {
+          await Promise.all(
+            cads.map(async (v) => {
+              const {small, large} = await getImg(v.data, {config: {width: v.imgSize[0], height: v.imgSize[1]}}, showCadLargeImg);
+              v.img = small;
+              v.imgLarge = large;
+            })
+          );
+        } else {
+          await Promise.all(cads.map(async (v) => (v.img = imgCadEmpty)));
+        }
       }
     }
     this.orders.update((v) => [...v]);
@@ -448,12 +497,11 @@ export class DingdanbiaoqianComponent implements OnInit {
         case "标签贴纸":
         case "配件模块": {
           order.info = null;
-          delete order.开启锁向示意图;
-          delete order.配合框;
+          delete order.shiyitus;
           let orderCurr: Order | null = null;
-          let orderPrev: Order | null = null;
-          const group1: Order["cads"][0][] = [];
-          const group2: Order["cads"][0][] = [];
+          let orderPrev: Order | null;
+          const group1: Order["cads"][number][] = [];
+          const group2: Order["cads"][number][] = [];
           for (const cad of cads) {
             if (cad.data.name.match(/^[左右顶]双包边$/)) {
               group2.push(cad);
@@ -473,7 +521,7 @@ export class DingdanbiaoqianComponent implements OnInit {
               const itemNext = group[k + 1];
               const {isLarge} = item;
               let forceBreak = false;
-              if (item.forceBreak && !itemNext.forceBreak) {
+              if (item.forceBreak && !itemNext?.forceBreak) {
                 forceBreak = true;
               }
               let result = this.takeEmptyPosition(orderCurr.positions, isLarge, forceBreak);
@@ -500,6 +548,8 @@ export class DingdanbiaoqianComponent implements OnInit {
                 }
               }
             }
+            i++;
+            j = 0;
           }
           break;
         }
@@ -523,7 +573,21 @@ export class DingdanbiaoqianComponent implements OnInit {
     cadsToSet.forEach((v) => {
       this.setCad(...v);
     });
-    await timeout(0);
+    const cadEls = this.cadsEls();
+    await waitFor(() => {
+      for (const {nativeElement: cadEl} of cadEls) {
+        const imgEl = cadEl.querySelector(".cad-image");
+        if (!(imgEl instanceof HTMLElement)) {
+          continue;
+        }
+        const rect = imgEl.getBoundingClientRect();
+        if (rect.height > 0) {
+          return true;
+        }
+      }
+      return null;
+    });
+    this.cd.markForCheck();
     this.updateCadsSizes();
     cadsToSet.forEach((v) => {
       this.setCad(...v);
@@ -544,6 +608,13 @@ export class DingdanbiaoqianComponent implements OnInit {
       });
     }
     this.cadsSizes.set(cadsSizes);
+  }
+
+  updateBarcodes() {
+    const barcodeEls = this.barcodeEls();
+    for (const {nativeElement: el} of barcodeEls) {
+      getOrderBarcode(el, {displayValue: false, margin: 0});
+    }
   }
 
   mokuais = signal<ZixuanpeijianMokuaiItem[]>([]);
@@ -614,7 +685,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         code: getMokuaiTitle(mokuai),
         cads: mokuai.cads.map((v) => {
           v.data.info.标签信息 = [];
-          return {
+          const result: Order["cads"][number] = {
             houtaiId: v.data.id,
             data: v.data,
             img: "",
@@ -625,6 +696,8 @@ export class DingdanbiaoqianComponent implements OnInit {
             imgStyle: {},
             zhankai: v.info.zhankai
           };
+          this.updateCadZhankaiDisplayInfos(result);
+          return result;
         }),
         positions: Array.from(Array(cadsRowNum), () => Array(cadsColNum).fill(0)),
         style: {},
@@ -650,7 +723,7 @@ export class DingdanbiaoqianComponent implements OnInit {
     window.print();
   }
 
-  setCad(cad: Order["cads"][0], i: number, j: number, position: number[]) {
+  setCad(cad: Order["cads"][number], i: number, j: number, position: number[]) {
     const cadsSizes = this.cadsSizes();
     const size = cadsSizes.at(i)?.cads.at(j);
     const [w, h] = size?.container || [0, 0];
@@ -677,10 +750,53 @@ export class DingdanbiaoqianComponent implements OnInit {
     };
   }
 
-  getValue(section: ObjectOf<string | number>, cell: SectionCell) {
-    const value = String(section[cell.key] || "");
+  getLabel(cell: SectionCell) {
+    return cell.label || cell.key;
+  }
+
+  getValue(section: ObjectOf<any>, cell: SectionCell) {
+    const prefixs = ["流程单", "订货单"];
+    let key = cell.key || "";
+    for (const prefix of prefixs) {
+      const key2 = prefix + key;
+      if (key2 in section) {
+        key = key2;
+        break;
+      }
+    }
+    const value = String(section[key] || "");
     if ((cell.key || cell.label) === "页厚" && value === "0") {
       return "";
+    }
+    if (cell.isBoolean) {
+      let value2 = section[key];
+      if (["安装孔", "拉片"].includes(key)) {
+        if (typeof section.安装 === "string") {
+          const list = section.安装.split("+");
+          switch (key) {
+            case "安装孔":
+              value2 = list.some((v) => v.includes("孔"));
+              break;
+            case "拉片":
+              value2 = list.some((v) => v.includes("拉片"));
+              break;
+          }
+        } else {
+          value2 = false;
+        }
+      }
+      if (typeof value2 === "string") {
+        if (["无", "否", ""].includes(value2)) {
+          value2 = false;
+        } else {
+          value2 = true;
+        }
+      } else {
+        value2 = Boolean(value2);
+      }
+      if (typeof value2 === "boolean") {
+        return value2 ? "✔" : "✖";
+      }
     }
     return value;
   }
@@ -752,8 +868,21 @@ export class DingdanbiaoqianComponent implements OnInit {
     }
   }
 
-  hasZhankaiNum(zhankai: NonNullable<Order["cads"][0]["zhankai"]>[0]) {
-    return isTypeOf(zhankai.num, ["number", "string"]);
+  updateCadZhankaiDisplayInfos(cad: Order["cads"][number]) {
+    const {data, zhankai: zhankais} = cad;
+    if (!zhankais) {
+      delete cad.zhankaiDisplayInfos;
+      return;
+    }
+    const infos: NonNullable<typeof cad.zhankaiDisplayInfos> = [];
+    for (const zhankai of zhankais) {
+      const kuan = getIsCadSuanliaoxianshi(data, "展开宽");
+      const gao = getIsCadSuanliaoxianshi(data, "展开高");
+      const sign = kuan && gao;
+      const num = (kuan || gao) && isTypeOf(zhankai.num, ["number", "string"]);
+      infos.push({kuan, gao, sign, num});
+    }
+    cad.zhankaiDisplayInfos = infos;
   }
 
   returnZero() {
@@ -779,5 +908,9 @@ export class DingdanbiaoqianComponent implements OnInit {
 
   isArray(v: any) {
     return Array.isArray(v);
+  }
+
+  getFormStyle(form: Form) {
+    return {...this.formsStyle(), ...form.style};
   }
 }

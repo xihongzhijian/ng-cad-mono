@@ -8,7 +8,7 @@ import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoIn
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {alertError, ErrorItem, ResultWithErrors} from "@app/utils/error-message";
 import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
-import {isSbjbCad, isSbjbCollection, isSbjbType, sbjbItemOptionalKeys4} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {isSbjbCad, isSbjbCollection, isSbjbType, sbjbItemCadKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLeader, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {downloadByString, isTypeOf, keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
@@ -18,6 +18,7 @@ import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty} from "lodash";
@@ -25,7 +26,6 @@ import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./import.types";
 import {BatchUploadChecker} from "./import.utils";
 
@@ -84,6 +84,7 @@ export class ImportComponent implements OnInit {
     }
     return isSbjbType(yaoqiu.CAD分类);
   });
+  extraData = computed(() => this.importCache()?.extraData);
 
   importConfigTranslation: Record<ImportComponentConfigName, string> = {
     requireLineId: "上传线必须全部带ID",
@@ -342,7 +343,8 @@ export class ImportComponent implements OnInit {
           cadData: cads[i].data,
           force: true,
           importConfig: {pruneLines},
-          sbjbReplace
+          sbjbReplace,
+          extraData: this.extraData()
         },
         true,
         httpOptions
@@ -464,17 +466,17 @@ export class ImportComponent implements OnInit {
           if (isSbjbType(yaoqiu.CAD分类)) {
             if (isSbjbCad(collection, data)) {
               yaoqiu = await this.status.fetchAndGetCadYaoqiu(data.type);
-              for (const key of sbjbItemOptionalKeys4) {
+              for (const key of sbjbItemCadKeys3) {
                 delete data.options[key];
               }
             } else {
-              const str = sbjbItemOptionalKeys4.join("，");
+              const str = sbjbItemCadKeys3.join("，");
               v.result.addErrorStr(`分类只能是【${str}】`);
               skipYaoqiu = true;
             }
           } else {
             if (isSbjbCad(collection, data)) {
-              const str = sbjbItemOptionalKeys4.join("，");
+              const str = sbjbItemCadKeys3.join("，");
               v.result.addErrorStr(`分类不能是【${str}】`);
               skipYaoqiu = true;
             }
@@ -636,7 +638,7 @@ export class ImportComponent implements OnInit {
       for (const error of data.info.errors) {
         if (isTypeOf(error, "string")) {
           dataErrors.addErrorStr(error);
-        } else if (isTypeOf(error, "object")) {
+        } else if (isTypeOf<ErrorItem>(error, "object")) {
           dataErrors.addError(error);
         }
       }

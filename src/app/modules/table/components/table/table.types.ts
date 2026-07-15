@@ -1,8 +1,10 @@
 import {AbstractControlOptions, ValidationErrors} from "@angular/forms";
 import {MatTableDataSource} from "@angular/material/table";
+import {Value} from "@app/utils/get-value";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
-import {InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
+import {TableComponent} from "./table.component";
 
 export interface TableRenderInfo<T> {
   data: T[];
@@ -30,15 +32,27 @@ export interface TableRenderInfo<T> {
   isTree?: boolean;
   onlineMode?: {tableName: string; refresh: () => MaybePromise<void>};
   noScroll?: boolean;
+  noBorder?: boolean;
   class?: string | string[];
   style?: Properties;
   getCellClass?: (event: CellEvent<T>) => string | string[];
   getCellStyle?: (event: CellEvent<T>) => Properties;
   hideHeader?: boolean;
   compactColumnButton?: boolean;
+  cellMergeInfos?: TableCellMergeInfo[];
 }
 export interface TableRenderInfoFilterable<T> {
-  fields?: (keyof T)[];
+  fields?: (keyof T | TableRenderInfoFilterableField<T>)[];
+}
+export interface TableRenderInfoFilterableField<T> {
+  field: keyof T;
+  valueGetter: (item: T) => string;
+}
+
+export interface TableCellMergeInfo {
+  rowIdx: number;
+  fields: string[];
+  n: number;
 }
 
 export interface RowSelection<T> {
@@ -68,10 +82,13 @@ export interface ColumnInfoBase<T> {
   sticky?: boolean;
   stickyEnd?: boolean;
   hidden?: boolean;
+  class?: string | string[];
   style?: Properties;
+  align?: "left" | "center" | "right";
   getString?: (value: T, index: number) => string;
   validators?: AbstractControlOptions["validators"];
   validators2?: TableItemValidator<T> | TableItemValidator<T>[];
+  inputInfoOverride?: Value<Partial<InputInfo<T>>, CellEvent<T>>;
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {
@@ -141,13 +158,10 @@ export interface RowButtonEventBase<T> {
   item: T;
   colIdx: number;
   rowIdx: number;
+  component: TableComponent<T>;
 }
-export interface RowButtonEvent<T> {
+export interface RowButtonEvent<T> extends RowButtonEventBase<T> {
   button: TableButton<RowButtonEventBase<T>>;
-  column: ColumnInfo<T>;
-  item: T;
-  colIdx: number;
-  rowIdx: number;
 }
 export interface RowSelectionChange<T> {
   items: T[];

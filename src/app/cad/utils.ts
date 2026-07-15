@@ -28,7 +28,18 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, downloadByUrl, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {
+  DEFAULT_TOLERANCE,
+  downloadByUrl,
+  isBetween,
+  isEqualTo,
+  isGreaterThan,
+  isTypeOf,
+  Line,
+  ObjectOf,
+  Point,
+  Rectangle
+} from "@lucilor/utils";
 import {CadFentiInfo, getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -156,7 +167,7 @@ export const validateLines = (
   }
   const typeCheck = cadTypes1.includes(data.type) || collection === "peijianCad";
   let has自动识别上下折 = false;
-  let has上下折 = false;
+  let has上下折: boolean;
   let shuangxiangzhewan = data.shuangxiangzhewan;
   if (cadTypes2.includes(data.type)) {
     has自动识别上下折 = !!data.entities.find((e) => e instanceof CadLineLike && e.双向折弯附加值.includes("上下折程序自动识别"));
@@ -306,12 +317,12 @@ export const autoFixLine = (cad: CadViewer, line: CadLine, tol = DEFAULT_TOLERAN
   const {start, end} = line;
   const dx = start.x - end.x;
   const dy = start.y - end.y;
-  const [min, max] = LINE_LIMIT;
+  const dx2 = Math.abs(dx);
+  const dy2 = Math.abs(dy);
   const translate = new Point();
-  if (isBetween(Math.abs(dx), min, max)) {
+  if (dx2 < dy2) {
     translate.x = dx;
-  }
-  if (isBetween(Math.abs(dy), min, max)) {
+  } else {
     translate.y = dy;
   }
   const map = generatePointsMap(cad.data.getAllEntities(), tol);
@@ -414,6 +425,14 @@ export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiang
     });
     return intersectionCount === 1;
   };
+  const getRect = (data2: CadData) => {
+    const rect = Rectangle.min;
+    for (const e of data2.entities.line) {
+      rect.expandByPoint(e.start);
+      rect.expandByPoint(e.end);
+    }
+    return rect;
+  };
   const transforms = [
     () => {
       let hLine: CadLine | undefined;
@@ -448,9 +467,14 @@ export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiang
       vData.transform({translate: [x1 - x2, y1 - y2]}, true);
     },
     () => {
-      const {x: x1, y: y1} = hData.getBoundingRect();
-      const {x: x2, y: y2} = vData.getBoundingRect();
-      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+      const {x: x1} = getRect(hData);
+      const {x: x2} = getRect(vData);
+      vData.transform({translate: [x1 - x2, 0]}, true);
+    },
+    () => {
+      const {y: y1} = getRect(hData);
+      const {y: y2} = getRect(vData);
+      vData.transform({translate: [0, y1 - y2]}, true);
     }
   ];
   for (const transform of transforms) {
@@ -481,11 +505,15 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
   const rectCenter = new Point(rect.x, rect.y);
   const drawing = {
     leader: {length: 32, gap: 4, size: 15},
-    circle: {radius: 8, linetype: "DASHEDX2", linewidth: 2},
+    circle: {radius: 12, linewidth: 1, color: 5},
     text: {size: 24, text: "", offset: 0}
   };
   for (const key of intersectionKeys) {
     const arr = data[key];
+    if (arr.length < 1) {
+      continue;
+    }
+    const circles: CadCircle[] = [];
     for (const sortedEntities of sortedEntitiesGroups) {
       for (let i = 0; i < sortedEntities.length; i++) {
         const e1 = sortedEntities[i];
@@ -546,6 +574,7 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
         let drawLeader = false;
         let drawCircle = false;
         let drawText = false;
+        let circleDashed = false;
         let layer = "";
         if (key === "zhidingweizhipaokeng") {
           line.end.sub(d.clone().multiply(drawing.leader.gap));
@@ -556,10 +585,17 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
           } else if (指定位置刨坑表示方法 === "箭头+箭头旁文字") {
             drawLeader = true;
             drawText = true;
+          } else if (指定位置刨坑表示方法 === "实线圆") {
+            drawCircle = true;
+          } else if (指定位置刨坑表示方法 === "实线圆+旁边文字") {
+            drawCircle = true;
+            drawText = true;
           } else if (指定位置刨坑表示方法 === "虚线圆") {
             drawCircle = true;
+            circleDashed = true;
           } else if (指定位置刨坑表示方法 === "虚线圆+旁边文字") {
             drawCircle = true;
+            circleDashed = true;
             drawText = true;
           }
           layer = "指定位置刨坑";
@@ -601,16 +637,18 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
         }
         if (drawCircle) {
           const radius = Math.min(drawing.circle.radius, p1.distanceTo(p2) / 2 - 1, p2.distanceTo(p3) / 2 - 1);
+          const linetype = circleDashed ? "DASHEDX2" : "CONTINUOUS";
           const circle = new CadCircle({
             layer,
             center: p2,
             radius,
-            linetype: drawing.circle.linetype,
+            linetype: linetype,
             linewidth: drawing.circle.linewidth,
-            color: 5,
+            color: drawing.circle.color,
             info: {isIntersectionEntity: true}
           });
           data.entities.add(circle);
+          circles.push(circle);
         }
         if (drawText) {
           let anchor = [0, 0];
@@ -634,6 +672,12 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
         }
       }
     }
+    if (circles.length > 0) {
+      const minRadius = Math.min(...circles.map((e) => e.radius));
+      for (const circle of circles) {
+        circle.radius = minRadius;
+      }
+    }
   }
 };
 
@@ -651,7 +695,9 @@ export const setDimensionText = (e: CadDimension, materialResult: Formulas) => {
     显示公式 = match[1].trim();
   }
   let 活动标注 = false;
-  if (显示公式 !== null) {
+  if (e.info.显示公式值) {
+    e.mingzi = e.info.显示公式值;
+  } else if (显示公式 !== null) {
     if (isNaN(Number(显示公式)) && 显示公式 in materialResult) {
       显示公式 = String(materialResult[显示公式]);
     }
@@ -725,7 +771,15 @@ export const getCadPaokengText = (
   return arr;
 };
 
-export const exportCadDataRemoveLengthTextCount = 200;
+export let exportCadDataRemoveLengthTextCount = 200;
+export const setExportCadDataRemoveLengthTextCount = (count: number) => {
+  if (count >= 0) {
+    exportCadDataRemoveLengthTextCount = count;
+  } else {
+    exportCadDataRemoveLengthTextCount = Infinity;
+  }
+};
+
 export const exportCadData = (data: CadData) => {
   const exportData = data.export();
   const count = data.entities.line.length + data.entities.arc.length;
@@ -747,10 +801,16 @@ export const exportCadData = (data: CadData) => {
             if (count > exportCadDataRemoveLengthTextCount) {
               delete mtexts[mtextId];
             } else {
-              const keys = ["type", "info", "insert", "lineweight", "anchor"];
+              const keys = ["type", "info", "insert", "lineweight", "anchor", "fontStyle"];
               for (const key of Object.keys(mtext)) {
                 if (!keys.includes(key)) {
                   delete mtext[key];
+                }
+                if (key === "fontStyle") {
+                  const val = mtext[key];
+                  if (isTypeOf(val, "object")) {
+                    delete val.size;
+                  }
                 }
               }
             }
@@ -822,7 +882,7 @@ export const openCadDimensionForm = async (
         form.push(getter.string("xianshigongshiwenben", {label: "显示公式文本"}));
         break;
       case "qujian":
-        form.push(getter.string("qujian", {label: "区间", validators: CustomValidators.stringRangeStr}));
+        form.push(getter.string("qujian", {label: "区间", validators: CustomValidators.numberRangeStr}));
         break;
       case "cad":
         form.push(
@@ -1049,7 +1109,7 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
         // data.components = resData.components;
         data.zhidingweizhipaokeng = resData.zhidingweizhipaokeng;
         const 唯一码 = data.info.唯一码;
-        data.info = resData.info;
+        data.info = {...data.info, ...resData.info};
         if (唯一码) {
           data.info.唯一码 = 唯一码;
         }
@@ -1082,6 +1142,21 @@ export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
   if (intersectionCount === 1) {
     data.shuangxiangzhewan = true;
   }
+};
+
+export const getIsCadSuanliaoxianshi = (data: CadData, key: string) => {
+  const suanliaodanxianshi = data.suanliaodanxianshi;
+  if (suanliaodanxianshi === "所有") {
+    return true;
+  }
+  if (suanliaodanxianshi === "都不显示") {
+    return false;
+  }
+  const arr = suanliaodanxianshi.split("+").map((v) => v.trim());
+  if (["展开宽", "展开高"].includes(key) && arr.includes("尺寸")) {
+    return true;
+  }
+  return arr.includes(key);
 };
 
 export const getDimArrowPreviewImg = async (cad: CadViewer) => {

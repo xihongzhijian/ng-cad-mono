@@ -79,7 +79,7 @@ export class XhmrmsbjMokuaisComponent {
             }
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
-          const formulasResult = getMkdxpzSlgsFormulas(value.选中布局数据?.模块大小配置, materialResult);
+          const formulasResult = getMkdxpzSlgsFormulas(value.选中布局数据?.模块大小配置, materialResult, key);
           const gongshi = {...formulasResult.data};
           const nodeNameKeys = getNodeFormulasKeys([node.层名字]);
           for (const key2 of Object.keys(gongshi)) {

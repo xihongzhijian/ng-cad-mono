@@ -28,10 +28,11 @@ import {getSortedItems} from "@app/utils/sort-items";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {FormulasCompactConfig, FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
+import {算料公式, 输入} from "@components/lurushuju/xinghao-data";
 import {TextInfoComponent} from "@components/text-info/text-info.component";
 import {TextInfo} from "@components/text-info/text-info.types";
 import {isTypeOf} from "@lucilor/utils";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -41,14 +42,13 @@ import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
-import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
 @Component({
   selector: "app-suanliaogongshi",
   imports: [
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormulasEditorComponent,
     MatButtonModule,
     MatCardModule,
@@ -317,7 +317,7 @@ export class SuanliaogongshiComponent {
       return;
     }
     const gongshi = data.from;
-    const names = [this.title(), getDateTimeString()];
+    const names = [this.title(), getDateTimeString({fmt: "yyyyMMdd"})];
     const name0 = getValue(this.exportFilename(), this.message);
     if (name0) {
       names.unshift(name0);

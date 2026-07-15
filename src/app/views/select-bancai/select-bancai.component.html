@@ -1,5 +1,6 @@
-<div class="title">
-  <div>订单编号: {{ codesStr() }}</div>
+<div class="toolbar">
+  <div class="title">订单编号: {{ codesStr() }}</div>
+  <button mat-button class="plain"><app-about></app-about></button>
 </div>
 <div class="toolbar flex-row">
   @if (isShowXikong()) {
@@ -12,6 +13,13 @@
     </div>
   } @else {
     <mat-slide-toggle [(ngModel)]="autoGuige" (change)="onAutoGuigeChange()">自动选择最合适的板材规格</mat-slide-toggle>
+    <mat-slide-toggle [(ngModel)]="expandGuige" (change)="onExpandGuigeChange()">规格超出预设时自动往大取整</mat-slide-toggle>
+    @if (showQiegemuban()) {
+      <mat-slide-toggle [(ngModel)]="enable45duQiejiao">开启45度切角</mat-slide-toggle>
+      @if (enable45duQiejiao()) {
+        <mat-slide-toggle [(ngModel)]="enable45duQiejiaoWeilian">45度切角微连</mat-slide-toggle>
+      }
+    }
     <div class="links">
       <button mat-button class="plain" [matMenuTriggerFor]="xikongFile">铝型材cnc铣孔文件</button>
       <button mat-button class="plain" (click)="openDdbq(true, true)">铝型材标签</button>
@@ -22,7 +30,7 @@
     </div>
     <mat-menu #downloadHistoryList="matMenu">
       @for (item of downloadHistory(); track $index) {
-        <button mat-menu-item (click)="downloadDxf(item.name, true)">
+        <button mat-menu-item (click)="downloadFile(item.name, true)">
           {{ item.date }}
         </button>
       }
@@ -80,8 +88,9 @@
           </div>
           @for (bancaiInfo of info.bancaiInfos; track j; let j = $index) {
             <div class="bancai-info-row flex-row">
+              <div>{{ (bancaiInfo.bancai.index ?? 0) + 1 }}、</div>
               @for (inputInfo of bancaiInfo.inputInfos; track $index) {
-                <app-input #bancaiInfoInput class="flex-110" [info]="inputInfo"></app-input>
+                <app-input #bancaiInfoInput [info]="inputInfo"></app-input>
               }
               <div>
                 <button mat-flat-button [class.accent]="bancaiInfo.oversized" (click)="openCadsDialog(i, j)">开料CAD</button>
@@ -98,6 +107,7 @@
     <div class="spinner-container">
       <div class="toolbar">
         <button mat-flat-button (click)="selectCadsToSubmit()">选择cad开料</button>
+        <button mat-flat-button (click)="getPaiBanSummaryItems()">最近一次排版结果</button>
         <button mat-flat-button (click)="submit()">{{ type() }}</button>
       </div>
       <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>

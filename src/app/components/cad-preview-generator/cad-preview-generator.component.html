@@ -1,0 +1,15 @@
+<ng-scrollbar>
+  @for (info of inputInfos(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
+  <div class="flex-column">
+    <div>图形尺寸：{{ dataWidth() }}mm × {{ dataHeight() }}mm</div>
+    <div>生成图片尺寸：{{ imgWidth() }}px × {{ imgHeight() }}px</div>
+  </div>
+  @if (previewSrc(); as src) {
+    <div class="toolbar" style="align-items: flex-end">
+      <app-image [src]="src" [bigPicSrc]="src" controlBigPic [style]="imgStyle()"></app-image>
+      <button mat-flat-button (click)="downloadPreview()">下载</button>
+    </div>
+  }
+</ng-scrollbar>

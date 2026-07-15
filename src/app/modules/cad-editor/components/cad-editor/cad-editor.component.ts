@@ -1,12 +1,11 @@
-import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
 import {
   AfterViewInit,
+  type AnimationCallbackEvent,
   Component,
   computed,
   effect,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
   input,
@@ -16,6 +15,7 @@ import {
   viewChild,
   viewChildren
 } from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -23,15 +23,18 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadDimensionForm} from "@app/cad/utils";
+import {tryParseJson} from "@app/utils/json-helper";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
@@ -39,7 +42,6 @@ import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-
 import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {take} from "rxjs";
-import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
 import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
@@ -49,6 +51,7 @@ import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
 import {CadLineComponent} from "../menu/cad-line/cad-line.component";
 import {openCadLineForm} from "../menu/cad-line/cad-line.utils";
 import {CadMtextComponent} from "../menu/cad-mtext/cad-mtext.component";
+import {openCadMtextForm} from "../menu/cad-mtext/cad-mtext.utils";
 import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
 import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
 import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
@@ -59,32 +62,6 @@ import {CadEditorMenuName} from "./cad-editor.utils";
   selector: "app-cad-editor",
   templateUrl: "./cad-editor.component.html",
   styleUrls: ["./cad-editor.component.scss"],
-  animations: [
-    trigger("closeTop", [
-      state("open", style({transform: "translateY(0)"})),
-      state("closed", style({transform: "translateY(-100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeRight", [
-      state("open", style({transform: "translateX(0)"})),
-      state("closed", style({transform: "translateX(100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeBottom", [
-      state("open", style({transform: "translateY(0)"})),
-      state("closed", style({transform: "translateY(100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeLeft", [
-      state("open", style({transform: "translateX(0)"})),
-      state("closed", style({transform: "translateX(-100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("menuWidth", [
-      transition(":enter", [style({opacity: 0}), animate("0.5s", style({opacity: 1}))]),
-      transition(":leave", [style({opacity: 1}), animate("0.5s", style({opacity: 0}))])
-    ])
-  ],
   imports: [
     CadAssembleComponent,
     CadDimensionComponent,
@@ -95,8 +72,9 @@ import {CadEditorMenuName} from "./cad-editor.utils";
     CadPointsComponent,
     CadSplitComponent,
     CdkDrag,
-    ContextMenuModule,
-    forwardRef(() => InputComponent),
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
+    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
@@ -125,7 +103,8 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const cad = this.status.cad;
     cad.appendTo(this.cadContainer().nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
-    cad.on("entitiespaste", this._onEntitiesPaste);
+    cad.on("entitiespastestart", this._onEntitiesPasteStart);
+    cad.on("entitiespasteend", this._onEntitiesPasteEnd);
     cad.on("entitiesremove", this._onEntitiesRemove);
     cad.on("entitydblclick", this._onEntityDblClick);
     cad.on("entitiesselect", this._onEntitySelect);
@@ -139,7 +118,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entitiescopy", this._onEntitiesCopy);
-    cad.off("entitiespaste", this._onEntitiesPaste);
+    cad.off("entitiespastestart", this._onEntitiesPasteStart);
     cad.off("entitiesremove", this._onEntitiesRemove);
     cad.off("entitydblclick", this._onEntityDblClick);
     cad.off("entitiesselect", this._onEntitySelect);
@@ -251,7 +230,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }
   });
 
-  cadLength = computed(() => this.status.cadTotalLength().toFixed(2));
+  cadLength = this.status.cadTotalLengthFixed;
 
   menuPaddingBase = [20, 20, 20, 20];
   leftMenuWidth0 = signal(0);
@@ -295,6 +274,25 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.config.setConfig(key, draggingRight.width);
       this.draggingRight.set(null);
     }
+  }
+
+  onMenuWidthEnter(event: AnimationCallbackEvent) {
+    this.runFadeAnimation(event, 0, 1);
+  }
+
+  onMenuWidthLeave(event: AnimationCallbackEvent) {
+    this.runFadeAnimation(event, 1, 0);
+  }
+
+  private runFadeAnimation(event: AnimationCallbackEvent, from: number, to: number) {
+    const animation = event.target.animate([{opacity: from}, {opacity: to}], {
+      duration: 500,
+      easing: "ease",
+      fill: "both"
+    });
+    const done = () => event.animationComplete();
+    animation.addEventListener("finish", done, {once: true});
+    animation.addEventListener("cancel", done, {once: true});
   }
 
   cadPaddingEff = effect(() => {
@@ -378,7 +376,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   scrollbarEff = effect(() => {
     setTimeout(() => {
       for (const scrollbar of this._scrollbars()) {
-        scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
+        scrollbar.nativeElement.addEventListener("scroll", this.onScrollChange);
       }
     }, 0);
   });
@@ -390,22 +388,38 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       return;
     }
     const scroll = this.config.getConfig("scroll");
-    scroll["tab" + this.tabIndex()] = this._scrollbar.viewport.nativeElement.scrollTop;
+    scroll["tab" + this.tabIndex()] = this._scrollbar.nativeElement.scrollTop;
     this.config.setConfig("scroll", scroll);
   }, 1000);
 
   private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = async (entities) => {
-    const cad = this.status.cad;
-    entities.forEach((e) => (e.opacity = 0.3));
-    cad.data.entities.merge(entities);
-    cad.unselectAll();
-    await cad.render(entities);
+    const copyInfo = {
+      key: "cad-viewer copy entities",
+      entities: entities.export()
+    };
+    await this.message.copyText(JSON.stringify(copyInfo));
   };
-  private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = async (entities) => {
+  private _onEntitiesPasteStart: CadEventCallBack<"entitiespastestart"> = async () => {
+    const copyInfoStr = await navigator.clipboard.readText();
+    const copyInfo = tryParseJson(copyInfoStr);
+    if (copyInfo?.key === "cad-viewer copy entities" && copyInfo.entities) {
+      const cad = this.status.cad;
+      const entities = new CadEntities(copyInfo.entities, true);
+      if (cad.pointerPosition) {
+        const {x: px, y: py} = cad.pointerPosition;
+        const point2 = cad.getWorldPoint(px, py);
+        const rect = entities.getBoundingRect();
+        entities.transform({translate: point2.sub(rect.x, rect.y)}, true);
+      }
+      entities.forEach((e) => (e.opacity = 0.3));
+      cad.entitiesToPaste = entities;
+      await cad.add(entities);
+    }
+  };
+  private _onEntitiesPasteEnd: CadEventCallBack<"entitiespasteend"> = async (entities) => {
     const cad = this.status.cad;
     entities.forEach((e) => (e.opacity = 1));
     await cad.render(entities);
-    await this.status.refreshCadFenti();
   };
   private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = async () => {
     this._highlightEntities();
@@ -415,8 +429,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const collection = this.status.collection();
     const cad = this.status.cad;
     const gongshis = this.status.openCadOptions().gongshis;
-    if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
-      openCadLineForm(collection, this.status, this.message, cad, entity.parent, gongshis);
+    if (entity instanceof CadMtext) {
+      const parent = entity.parent;
+      if (parent instanceof CadLineLike && (entity.info.isLengthText || entity.info.isGongshiText || entity.info.isBianhuazhiText)) {
+        openCadLineForm(collection, this.status, this.message, cad, parent, gongshis);
+      } else {
+        openCadMtextForm(collection, this.status, this.message, cad, entity);
+      }
     } else if (entity instanceof CadLineLike) {
       openCadLineForm(collection, this.status, this.message, cad, entity, gongshis);
     } else if (entity instanceof CadDimensionLinear) {
@@ -494,6 +513,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     return true;
   }
 
+  saveLocked = toSignal(this.status.saveCadLocked$, {initialValue: false});
   async save() {
     const {extraData, query} = this.params() || {};
     const data = this.status.cad.data;
@@ -525,6 +545,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this._setTabScroll();
   }
 
+  selectModeLocked = computed(() => this.config.getConfig("cadSelectModeLocked"));
   toggleMultiSelect() {
     let selectMode = this.config.getConfig("selectMode");
     selectMode = selectMode === "multiple" ? "single" : "multiple";
@@ -552,7 +573,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       return;
     }
     this._scrollbars().forEach((scrollbar) => {
-      const inputs = scrollbar.viewport.nativeElement.querySelectorAll("app-input");
+      const inputs = scrollbar.nativeElement.querySelectorAll("app-input");
       const input2 = Array.from(inputs).find((el) => {
         if (el instanceof HTMLElement && queryString(val, el.dataset.label || "")) {
           return true;
@@ -583,6 +604,12 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
       this.hideMenuSearch();
     }
+  }
+
+  async focusZhuangpeixinxi() {
+    this.tabIndex.set(0);
+    await timeout(0);
+    this._scrollbar?.scrollToElement(".装配信息");
   }
 }
 

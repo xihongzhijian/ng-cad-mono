@@ -1,4 +1,4 @@
-import {Component, computed, effect, forwardRef, HostBinding, inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -13,7 +13,7 @@ import {getLineTable, getMultiSetData, getMultiSetInputInfos, MultiSetData} from
 
 @Component({
   selector: "app-cad-kailiao-config",
-  imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule, TableComponent],
+  imports: [InputComponent, MatButtonModule, NgScrollbarModule, TableComponent],
   templateUrl: "./cad-kailiao-config.component.html",
   styleUrl: "./cad-kailiao-config.component.scss"
 })
@@ -63,7 +63,9 @@ export class CadKailiaoConfigComponent {
     for (const table of this.lineTableComponents()) {
       for (const item of table.getSelectedItems()) {
         item.zhankaifangshi = data.展开方式;
-        item.zidingzhankaichang = data.指定展开长;
+        if (data.展开方式 === "指定长度") {
+          item.zidingzhankaichang = data.指定展开长;
+        }
         isChanged = true;
       }
     }

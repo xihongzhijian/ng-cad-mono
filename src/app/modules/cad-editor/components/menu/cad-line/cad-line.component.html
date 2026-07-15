@@ -18,6 +18,13 @@
   >
     增加宽高虚线
   </button>
+  @if (canRemoveAngularDimension()) {
+    <button mat-flat-button [style.z-index]="data() ? '1' : '0'" (click)="removeAngularDimension()">删除角度标注</button>
+  } @else {
+    <button mat-flat-button [style.z-index]="data() ? '1' : '0'" [disabled]="!canAddAngularDimension()" (click)="addAngularDimension()">
+      增加角度标注
+    </button>
+  }
 </div>
 @for (info of lineInputInfos1(); track $index) {
   <app-input [info]="info"></app-input>

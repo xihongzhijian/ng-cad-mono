@@ -1,16 +1,38 @@
-import {MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
-import {getVectorsFromArray, purgeObject} from "../../cad-utils";
+import {MatrixLike, ObjectOf, Point, purgeObject, Rectangle, Spline} from "@lucilor/utils";
+import {CadLineLike} from "../..";
+import {getVectorsFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
-import {CadEntity} from "./cad-entity";
 
-export class CadSpline extends CadEntity {
+export class CadSpline extends CadLineLike {
   type: EntityType = "SPLINE";
   fitPoints: Point[] = [];
   controlPoints: Point[] = [];
   degree = 3;
-  calcBoundingRect = false;
   get _boundingRectCalc() {
-    return Rectangle.min;
+    const rect = Rectangle.min;
+    for (const p of this.controlPoints) {
+      rect.expandByPoint(p);
+    }
+    for (const p of this.fitPoints) {
+      rect.expandByPoint(p);
+    }
+    return rect;
+  }
+
+  get start() {
+    return this.curve.getPoint(0);
+  }
+  get end() {
+    return this.curve.getPoint(1);
+  }
+  get middle() {
+    return this.curve.getPoint(0.5);
+  }
+  get curve() {
+    return new Spline(this.fitPoints, this.controlPoints, this.degree);
+  }
+  get length() {
+    return this.curve.length;
   }
 
   constructor(data: any = {}, resetId = false) {
@@ -22,10 +44,10 @@ export class CadSpline extends CadEntity {
     }
   }
 
-  export(): ObjectOf<any> {
+  export() {
     return {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         fitPoints: this.fitPoints.map((v) => v.toArray()),
         controlPoints: this.controlPoints.map((v) => v.toArray()),
         degree: this.degree

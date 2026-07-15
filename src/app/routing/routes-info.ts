@@ -15,6 +15,7 @@ import {IndexComponent} from "@views/index/index.component";
 import {JiaoweiComponent} from "@views/jiaowei/jiaowei.component";
 import {KailiaocanshuComponent} from "@views/kailiaocanshu/kailiaocanshu.component";
 import {KailiaokongweipeizhiComponent} from "@views/kailiaokongweipeizhi/kailiaokongweipeizhi.component";
+import {ListProjectsComponent} from "@views/list-projects/list-projects.component";
 import {LvxingcaiyouhuaComponent} from "@views/lvxingcaiyouhua/lvxingcaiyouhua.component";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MsbjComponent} from "@views/msbj/msbj.component";
@@ -29,9 +30,10 @@ import {SelectCadsComponent} from "@views/select-cads/select-cads.component";
 import {SuanliaoComponent} from "@views/suanliao/suanliao.component";
 import {WorkSpaceComponent} from "@views/work-space/work-space.component";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
+import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview.component";
 import {YahuabanTestComponent} from "@views/yahuaban-test/yahuaban-test.component";
 
-export const routesInfo: (Route & {path: string})[] = [
+export const routesInfo: Route[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
   {path: "布局模块", component: BujumokuaiIndexComponent, title: "模块库"},
@@ -56,6 +58,7 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "型号默认门扇布局", component: XhmrmsbjComponent, title: "型号默认门扇布局"},
   {path: "默认板材及分组", component: MrbcjfzComponent, title: "默认板材及分组"},
   {path: "suanliao", component: SuanliaoComponent, title: "算料"},
+  {path: "xinghao-overview", component: XinghaoOverviewComponent, title: "型号数据快速配置"},
   {
     path: "bom-gongyiluxian",
     component: BomGongyiluxianComponent,
@@ -69,5 +72,6 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "refresh-cad-imgs", component: RefreshCadImgsComponent, title: "刷新cad图片"},
   {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "多订单型材优化排产"},
   {path: "压花板测试", component: YahuabanTestComponent, title: "压花板测试"},
-  {path: "型号公式输入", component: XinghaoGongshishuruComponent, title: "型号公式输入"}
+  {path: "型号公式输入", component: XinghaoGongshishuruComponent, title: "型号公式输入"},
+  {path: "list-projects", component: ListProjectsComponent, title: "项目列表"}
 ];

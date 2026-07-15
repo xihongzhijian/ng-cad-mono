@@ -13,7 +13,7 @@ import {
   isCadCollectionOfCad,
   prepareCadViewer,
   removeIntersections,
-  showIntersections,
+  setExportCadDataRemoveLengthTextCount,
   suanliaodanZoomIn,
   suanliaodanZoomOut,
   validateCad,
@@ -24,7 +24,7 @@ import {FetchManager} from "@app/utils/fetch-manager";
 import {getInsertName} from "@app/utils/get-value";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {getSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
+import {getSbjbCadName, isSbjbItemCadKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
 import {environment} from "@env";
 import {
   CadData,
@@ -53,7 +53,7 @@ import {clamp, cloneDeep, differenceWith, isEmpty, isEqual} from "lodash";
 import {BehaviorSubject, Subject, take} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
-import {AppUser, CadPoints, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
+import {AppUser, CadPoints, CadPointSelectMode, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
 const 合型板示意图 = new CadData();
@@ -79,7 +79,9 @@ export class AppStatusService {
 
   project = "";
   collection = signal<CadCollection>("cad");
+  cadNumberDigits = signal(4);
   cadTotalLength = signal(0);
+  cadTotalLengthFixed = computed(() => this.cadTotalLength().toFixed(this.cadNumberDigits()));
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected: signal<CadData[]>([]),
@@ -92,16 +94,28 @@ export class AppStatusService {
     this._changeCadSignal.set(this._changeCadSignal() + Math.random() < 0.5 ? 1 : -1);
   }
   cadData = signal(this.cad.data);
-  cadDataEff = effect(() => {
+  cadDataEff1 = effect(async () => {
     this._changeCadSignal();
+    this.cadData.set(new CadData());
+    this.cadData.set(this.cad.data);
+  });
+  cadDataEff2 = effect(async () => {
     this.openCadOptions();
     this.cadData.set(new CadData());
     this.cadData.set(this.cad.data);
+    if (!this.cad.data.info.isLocal) {
+      const {isDataFetched, fetchPromise} = this.inputOptionsManager;
+      if (isDataFetched || fetchPromise) {
+        await fetchPromise;
+        this.inputOptionsManager.fetch(true);
+      }
+    }
   });
   saveCadStart$ = new Subject<void>();
   saveCadEnd$ = new Subject<{data: CadData}>();
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints = signal<CadPoints>([]);
+  cadPointSelectMode = signal<CadPointSelectMode>("none");
   setProject$ = new Subject<void>();
   user = signal<AppUser | null>(null);
   isAdmin = signal<boolean>(false);
@@ -109,7 +123,9 @@ export class AppStatusService {
   zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
-  projectConfig = new ProjectConfig();
+  projectConfig = new ProjectConfig({}, (projectConfig: ProjectConfig) => {
+    setExportCadDataRemoveLengthTextCount(projectConfig.getNumber("CAD保存线长位置的实体数量限制", 200));
+  });
 
   constructor() {
     this.cad.setConfig(this.config.getConfig());
@@ -400,9 +416,6 @@ export class AppStatusService {
     await cad.reset().render();
     if (data) {
       setCadData(data, this.project, collection, this.config.getConfig());
-      if (!environment.production) {
-        showIntersections(data, this.projectConfig);
-      }
       for (const key in replaceMap) {
         this._replaceText(data, key, replaceMap[key]);
       }
@@ -467,6 +480,9 @@ export class AppStatusService {
 
   async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
     await timeout(100); // 等待input事件触发
+    if (this.saveCadLocked$.value) {
+      return null;
+    }
     const {http, message, spinner} = this;
     const collection = this.collection();
 
@@ -486,7 +502,7 @@ export class AppStatusService {
       }
     }
 
-    let resData: CadData | null = null;
+    let resData: CadData | null;
     const result = this.validate(true);
     const blockError = "不能包含块";
     if (result.errors.some((v) => v.content === blockError)) {
@@ -572,6 +588,7 @@ export class AppStatusService {
     } else {
       generateLineTexts2(data);
     }
+    this.emitChangeCadSignal();
   }
 
   getCadPoints(map?: PointsMap | CadEntities, mid?: boolean) {
@@ -595,10 +612,29 @@ export class AppStatusService {
     });
   }
 
-  setCadPoints(map: PointsMap | CadEntities = [], opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}) {
+  setCadPoints(
+    selectMode: CadPointSelectMode | null,
+    map: CadPoints | PointsMap | CadEntities = [],
+    opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}
+  ) {
     const {include, exclude, mid} = opts;
-    const points = this.getCadPoints(map, mid);
+    const isMap = (map2: CadPoints | PointsMap | CadEntities): map2 is PointsMap | CadEntities => {
+      if (map2 instanceof CadEntities) {
+        return true;
+      }
+      if (Array.isArray(map2) && map2.length > 0) {
+        return Object.keys(map2[0]).includes("point");
+      }
+      return false;
+    };
+    const points = isMap(map) ? this.getCadPoints(map, mid) : map;
     this.cadPoints.set(differenceWith(points, exclude || [], (a, b) => a.x === b.x && a.y === b.y).concat(include || []));
+    if (selectMode !== null) {
+      this.cadPointSelectMode.set(selectMode);
+    }
+  }
+  clearCadPoints() {
+    this.setCadPoints("none", []);
   }
 
   addCadPoint(point: CadPoints[0], i?: number) {
@@ -793,7 +829,7 @@ export class AppStatusService {
     }
     const yaoqius = this.cadYaoqiusManager.data();
     let result = yaoqius.find((v) => v.CAD分类 === name);
-    if (isSbjbItemOptionalKeys3(name)) {
+    if (isSbjbItemCadKeys3(name)) {
       const name2 = getSbjbCadName(name);
       if (!result && name2) {
         result = yaoqius.find((v) => v.CAD分类 === name2);
@@ -882,7 +918,11 @@ export class AppStatusService {
   }
 
   inputOptionsManager = new FetchManager(null, async () => {
-    const result = await this.http.getData<HoutaiInputOptions>("shuju/api/getInputNames", {}, {spinner: false});
+    const params: ObjectOf<any> = {};
+    if (!this.cad.data.info.isLocal) {
+      params.cadInfo = {collection: this.collection(), id: this.cad.data.id};
+    }
+    const result = await this.http.getData<HoutaiInputOptions>("shuju/api/getInputNames", params, {spinner: false});
     if (!result || !isTypeOf(result, "object")) {
       return null;
     }
@@ -977,7 +1017,10 @@ export class AppStatusService {
         map.delete(id);
       }
     }
-    this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
+    this.setCadPoints(
+      "none",
+      points.map((v) => ({point: v, lines: [], selected: false}))
+    );
     return highlightedEntities;
   }
 

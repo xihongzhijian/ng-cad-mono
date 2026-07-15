@@ -1,0 +1,14 @@
+.sections {
+  flex-wrap: nowrap;
+  overflow: auto;
+}
+
+.section {
+  flex: 0 0 auto;
+  --item-width: 230px;
+
+  app-input {
+    width: 0;
+    flex: 1 1 0;
+  }
+}

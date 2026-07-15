@@ -5,23 +5,37 @@ import {Calc} from "./calc";
 export class CustomValidators {
   static numberRangeStr: ValidatorFn = (control) => {
     const value = control.value;
-    if (!value) {
+    if (!value || typeof value !== "string") {
       return null;
     }
-    if (!/^\d+(.\d+)?[-~]\d+(.\d+)?$/.test(value)) {
-      return {numberRange: "区间应有且仅有两个数字，且以~或-连接。"};
+    const separators = ["-", "||"];
+    let isValid = false;
+    for (const sep of separators) {
+      let parts = value.split(sep).map((v) => v.trim());
+      const toRemove: number[] = [];
+      if (sep === "-") {
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i] === "" && i < parts.length - 1 && parts[i + 1] !== "") {
+            parts[i + 1] = "-" + parts[i + 1];
+            toRemove.push(i);
+          }
+        }
+      }
+      parts = parts.filter((_, i) => !toRemove.includes(i));
+      let limit = 2;
+      if (sep === "||") {
+        limit = Infinity;
+      }
+      if (parts.length < 2 || parts.length > limit) {
+        continue;
+      }
+      const isAllNumbers = parts.every((part) => part === "" || !isNaN(Number(part)));
+      if (isAllNumbers) {
+        isValid = true;
+        break;
+      }
     }
-    return null;
-  };
-  static stringRangeStr: ValidatorFn = (control) => {
-    const value = control.value;
-    if (!value) {
-      return null;
-    }
-    if (!/^[^-~]+[-~][^-~]+$/.test(value)) {
-      return {stringRange: "区间应有且仅有一个~或-，且该符号不位于开头或结尾。"};
-    }
-    return null;
+    return isValid ? null : {取值范围不符合格式: true};
   };
   static rangedNumber = (rangeStr: string): ValidatorFn => {
     let [min, max] = rangeStr.split("-").map(Number);

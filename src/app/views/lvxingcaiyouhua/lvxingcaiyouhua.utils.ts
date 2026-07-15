@@ -200,21 +200,38 @@ export const calc = (data: InputData) => {
       boms2.push(bom);
       bomsMap.set(key, boms2);
     }
-    const rawLength = 铝型材.biaozhunchangdu;
+    let rawLength = 铝型材.biaozhunchangdu;
+    let rawLengthList = [...铝型材.kexuanchangdu];
+    if (!rawLengthList.includes(rawLength)) {
+      rawLengthList.push(rawLength);
+    }
+    rawLengthList.sort((a, b) => a - b);
+    rawLength = rawLengthList[rawLengthList.length - 1];
+    rawLengthList = rawLengthList.slice(0, rawLengthList.length - 1);
     const totalLength = getTotalLength(rawLength, 铝型材);
     for (const boms of bomsMap.values()) {
       const dpResult = backpackDp(boms, totalLength, Infinity, 铝型材);
       for (const dpItem of dpResult) {
-        const remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
+        let remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
+        let rawLength2 = rawLength;
+        for (const rawLength3 of rawLengthList) {
+          const totalLength3 = getTotalLength(rawLength3, 铝型材);
+          const remainingLength3 = getRemainingLength(totalLength3, dpItem, 铝型材);
+          if (remainingLength3 >= 0) {
+            rawLength2 = rawLength3;
+            remainingLength = remainingLength3;
+            break;
+          }
+        }
         resultItems.push({
           vid: 铝型材.vid,
           铝型材: 铝型材.mingzi,
-          物料长度: rawLength,
+          物料长度: getNum(rawLength2),
           物料颜色: boms[0].型材颜色,
           数量: 1,
           单支型材利用率: 0,
-          排料后剩余长度: remainingLength,
-          总损耗: rawLength - dpItem.value - remainingLength,
+          排料后剩余长度: getNum(remainingLength),
+          总损耗: getNum(rawLength2 - dpItem.value - remainingLength),
           余料可以入库: remainingLength >= 铝型材.yuliaorukuzuixiaochangdu,
           BOM: dpItem.items,
           型材类型: "标准型材"

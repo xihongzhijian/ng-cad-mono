@@ -52,6 +52,7 @@ export interface MrbcjfzInfo {
   不显示内容?: MrbcjfzInfoShowItem[];
   门扇使用限制?: MrbcjfzMsxzItem;
   算料单分组标题附加信息?: string;
+  属于门框门扇?: MrbcjfzMkmsItem;
 }
 
 export const mrbcjfzInfoShowItems = ["颜色", "材料", "厚度", "结果"] as const;
@@ -59,6 +60,9 @@ export type MrbcjfzInfoShowItem = (typeof mrbcjfzInfoShowItems)[number];
 
 export const mrbcjfzMsxzItems = ["无限制", "子母小扇", "子母大扇", "双开铰扇"] as const;
 export type MrbcjfzMsxzItem = (typeof mrbcjfzMsxzItems)[number];
+
+export const mrbcjfzMkmsItems = ["属于门框", "属于门扇"] as const;
+export type MrbcjfzMkmsItem = (typeof mrbcjfzMkmsItems)[number];
 
 export interface MrbcjfzBancaiInputs {
   bancai: InputInfo<MrbcjfzInfo>;

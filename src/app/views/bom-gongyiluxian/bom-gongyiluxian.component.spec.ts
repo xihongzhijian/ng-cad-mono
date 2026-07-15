@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {BomGongyiluxianComponent} from "./bom-gongyiluxian.component";
 
@@ -10,7 +9,7 @@ describe("BomGongyiluxianComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [BomGongyiluxianComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     });
     fixture = TestBed.createComponent(BomGongyiluxianComponent);
     component = fixture.componentInstance;

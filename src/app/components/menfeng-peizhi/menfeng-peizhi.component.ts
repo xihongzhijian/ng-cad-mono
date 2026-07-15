@@ -1,7 +1,7 @@
 import {Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {XhmrmsbjSbjbItem} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -12,7 +12,7 @@ import {getMenfengPeizhiBatchReplaceTableInfo, getMenfengPeizhiTableInfo} from "
 
 @Component({
   selector: "app-menfeng-peizhi",
-  imports: [FloatingDialogModule, MatButtonModule, TableComponent],
+  imports: [FloatingDialogComponent, MatButtonModule, TableComponent],
   templateUrl: "./menfeng-peizhi.component.html",
   styleUrl: "./menfeng-peizhi.component.scss"
 })
@@ -28,16 +28,16 @@ export class MenfengPeizhiComponent {
   xinghaoName = computed(() => this.xinghao()?.raw.mingzi);
 
   items = signal<MenfengpeizhiItem[]>([]);
-  async fetchData() {
+  async fetchData(silent = false) {
     const xinghao = this.xinghaoName();
     const suobianjiaobian = this.sbjbItems();
     if (!xinghao || suobianjiaobian.length < 1) {
       return;
     }
-    const data = await this.http.getData<MenfengpeizhiItem[]>("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
+    const data = await this.http.getData<MenfengpeizhiItem[]>("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian}, {silent});
     this.items.set(data || []);
   }
-  fetchDataEff = effect(() => this.fetchData());
+  fetchDataEff = effect(() => this.fetchData(true));
 
   async submit() {
     if (!(await this.validate())) {

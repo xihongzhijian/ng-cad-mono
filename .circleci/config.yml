@@ -2,7 +2,6 @@ version: 2.1
 orbs:
   node: circleci/node@5
   browser-tools: circleci/browser-tools@1
-  cypress: cypress-io/cypress@3
 commands:
   build:
     steps:
@@ -42,9 +41,6 @@ jobs:
       - build
       - browser-tools/install-chrome
       - browser-tools/install-chromedriver
-      - cypress/run-tests:
-          start-command: yarn start
-          cypress-command: yarn dlx wait-on https://localhost:4200 && yarn cypress:run
   build-app:
     executor: default
     steps:

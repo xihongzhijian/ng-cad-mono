@@ -31,6 +31,10 @@
   margin: 10px;
   border: var(--border);
   background-color: var(--mat-sys-surface);
+  &.生产流程单 {
+    width: 297mm;
+    height: 210mm;
+  }
 
   :not(.out-of-page) {
     font-family: "宋体";
@@ -83,17 +87,12 @@
     }
 
     .cad-size {
-      font: var(--mat-sys-title-large);
-      font-size: 22px;
+      font-size: 20px;
 
       > .highlight {
         border: var(--border);
         padding: 0 10px;
         background-color: var(--mat-sys-outline-variant);
-      }
-
-      .sign {
-        font-size: 25px;
       }
     }
 
@@ -151,43 +150,62 @@
       &:not(:last-child) {
         border-bottom: var(--border);
       }
+    }
 
-      .cell {
+    .cell {
+      display: flex;
+      flex: 1 1 0;
+      height: 100%;
+      border: none;
+      &.border {
+        &:not(:last-child) {
+          border-right: var(--border);
+        }
+        .label {
+          border-right: var(--border);
+        }
+      }
+
+      .label,
+      .value {
+        white-space: pre-wrap;
+        word-break: break-word;
+        padding: 2px;
         display: flex;
+        align-items: center;
+        &.center {
+          justify-content: center;
+        }
+      }
+      .value {
         flex: 1 1 0;
-        height: 100%;
-        &.border {
-          &:not(:last-child) {
-            border-right: var(--border);
-          }
-          .label {
-            border-right: var(--border);
-          }
+      }
+
+      &.alt {
+        .value {
+          font-weight: bold;
+          font-size: 18px;
+        }
+      }
+      &.text-left {
+        .value {
+          justify-content: flex-start;
+        }
+      }
+      &.auto-width {
+        flex: 1 1 auto;
+
+        .label {
+          flex: 0 0 auto;
+        }
+        .value {
+          flex: 1 1 auto;
         }
 
-        .label,
-        .value {
-          word-break: break-word;
-          padding: 3px;
-          display: flex;
-          align-items: center;
-          &.center {
-            justify-content: center;
-          }
-        }
-        .value {
-          flex: 1 1 0;
-        }
-
-        &.alt {
+        &.is-boolean {
+          flex: 0 0 auto;
           .value {
-            font-weight: bold;
-            font-size: 18px;
-          }
-        }
-        &.text-left {
-          .value {
-            justify-content: flex-start;
+            flex: 0 0 29px;
           }
         }
       }
@@ -195,48 +213,57 @@
 
     .示意图 {
       display: flex;
+      flex: 1 1 0;
 
-      > * {
+      .shiyitu-container {
         display: flex;
         flex-direction: column;
 
-        app-image {
-          height: 100%;
-        }
-      }
-      .开启锁向示意图 {
-        align-items: flex-start;
-        padding-left: 5px;
-      }
-      .配合框-group {
-        justify-content: flex-end;
-        padding-bottom: 10px;
-        .配合框 {
+        .shiyitu-inner {
           display: flex;
-          justify-content: flex-end;
-          padding-right: 5px;
 
-          .name {
-            display: flex;
-            align-items: center;
+          app-image {
+            width: auto;
+            height: auto;
+          }
+        }
+
+        &.开启锁向示意图 {
+          flex: 1 1 0;
+          justify-content: flex-end;
+          align-items: flex-start;
+
+          .shiyitu-inner {
+            justify-content: flex-start;
+            align-items: flex-end;
+          }
+        }
+        &.背框示意图 {
+          flex: 1 1 0;
+          justify-content: flex-end;
+          align-items: flex-end;
+
+          .shiyitu-inner {
+            justify-content: flex-end;
+            align-items: flex-end;
           }
         }
       }
     }
   }
-}
-.info-border-left {
-  border-left: var(--border);
-}
-.info-border-right {
-  border-right: var(--border);
-  flex: 0 0 200px;
-}
-.info-border-top {
-  border-top: var(--border);
-}
-.info-border-bottom {
-  border-bottom: var(--border);
+
+  .order-info {
+    display: flex;
+
+    > *:not(:last-child) {
+      border-right: var(--border);
+    }
+
+    .cell {
+      flex: 0 0 auto;
+      height: auto;
+    }
+  }
 }
 
 .配件模块 {
@@ -268,11 +295,12 @@
   background-color: var(--mat-sys-surface);
   box-shadow: var(--mat-sys-level1);
   --label-width: auto;
-  --label-height: 16px;
-  --value-height: 17px;
+  --label-size: 16px;
+  --value-size: 17px;
+  --row-height: 17px;
   &:not(:last-child) {
     margin-bottom: var(--form-space);
-    page-break-after: always;
+    break-after: page;
   }
 
   .form-inner {
@@ -281,6 +309,10 @@
     align-items: center;
     width: 100%;
     height: 100%;
+
+    .title {
+      padding: 0;
+    }
   }
 
   .title {
@@ -288,11 +320,16 @@
     font-size: 23px;
     font-weight: bold;
     padding: 6px;
+    font-family: inherit;
   }
 
   .row {
     display: flex;
     width: 100%;
+
+    &.row-border:not(:last-child) {
+      border-bottom: var(--border);
+    }
   }
 
   .item {
@@ -308,19 +345,19 @@
       box-sizing: border-box;
       height: 100%;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       overflow: hidden;
     }
 
     .label {
       flex: 0 0 var(--label-width);
-      font-size: var(--label-height);
-      line-height: var(--label-height);
+      font-size: var(--label-size);
+      line-height: var(--row-height);
     }
 
     .value {
-      font-size: var(--value-height);
-      line-height: var(--value-height);
+      font-size: var(--value-size);
+      line-height: var(--row-height);
       width: 0;
       flex: 1 1 0;
     }
@@ -346,8 +383,8 @@
 }
 
 .质检标签 {
-  width: 59mm;
-  height: 99mm;
+  width: 60mm;
+  height: 98mm;
   box-sizing: border-box;
   padding: 10px;
   display: flex;
@@ -368,8 +405,9 @@
   height: 12.5cm;
   padding: 0.2cm 0 0.2cm 5cm;
   --label-width: 84px;
-  --label-height: 18px;
-  --value-height: 22px;
+  --label-size: 18px;
+  --value-size: 22px;
+  --row-height: 22px;
 
   .form-inner {
     border: var(--border);
@@ -394,6 +432,18 @@
     }
   }
 }
+:host.fm {
+  .合格证 {
+    padding: 0.2cm;
+    width: 8cm;
+    height: 10cm;
+    --label-width: auto;
+
+    .form-inner {
+      border-right: var(--border);
+    }
+  }
+}
 
 .流程指令卡 {
   width: 122mm;
@@ -403,9 +453,10 @@
   font-weight: bold;
   display: flex;
   flex-direction: column;
-  --label-height: 15px;
-  --value-height: 15px;
   --label-width: 70px;
+  --label-size: 15px;
+  --value-size: 15px;
+  --row-height: 15px;
   --border: 1px solid var(--mat-sys-on-surface);
 
   .title {

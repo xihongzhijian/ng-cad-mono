@@ -1,5 +1,5 @@
-import {Matrix, ObjectOf, Point} from "@lucilor/utils";
-import {getVectorsFromArray, purgeObject} from "../../cad-utils";
+import {Matrix, ObjectOf, Point, purgeObject} from "@lucilor/utils";
+import {getVectorsFromArray} from "../../cad-utils";
 import {CadAxis} from "../cad-types";
 import {CadDimension, CadDimensionEntity} from "./cad-dimension";
 
@@ -43,10 +43,10 @@ export class CadDimensionLinear extends CadDimension {
     }
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const result = {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         axis: this.axis,
         entity1: this.entity1,
         entity2: this.entity2,

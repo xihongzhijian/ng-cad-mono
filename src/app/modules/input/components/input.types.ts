@@ -32,10 +32,10 @@ export interface InputInfoBase<T = any> extends StyledItem {
   inputTextAlign?: Properties["textAlign"];
   hidden?: boolean;
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
-  onChange?: (val: any, info: this) => void;
-  onClick?: (info: this) => void;
-  onFocus?: (info: this) => void;
-  onBlur?: (info: this) => void;
+  onChange?: (val: any, info: this) => MaybePromise<void>;
+  onClick?: (info: this) => MaybePromise<void>;
+  onFocus?: (info: this) => MaybePromise<void>;
+  onBlur?: (info: this) => MaybePromise<void>;
   info?: ObjectOf<any>;
 }
 
@@ -43,12 +43,13 @@ export interface InputInfoString<T = any> extends InputInfoBase<T> {
   type: "string";
   value?: Value<string>;
   textarea?: {autosize?: {minRows?: number; maxRows?: number}};
-  onInput?: (val: string, info: this) => void;
-  onChange?: (val: string, info: this) => void;
+  onInput?: (val: string, info: this) => MaybePromise<void>;
+  onChange?: (val: string, info: this) => MaybePromise<void>;
   options?: Value<InputInfoOptions<string>>;
   selectOnly?: boolean;
   optionValueType?: "string" | "array";
   fixedOptions?: string[];
+  noSortOptions?: boolean;
   optionRequired?: boolean;
   optionsDisplayLimit?: number;
   optionMultiple?: boolean;
@@ -64,8 +65,8 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   min?: number;
   max?: number;
   ndigits?: number;
-  onInput?: (val: number, info: this) => void;
-  onChange?: (val: number, info: this) => void;
+  onInput?: (val: number, info: this) => MaybePromise<void>;
+  onChange?: (val: number, info: this) => MaybePromise<void>;
 }
 
 export type KeyValidatorFn = (control: AbstractControl, objValue: string) => ValidationErrors | null;
@@ -79,23 +80,26 @@ export interface InputInfoObject<T = any, K = string, R = any> extends InputInfo
   optionMultiple?: boolean;
   optionSeparator?: OptionSeparator;
   keyLabel?: string | ((key: K, value: R, info: this) => string);
+  keyHint?: string | ((key: K, value: R, info: this) => string);
   valueLabel?: string | ((key: K, value: R, info: this) => string);
+  valueHint?: string | ((key: K, value: R, info: this) => string);
   keyValidators?: KeyValidatorFn | KeyValidatorFn[] | null;
   valueValidators?: ValueValidatorFn | ValueValidatorFn[] | null;
   keysReadonly?: boolean;
   parseString?: boolean;
   requiredKeys?: string[];
   optionType?: "选项" | "模块选项";
-  onChange?: (val: ObjectOf<R>, info: this) => void;
+  onChange?: (val: ObjectOf<R>, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoArray<T = any, R = any> extends InputInfoBase<T> {
   type: "array";
   value?: Value<R[]>;
   valueLabel?: string | ((i: number, value: R, info: this) => string);
+  valueHint?: string | ((i: number, value: R, info: this) => string);
   valueValidators?: AbstractControlOptions["validators"];
   sortable?: boolean;
-  onChange?: (val: R[], info: this) => void;
+  onChange?: (val: R[], info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
@@ -104,7 +108,7 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   allowEmpty?: boolean;
   appearance?: "select" | "radio" | "checkbox" | "switch";
   indeterminate?: boolean;
-  onChange?: (val: boolean, info: this) => void;
+  onChange?: (val: boolean, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> {
@@ -119,13 +123,13 @@ export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelect
   value?: Value<K>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
-  onChange?: (val: K, info: this) => void;
+  onChange?: (val: K, info: this) => MaybePromise<void>;
 }
 export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<K[]>;
   optionText?: string | ((val: string[]) => string);
   multiple: true;
-  onChange?: (val: K[], info: this) => void;
+  onChange?: (val: K[], info: this) => MaybePromise<void>;
 }
 export type InputInfoSelect<T = any, K = any> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
 
@@ -135,7 +139,7 @@ export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
   compact?: boolean;
   labelX?: string;
   labelY?: string;
-  onChange?: (val: {anchor: [number, number]}, info: this) => void;
+  onChange?: (val: {anchor: [number, number]}, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoColor<T = any> extends InputInfoBase<T> {
@@ -143,7 +147,7 @@ export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   value?: Value<ColorInstance>;
   options?: ColorInstance[];
   optionsOnly?: boolean;
-  onChange?: (val: ColorInstance, info: this) => void;
+  onChange?: (val: ColorInstance, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoFile<T = any> extends InputInfoBase<T> {
@@ -151,7 +155,7 @@ export interface InputInfoFile<T = any> extends InputInfoBase<T> {
   accept?: string;
   multiple?: boolean;
   model?: never;
-  onChange?: (val: FileList | null, info: this) => void;
+  onChange?: (val: FileList | null, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoImage<T = any> extends InputInfoBase<T> {
@@ -161,19 +165,19 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   bigPicSrc?: string;
   prefix?: string;
   model?: never;
-  onChange?: (val: File | null, info: this) => void;
+  onChange?: (val: File | null, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   type: "formulas";
   value?: Value<Formulas>;
   params?: Value<Omit<EditFormulasInput, "formulas">>;
-  onChange?: (val: Formulas, info: this) => void;
+  onChange?: (val: Formulas, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoButtonInfo extends StyledItem {
   name: string;
-  onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
+  onClick?: (info: InputInfo) => MaybePromise<{isValueChanged?: boolean} | void | null>;
   isDefault?: boolean;
 }
 export interface InputInfoTextInfo extends StyledItem {
@@ -207,7 +211,7 @@ export type InputInfo<T = any> =
   | InputInfoColor<T>
   | InputInfoFile<T>
   | InputInfoImage<T>
-  | InputInfoFormulas<T>
+  // | InputInfoFormulas<T>
   | InputInfoButton<T>
   | InputInfoList<T>
   | InputInfoGroup<T>;

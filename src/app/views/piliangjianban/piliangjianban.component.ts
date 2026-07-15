@@ -8,11 +8,11 @@ import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {cloneDeep, difference, union} from "lodash";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 
 export interface Bancai {
   data: {
@@ -128,7 +128,8 @@ export class PiliangjianbanComponent implements OnInit {
         fontStyle: {family: "宋体"}
       };
       const collection = this.status.collection();
-      const getImg = async (data: CadData) => await getCadPreview(collection, data, {fixedLengthTextSize, config});
+      const getImg = async (data: CadData) =>
+        await getCadPreview(collection, data, {fixedLengthTextSize, clearLengthTextOffset: true, config});
       await Promise.all(dataAll.map(async (v) => (v.img = await getImg(v.cad))));
       this.spinner.hide(this.spinner.defaultLoaderId);
       this.bancais.update((v) => [...v]);

@@ -20,7 +20,8 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point, selectFiles} from "@lucilor/utils";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -47,7 +48,8 @@ type ContextMenuCadField = "main" | "component";
   styleUrls: ["./sub-cads.component.scss"],
   imports: [
     CadItemComponent,
-    ContextMenuModule,
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
     forwardRef(() => CadImageComponent),
     MatButtonModule,
     MatCheckboxModule,
@@ -390,12 +392,10 @@ export class SubCadsComponent implements OnInit, OnDestroy {
           components.push(cad);
         }
       }
-      let timerContent = "";
       data.updateComponents();
-      timerContent = "编辑装配CAD";
       const resData = this.status.closeCad();
       await this.status.openCad({data: resData});
-      timer.end(timerName, timerContent);
+      timer.end(timerName, "编辑装配CAD");
     }
   }
 
@@ -426,12 +426,12 @@ export class SubCadsComponent implements OnInit, OnDestroy {
         }
         data.entities.merge(resData.entities);
         data.blocks = resData.blocks;
-        await this.status.openCad();
+        await this.status.openCad({data});
       }
     } else {
       const success = await uploadAndReplaceCad(file, data, !!mainCad, this.message, this.http);
       if (success) {
-        await this.status.openCad();
+        await this.status.openCad({data});
       }
     }
   }

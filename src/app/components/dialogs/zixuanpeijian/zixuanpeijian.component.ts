@@ -37,13 +37,19 @@ import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {convertOptions} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {openExportPage} from "@views/export/export.utils";
@@ -51,11 +57,6 @@ import {ImportCache} from "@views/import/import.types";
 import {openImportPage} from "@views/import/import.utils";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
-import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
-import {ImageComponent} from "../../../modules/image/components/image/image.component";
-import {InputComponent} from "../../../modules/input/components/input.component";
-import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {openKlcsDialog} from "../klcs-dialog/klcs-dialog.component";
@@ -98,7 +99,8 @@ import {
     CdkDragHandle,
     CdkDropList,
     ClickStopPropagationDirective,
-    ContextMenuModule,
+    ContextMenuComponent,
+    ContextMenuTriggerDirective,
     ImageComponent,
     InputComponent,
     KeyValuePipe,
@@ -611,8 +613,8 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   private async _onStep({value, refresh, noCache, preserveImgs}: ReturnType<ZixuanpeijianComponent["step"]>) {
-    let isRefreshed = false;
     if (value === 1) {
+      let isRefreshed = false;
       if (refresh || !this._step1Fetched) {
         await this.step1Fetch();
         isRefreshed = true;
@@ -624,14 +626,12 @@ export class ZixuanpeijianComponent implements OnInit {
     } else if (value === 2) {
       if (refresh || !this._step2Fetched) {
         await this.step2Fetch();
-        isRefreshed = true;
       }
     } else if (value === 3) {
       const scrollTop = this.lingsanLeftScrollbar()?.nativeElement.scrollTop;
       const lingsanCadTypePrev = this.lingsanCadType;
       if (refresh || !this._step3Fetched) {
         await this.step3Fetch(false, noCache, preserveImgs);
-        isRefreshed = true;
       }
       await timeout(500);
       if (lingsanCadTypePrev === this.lingsanCadType) {

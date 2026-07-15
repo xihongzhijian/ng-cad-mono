@@ -6,7 +6,7 @@ import {Directive, ElementRef, HostListener, inject} from "@angular/core";
 export class ClickedClsDirective {
   private el = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @HostListener("click", ["$event"])
+  @HostListener("click")
   public onHostClick() {
     const el = this.el.nativeElement;
     el.classList.add("clicked");

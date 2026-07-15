@@ -25,7 +25,7 @@ import {CadStylizer} from "./cad-stylizer";
 import {getVectorFromArray, toFixedTrim} from "./cad-utils";
 import {CadEventCallBack, CadEvents, controls} from "./cad-viewer-controls";
 import {CadViewerConfig, CadViewerFont, getDefalutCadViewerConfig} from "./cad-viewer.types";
-import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawText} from "./draw";
+import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawSpline, drawText} from "./draw";
 
 const getConfigProxy = (config: Partial<CadViewerConfig> = {}) => {
   const defalutConfig = getDefalutCadViewerConfig();
@@ -70,7 +70,8 @@ export class CadViewer extends EventEmitter {
   data: CadData;
   dom: HTMLDivElement;
   draw: Svg;
-  entitiesCopied?: CadEntities;
+  entitiesToPaste?: CadEntities;
+  pointerPosition?: Point;
   entitiesClickLock = false;
   private _config: CadViewerConfig;
   private _fonts: CadViewerFont[] = [];
@@ -241,7 +242,11 @@ export class CadViewer extends EventEmitter {
       this.emit("zoom");
       return this;
     } else {
-      return this.draw.zoom();
+      try {
+        return this.draw.zoom();
+      } catch {
+        return 0;
+      }
     }
   }
 
@@ -332,17 +337,24 @@ export class CadViewer extends EventEmitter {
       entity.el = el;
       let startX = 0;
       let startY = 0;
+      let lastClickTime = 0;
+      let lastClickTimeoutId = 0;
       el.node.onclick = (event) => {
         if (new Point(startX, startY).distanceTo(new Point(event.clientX, event.clientY)) > 1) {
           return;
         }
-        controls.onEntityClick.call(this, event, entity);
-      };
-      el.node.ondblclick = (event) => {
-        if (new Point(startX, startY).distanceTo(new Point(event.clientX, event.clientY)) > 1) {
-          return;
+        const singleClickDelay = this.getConfig("singleClickDelay");
+        const now = Date.now();
+        const delay = now - lastClickTime;
+        lastClickTime = now;
+        if (delay < singleClickDelay) {
+          window.clearTimeout(lastClickTimeoutId);
+          controls.onEntityDoubleClick.call(this, event, entity);
+        } else {
+          lastClickTimeoutId = window.setTimeout(() => {
+            controls.onEntityClick.call(this, event, entity);
+          }, singleClickDelay);
         }
-        controls.onEntityDoubleClick.call(this, event, entity);
       };
       el.node.onpointerdown = (event) => {
         startX = event.clientX;
@@ -517,10 +529,6 @@ export class CadViewer extends EventEmitter {
         }
         const middle = parent.middle;
         if (foundOffset) {
-          if (Math.abs(foundOffset.x) >= 60 || Math.abs(foundOffset.y) >= 60) {
-            foundOffset.set(0, 0);
-            entity.info.offset = foundOffset.toArray();
-          }
           entity.insert.copy(foundOffset.add(middle));
         }
 
@@ -560,9 +568,9 @@ export class CadViewer extends EventEmitter {
           }
         }
       }
-      drawResult = drawText(el, entity.text, insert, anchor, fontStyle);
+      drawResult = drawText(el, entity.text, insert, anchor, entity.transformMatrix, fontStyle);
     } else if (entity instanceof CadSpline) {
-      // TODO
+      drawResult = await drawSpline(el, entity, lineStyle);
     } else if (entity instanceof CadLeader) {
       const start = entity.vertices[0];
       const end = entity.vertices[1];

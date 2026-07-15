@@ -7,7 +7,9 @@ import {MatIconModule} from "@angular/material/icon";
 import {filePathUrl, getFilepathUrl} from "@app/app.common";
 import {getCopyName} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {FloatingDialogBodyDirective} from "@modules/floating-dialog/directives/floating-dialog-body.directive";
+import {FloatingDialogTitleDirective} from "@modules/floating-dialog/directives/floating-dialog-title.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -24,7 +26,17 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
 
 @Component({
   selector: "app-lrsj-zuofas",
-  imports: [FloatingDialogModule, ImageComponent, LrsjZuofaComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
+  imports: [
+    FloatingDialogBodyDirective,
+    FloatingDialogComponent,
+    FloatingDialogTitleDirective,
+    ImageComponent,
+    LrsjZuofaComponent,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    NgScrollbarModule
+  ],
   templateUrl: "./lrsj-zuofas.component.html",
   styleUrl: "./lrsj-zuofas.component.scss"
 })
@@ -98,7 +110,9 @@ export class LrsjZuofasComponent extends LrsjPiece {
     }
     const 型号 = xinghao.名字;
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字: zuofa.名字, 型号, 产品分类: fenleiName});
-    await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
+    if (xinghaoRaw) {
+      await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw.产品分类);
+    }
   }
   async copyZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const xinghao = this.xinghao();
@@ -217,7 +231,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
     const scrollbar = this.scrollbar();
     let el: Element | null;
     if (typeof j === "number") {
-      el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
+      el = scrollbar.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
       const xinghao = this.xinghao();
       if (xinghao) {
         const fenleiName = xinghao.显示产品分类[i];
@@ -225,7 +239,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
         this.openZuofa(fenleiName, zuofa);
       }
     } else {
-      el = scrollbar.viewport.nativeElement.querySelector(`[data-i="${i}"]`);
+      el = scrollbar.nativeElement.querySelector(`[data-i="${i}"]`);
     }
     if (el) {
       scrollbar.scrollToElement(el);

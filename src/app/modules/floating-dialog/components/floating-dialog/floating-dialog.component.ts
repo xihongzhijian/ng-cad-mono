@@ -21,7 +21,8 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {ObjectOf} from "@lucilor/utils";
-import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
+import {ContextMenuComponent} from "@modules/context-menu/components/context-menu/context-menu.component";
+import {ContextMenuTriggerDirective} from "@modules/context-menu/directives/context-menu-trigger.directive";
 import {Properties} from "csstype";
 import {uniqueId} from "lodash";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
@@ -29,7 +30,7 @@ import {ResizeHandle} from "./floating-dialog.types";
 
 @Component({
   selector: "app-floating-dialog",
-  imports: [CdkDrag, CdkDragHandle, ContextMenuModule, MatButtonModule, MatIconModule, MatMenuModule],
+  imports: [CdkDrag, CdkDragHandle, ContextMenuComponent, ContextMenuTriggerDirective, MatButtonModule, MatIconModule, MatMenuModule],
   templateUrl: "./floating-dialog.component.html",
   styleUrl: "./floating-dialog.component.scss"
 })
@@ -128,8 +129,8 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.manager.dialogs.update((dialogs) => dialogs.filter((dialog) => dialog !== this));
     window.removeEventListener("resize", this.onWindowResize.bind(this));
-    const el = this.el.nativeElement;
-    this._parentEl()?.appendChild(el);
+    // const el = this.el.nativeElement;
+    // this._parentEl()?.appendChild(el);
   }
   private _windowResizeNum = signal(0);
   onWindowResize() {
@@ -150,7 +151,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
       this._windowResizeNum();
       let maximizedMargin = this.maximizedMargin();
       if (maximizedMargin === "default") {
-        maximizedMargin = 50;
+        maximizedMargin = 10;
       }
       const margin = getTrbl(maximizedMargin);
       style.left = "50%";

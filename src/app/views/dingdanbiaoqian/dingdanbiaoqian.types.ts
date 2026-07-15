@@ -6,8 +6,7 @@ import {Properties} from "csstype";
 
 export interface Order {
   code: string;
-  开启锁向示意图?: {data: CadData; img: string; style: Properties};
-  配合框?: {data: CadData; img: string; style: Properties}[];
+  shiyitus?: ShiyituInfo[];
   materialResult?: Formulas;
   cads: {
     houtaiId: string;
@@ -19,7 +18,17 @@ export interface Order {
     imgSize: [number, number];
     style: Properties;
     imgStyle: Properties;
-    zhankai?: {width: string; height: string; num?: string}[];
+    zhankai?: {
+      width: string;
+      height: string;
+      num?: string;
+    }[];
+    zhankaiDisplayInfos?: {
+      kuan: boolean;
+      sign: boolean;
+      gao: boolean;
+      num: boolean;
+    }[];
   }[];
   positions: number[][];
   style: Properties;
@@ -36,8 +45,22 @@ export interface SectionCell {
   key: string;
   label?: string;
   isBoolean?: boolean;
+  autoWidth?: boolean;
   class?: string | string[];
   style?: Properties;
+  labelStyle?: Properties;
+  valueStyle?: Properties;
+}
+
+export interface ShiyituInfo {
+  name: string;
+  cads: ShiyituCadInfo[];
+}
+export interface ShiyituCadInfo {
+  data: CadData;
+  img: string;
+  imgLarge?: string;
+  style: Properties;
 }
 
 export interface SectionConfig {
@@ -50,15 +73,27 @@ export type DdbqData = {
   code: string;
   materialResult?: Formulas;
   cads?: ObjectOf<any>[];
-  开启锁向示意图?: ObjectOf<any>;
-  配合框?: ObjectOf<any>[];
+  shiyitus?: {name: string; cads: CadData[]}[];
   forms?: Form[];
+  formsStyle?: Properties;
 }[];
 
 export interface Form {
-  title?: string;
+  title?:
+    | string
+    | {
+        content?: string;
+        style?: Properties;
+      };
+  isTitleInner?: boolean;
   barCode?: string;
-  rows: FormItem[][];
+  style?: Properties;
+  rowBorder?: boolean;
+  footer?: {
+    content?: string;
+    style?: Properties;
+  };
+  rows: ({items: FormItem[]; style?: Properties} | FormItem[])[];
 }
 
 export interface FormItem {

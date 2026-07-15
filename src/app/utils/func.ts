@@ -6,7 +6,7 @@ export const toFixed = (num: string | number, fractionDigits: number) => {
   const times = Math.pow(10, fractionDigits);
   const roundNum = Math.round(num * times) / times;
 
-  let result = "";
+  let result: string;
 
   if (fractionDigits < 0) {
     result = roundNum.toFixed(0);

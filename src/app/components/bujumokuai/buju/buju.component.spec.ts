@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {BujuComponent} from "./buju.component";
 
@@ -10,7 +9,7 @@ describe("BujuComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BujuComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BujuComponent);

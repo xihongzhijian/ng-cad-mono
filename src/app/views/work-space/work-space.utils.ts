@@ -1,4 +1,4 @@
-import {computed, signal} from "@angular/core";
+import {computed, effect, signal, untracked} from "@angular/core";
 import {getSortedItems} from "@app/utils/sort-items";
 import {InputInfo} from "@modules/input/components/input.types";
 import {cloneDeep} from "lodash";
@@ -14,16 +14,16 @@ export class WorkSpaceManager {
   favorites = signal<WorkSpaceFavoriteItem[]>([]);
   favoritesSorted = computed(() => getSortedItems(this.favorites(), (v) => v.order ?? 0));
 
-  typesRaw = signal<WorkSpaceFavoriteType[]>([]);
-  types = computed(() => {
-    const types = this.typesRaw().slice();
+  types = signal<WorkSpaceFavoriteType[]>([]);
+  typesEff = effect(() => {
+    const types = untracked(() => this.types().slice());
     const favorites = this.favorites();
     for (const favorite of favorites) {
       if (!types.some((v) => v.name === favorite.type)) {
         types.push({name: favorite.type});
       }
     }
-    return types;
+    this.types.set(types);
   });
   typesSorted = computed(() => getSortedItems(this.types(), (v) => v.order ?? 0));
 
@@ -54,6 +54,7 @@ export class WorkSpaceManager {
       data = {};
     }
     this.user.set(data.user ?? -1);
+    this.types.set(Array.isArray(data.types) ? data.types : []);
     const favorites = Array.isArray(data.favorites) ? data.favorites : [];
     for (const favorite of favorites) {
       if (!favorite.type) {

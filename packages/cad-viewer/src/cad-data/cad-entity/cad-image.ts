@@ -1,7 +1,7 @@
-import {exportObject, Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {exportObject, Matrix, MatrixLike, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {isEqual} from "lodash";
-import {getVectorFromArray, purgeObject} from "../../cad-utils";
+import {getVectorFromArray} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -46,10 +46,10 @@ export class CadImage extends CadEntity {
     }
   }
 
-  export(): ObjectOf<any> {
+  export() {
     return {
       ...super.export(),
-      ...purgeObject({
+      ...purgeObject<ObjectOf<any>>({
         url: this.url,
         position: this.position.toArray(),
         anchor: this.anchor.toArray(),

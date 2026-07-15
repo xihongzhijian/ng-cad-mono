@@ -1,5 +1,5 @@
 @if (toolbarVisible()) {
-  <div class="toolbar toolbar" [@toolbarEnter] [@toolbarLeave]>
+  <div class="toolbar toolbar" (animate.enter)="onToolbarEnter($event)" (animate.leave)="onToolbarLeave($event)">
     @if (showDxfInput()) {
       <button mat-flat-button (click)="uploadDxf('dxf')">上传dxf</button>
       <button mat-flat-button (click)="uploadDxf('json')">上传json</button>
@@ -16,7 +16,7 @@
       }
     }
     @if (mode() !== "edit") {
-      <button mat-flat-button (click)="downloadDxf(true)" [disabled]="!downloadUrl">下载原始dxf</button>
+      <button mat-flat-button (click)="downloadDxf(true)" [disabled]="!downloadUrl()">下载原始dxf</button>
       <button mat-flat-button (click)="print()">打印</button>
       <button mat-flat-button (click)="openCadMuban()">打开cad模板</button>
       <button mat-flat-button (click)="saveAsImage()">保存成图片</button>
@@ -32,7 +32,7 @@
     <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_less</mat-icon></button>
   </div>
 } @else {
-  <div class="toolbar-toggle" [@toolbarToggleEnter] [@toolbarToggleLeave]>
+  <div class="toolbar-toggle" (animate.enter)="onToolbarToggleEnter($event)" (animate.leave)="onToolbarToggleLeave($event)">
     <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_more</mat-icon></button>
   </div>
 }

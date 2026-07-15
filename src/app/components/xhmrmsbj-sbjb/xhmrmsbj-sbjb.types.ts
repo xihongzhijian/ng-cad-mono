@@ -24,6 +24,8 @@ export interface XhmrmsbjSbjbItemSbjb {
   插销边?: XhmrmsbjSbjbItemSbjbItem;
   小扇铰边?: XhmrmsbjSbjbItemSbjbItem;
   小扇插销边?: XhmrmsbjSbjbItemSbjbItem;
+  中锁边?: XhmrmsbjSbjbItemSbjbItem;
+  中铰边?: XhmrmsbjSbjbItemSbjbItem;
   锁框?: string;
   铰框?: string;
   顶框?: string;
@@ -55,22 +57,20 @@ export interface XhmrmsbjSbjbItemSbjbCadInfo {
   index: number;
 }
 
-export const sbjbItemOptionalKeys1 = ["锁框", "铰框", "顶框"] as const;
-export type SbjbItemOptionalKey1 = (typeof sbjbItemOptionalKeys1)[number];
-export const sbjbItemOptionalKeys2 = ["锁边", "铰边", "插销边", "小扇插销边", "小扇铰边"] as const;
-export type SbjbItemOptionalKey2 = (typeof sbjbItemOptionalKeys2)[number];
-export const sbjbItemOptionalKeys3 = [...sbjbItemOptionalKeys1, ...sbjbItemOptionalKeys2] as const;
-export type SbjbItemOptionalKey3 = SbjbItemOptionalKey1 | SbjbItemOptionalKey2;
-export const sbjbItemOptionalKeys4 = ["锁框", "铰框", "顶框", "锁边", "铰边", "插销边", "中锁边", "中铰边"] as const;
-export type SbjbItemOptionalKey4 = (typeof sbjbItemOptionalKeys4)[number];
+export const sbjbItemCadKeys1 = ["锁框", "铰框", "顶框"] as const;
+export type SbjbItemCadKey1 = (typeof sbjbItemCadKeys1)[number];
+export const sbjbItemCadKeys2 = ["锁边", "铰边", "插销边", "小扇插销边", "小扇铰边", "中锁边", "中铰边"] as const;
+export type SbjbItemCadKey2 = (typeof sbjbItemCadKeys2)[number];
+export const sbjbItemCadKeys3 = [...sbjbItemCadKeys1, ...sbjbItemCadKeys2] as const;
+export type SbjbItemCadKey3 = SbjbItemCadKey1 | SbjbItemCadKey2;
 
-export const sbjbItemOptionalKeys2Map = new Map<SbjbItemOptionalKey2, SbjbItemOptionalKey2>([["小扇铰边", "铰边"]]);
+export const sbjbItemCadKeys2Map = new Map<SbjbItemCadKey2, SbjbItemCadKey2>([["小扇铰边", "铰边"]]);
 
 export const isSbjbCollection = (collection: CadCollection): collection is "peijianCad" => {
   return collection === "peijianCad";
 };
-export const isSbjbType = (type: string): type is SbjbItemOptionalKey4 => {
-  return sbjbItemOptionalKeys4.includes(type as SbjbItemOptionalKey4);
+export const isSbjbType = (type: string): type is SbjbItemCadKey3 => {
+  return sbjbItemCadKeys3.includes(type as SbjbItemCadKey3);
 };
 export const isSbjbCad = (collection: CadCollection, cad: CadData): collection is "peijianCad" => {
   return isSbjbCollection(collection) && isSbjbType(cad.type);
@@ -92,7 +92,7 @@ export interface SbjbItemSbjbItemForm {
   title: string;
   inputInfos: InputInfo<XhmrmsbjSbjbItemSbjbItem>[];
   item: XhmrmsbjSbjbItemSbjb;
-  name: SbjbItemOptionalKey2;
+  name: SbjbItemCadKey2;
   item2?: XhmrmsbjSbjbItemSbjbItem;
   item2New: XhmrmsbjSbjbItemSbjbItem;
   qiliaoPrev?: Qiliao | null;
@@ -103,7 +103,7 @@ export interface SbjbItemSbjbItemForm {
 }
 
 export interface FentiCadTemplateData {
-  key: SbjbItemOptionalKey2;
+  key: SbjbItemCadKey2;
   qiliao?: Qiliao;
   form?: SbjbItemSbjbItemForm;
   vertical?: boolean;

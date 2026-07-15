@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostListener,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  untracked
-} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, HostListener, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -21,20 +9,25 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
+import {toFixed} from "@app/utils/func";
 import {CustomValidators} from "@app/utils/input-validators";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
+  CadArc,
   CadEntities,
   CadEventCallBack,
   CadLine,
   CadLineLike,
   cadLineOptions,
+  CadMtext,
   Defaults,
+  findAdjacentLines,
+  generatePointsMap,
   lineweight2linewidth,
   linewidth2lineweight,
   PointsMap
 } from "@lucilor/cad-viewer";
-import {Point} from "@lucilor/utils";
+import {Angle, Line, Point} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {
   InputInfo,
@@ -55,7 +48,13 @@ import {debounce} from "lodash";
 import {ColorCircleModule} from "ngx-color/circle";
 import {convertToCadFentiLine, getCadFentiInfo} from "../cad-fenti-config/cad-fenti-config.utils";
 import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
-import {parseLineNames, stringifyLineNames} from "./cad-line.utils";
+import {
+  addCadEntityAngularDimension,
+  getCadEntityAngularDimension,
+  isCadEntityHasAngularDimension,
+  parseLineNames,
+  stringifyLineNames
+} from "./cad-line.utils";
 
 @Component({
   selector: "app-cad-line",
@@ -65,7 +64,7 @@ import {parseLineNames, stringifyLineNames} from "./cad-line.utils";
     CadLayerInputComponent,
     ColorCircleModule,
     FormsModule,
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
@@ -119,7 +118,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         delete e.info.prevSelectable;
       });
       this.lineDrawing = null;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
     }
   );
 
@@ -132,7 +131,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       this._updateCadPoints();
     },
     () => {
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
       this.linesMoving = null;
     }
   );
@@ -148,31 +147,26 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     (cadStatus) => {
       const cad = this.status.cad;
       const {linesCutting} = this;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
       this.linesCutting = null;
       if (cadStatus.confirmed && linesCutting) {
         const lines = linesCutting.lines;
         linesCutting.points.forEach((point) => {
-          let index = -1;
           let split1: CadLine | undefined;
           let split2: CadLine | undefined;
-          lines.forEach((line, i) => {
+          lines.forEach((line) => {
             if (line.curve.contains(point)) {
-              split1 = new CadLine(line.export(), true);
+              split1 = line.clone(true);
               split2 = new CadLine();
               split2.setColor(line.getColor());
               split2.zhankaixiaoshuchuli = line.zhankaixiaoshuchuli;
               split1.end.copy(point);
               split2.start.copy(point);
               split2.end.copy(line.end);
-              index = i;
               cad.data.entities.add(split1, split2);
               cad.remove(line);
             }
           });
-          if (index > -1 && split1 && split2) {
-            lines.splice(index, 1, split1, split2);
-          }
         });
       }
     }
@@ -398,22 +392,22 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       const info = getCadFentiInfo(cad.data);
       const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusDrawLine);
       if (cadStatus?.isFenti) {
-        this.status.setCadPoints(info.fentiEntities, {mid: true});
+        this.status.setCadPoints("multiple", info.fentiEntities, {mid: true});
       } else {
-        this.status.setCadPoints(info.rawEntities, {mid: true});
+        this.status.setCadPoints("multiple", info.rawEntities, {mid: true});
       }
       this.lineDrawing = {};
     } else if (linesMoving) {
       if (linesMoving.start) {
         const {x, y} = cad.getScreenPoint(linesMoving.start.x, linesMoving.start.y);
-        this.status.setCadPoints(cad.data.getAllEntities(), {exclude: [{x, y}]});
+        this.status.setCadPoints("single", cad.data.getAllEntities(), {exclude: [{x, y}]});
       } else {
         if (selected.length < 1) {
           this.message.alert("没有选中线");
           this.moveLines();
           this.linesMoving = null;
         } else {
-          this.status.setCadPoints(new CadEntities().fromArray(selected));
+          this.status.setCadPoints("single", new CadEntities().fromArray(selected));
         }
       }
     } else if (linesCutting) {
@@ -435,14 +429,15 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
         if (points.length) {
-          this.status.cadPoints.set(points);
+          this.status.setCadPoints("single", points);
           this.linesCutting = {lines: [selected0], points: []};
         } else {
           this.message.alert("无法截这条线(相交的线不足)");
+          this.cutLine();
         }
       }
     } else if (WHDashedLines) {
-      this.status.setCadPoints(WHDashedLines.map);
+      this.status.setCadPoints("single", WHDashedLines.map);
     }
   };
 
@@ -457,7 +452,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
             lineDrawing.oldEntity.opacity = 1;
           }
           this.lineDrawing = null;
-          this.status.cadPoints.update((v) => v.map((v2) => ({...v2, active: false})));
+          const poins = this.status.cadPoints().map((v) => ({...v, active: false}));
+          this.status.setCadPoints(null, poins);
         }
       }
     }
@@ -472,7 +468,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isZero) {
       value = undefined;
     } else {
-      const values = new Set(lines.map((v) => Number(v.length.toFixed(2))));
+      const ndigits = this.status.cadNumberDigits();
+      const values = new Set(lines.map((v) => Number(v.length.toFixed(ndigits))));
       if (values.size === 1) {
         value = values.values().next().value;
       } else {
@@ -634,13 +631,16 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     const lengthInfo = this.getLineLengthInfo();
     const selected = this.selected();
     const disabled = selected.length < 1;
+    const ndigits = this.status.cadNumberDigits();
     const infos: InputInfo[] = [
       {
         type: "number",
         label: "长度",
         value: lengthInfo.value,
         hint: lengthInfo.isMultiple ? "多个值" : "",
+        step: 10 ** -ndigits,
         disabled,
+        readonly: selected.some((v) => !(v instanceof CadLine)),
         onChange: (val) => {
           this.setLineLength(val);
         }
@@ -745,6 +745,13 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "array",
         label: "",
         valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+        valueHint: (_, value) => {
+          const bancaihoudufangxiang = data.bancaihoudufangxiang;
+          if (value === "起始线" && bancaihoudufangxiang && bancaihoudufangxiang !== "none") {
+            return "修改起始线后请确认板材厚度方向是否正确";
+          }
+          return "";
+        },
         disabled: isMultiple || isZero,
         hint: isMultiple ? "选中多根线时无法编辑" : "",
         sortable: true,
@@ -920,11 +927,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       return false;
     }
     const line = selected[0];
-    if (line instanceof CadLineLike) {
-      const {deltaX, deltaY} = line;
-      return deltaX !== 0 && deltaY !== 0;
-    }
-    return false;
+    return line instanceof CadLine && line.isOblique();
   }
 
   toggleWHDashedLines() {
@@ -972,7 +975,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       map[1].lines = [lines[0], lines[3]];
     }
     this.WHDashedLines = {line, map};
-    this.status.setCadPoints(map);
+    this.status.setCadPoints("single", map);
     const whLinesBefore = line.children.line.filter((l) => l.宽高虚线);
     whLinesBefore.forEach((l) => l.remove());
     line.removeChild(...whLinesBefore);
@@ -986,7 +989,106 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         v.lines.forEach((line) => line.remove());
       });
       this.WHDashedLines = null;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
+    }
+  }
+
+  canAddAngularDimension = computed(() => {
+    const selected = this.selected();
+    const lines = selected.filter((v) => v instanceof CadLine && v.isOblique());
+    return lines.some((v) => !isCadEntityHasAngularDimension(v));
+  });
+  canRemoveAngularDimension = computed(() => {
+    const selected = this.selected();
+    const lines = selected.filter((v) => v instanceof CadLine && v.isOblique());
+    return lines.some((v) => isCadEntityHasAngularDimension(v));
+  });
+  async addAngularDimension() {
+    const lines = this.selected();
+    const pointsMap = generatePointsMap(this.data().entities);
+    const toRemove = new CadEntities();
+    const toRender = new CadEntities();
+    for (const line of lines) {
+      if (!(line instanceof CadLine && line.isOblique())) {
+        continue;
+      }
+      const adjLines = findAdjacentLines(pointsMap, line);
+      if (adjLines.length < 1) {
+        continue;
+      }
+      toRemove.merge(getCadEntityAngularDimension(line));
+      toRender.add(line);
+      for (const adjLine of adjLines) {
+        if (!(adjLine instanceof CadLine)) {
+          continue;
+        }
+        const p1 = line.start;
+        const p2 = line.end;
+        const p3 = adjLine.start;
+        const p4 = adjLine.end;
+        let pts: [Point, Point, Point];
+        if (p1.equals(p3)) {
+          pts = [p2, p1, p4];
+        } else if (p1.equals(p4)) {
+          pts = [p2, p1, p3];
+        } else if (p2.equals(p3)) {
+          pts = [p1, p2, p4];
+        } else if (p2.equals(p4)) {
+          pts = [p1, p2, p3];
+        } else {
+          continue;
+        }
+        const arc = new CadArc();
+        arc.center.copy(pts[1]);
+        arc.radius = Math.min(15, line.length, adjLine.length) / 3;
+        const l1 = new Line(pts[1], pts[0]);
+        const l2 = new Line(pts[1], pts[2]);
+        arc.start_angle = l1.theta.deg;
+        arc.end_angle = l2.theta.deg;
+        const angle = Angle.fromPoints(...pts);
+        if (!arc.curve.totalAngle.equals(angle)) {
+          arc.clockwise = !arc.clockwise;
+        }
+        const arcCurve = arc.curve;
+        const arcMidLine = new Line(pts[1], arcCurve.getPoint(0.5));
+        const angleText = new CadMtext();
+        angleText.text = `${toFixed(angle.deg, 2)}°`;
+        angleText.insert.copy(arcMidLine.end);
+        angleText.anchor.set(0.5, 1);
+        angleText.fontStyle.size = Math.round(arc.radius * 0.8);
+        const {rad: arcMidRad, deg: arcMidDeg} = arcMidLine.theta.constrain();
+        const rotateText = new Angle(arcMidDeg - 90, "deg");
+        rotateText.constrain();
+        if (arcMidDeg > 180) {
+          rotateText.deg -= 180;
+          angleText.anchor.y = 0;
+          const offset = 1;
+          const dx = offset * Math.cos(arcMidRad);
+          const dy = offset * Math.sin(arcMidRad);
+          angleText.insert.add(dx, dy);
+        }
+        angleText.transformMatrix.transform({rotate: rotateText.rad});
+        addCadEntityAngularDimension(line, [arc, angleText]);
+      }
+    }
+    if (toRemove.length) {
+      await this.status.cad.remove(toRemove);
+    }
+    if (toRender.length) {
+      await this.status.cad.render(toRender);
+    }
+    if (toRemove.length < 1 && toRender.length > 0) {
+      this._onEntitiesChange();
+    }
+  }
+  async removeAngularDimension() {
+    const lines = this.selected();
+    for (const line of lines) {
+      const toRemove = getCadEntityAngularDimension(line);
+      if (toRemove.length > 0) {
+        await this.status.cad.remove(toRemove);
+      }
+      delete line.info.hasAngularDimension;
     }
   }
 }

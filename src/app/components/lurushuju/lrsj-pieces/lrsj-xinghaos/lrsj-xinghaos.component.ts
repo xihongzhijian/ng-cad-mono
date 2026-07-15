@@ -7,7 +7,7 @@ import {getCopyName} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {environment} from "@env";
 import {ClickedClsDirective} from "@modules/directives/clicked-cls.directive";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -30,7 +30,7 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
   selector: "app-lrsj-xinghaos",
   imports: [
     ClickedClsDirective,
-    FloatingDialogModule,
+    FloatingDialogComponent,
     FormsModule,
     ImageComponent,
     InputComponent,
@@ -230,6 +230,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       await getOptionInput("zuoshujubanben", "做数据版本"),
       getter.selectSingle("算料单模板", 算料单模板Options.slice(), {validators: Validators.required}),
       getter.boolean("下单显示没有配件的板材分组"),
+      getter.boolean("型材分色"),
       getter.boolean("是否需要激光开料", {validators: Validators.required}),
       getter.number("paixu", {label: "排序"}),
       getter.boolean("tingyong", {label: "停用"}),
@@ -247,6 +248,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         订单流程: data.dingdanliucheng,
         做数据版本: data.zuoshujubanben,
         算料单模板: data.算料单模板,
+        型材分色: data.型材分色,
         是否需要激光开料: data.是否需要激光开料,
         下单显示没有配件的板材分组: data.下单显示没有配件的板材分组,
         数据已录入完成: data.数据已录入完成
@@ -291,41 +293,47 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       }
     }
   }
-  async copyXinghao(xinghao: XinghaoData) {
-    const fromName = xinghao.mingzi;
+  private async _getCopyXinghaoInfo(xinghaos: XinghaoData[], isMulti: boolean) {
     const namesAll = this.xinghaos().map((v) => v.mingzi);
-    const data = {num: 1, names: [] as string[], menchuang: xinghao.menchuang, gongyi: xinghao.gongyi};
+    const data = {num: 1, names: [] as string[], menchuang: xinghaos[0].menchuang, gongyi: xinghaos[0].gongyi};
     const getNameInputs = () => {
       const result: InputInfo[] = [];
       data.names = [];
       const numPerRow = 5;
       const w = 100 / numPerRow + "%";
-      for (let i = 0; i < data.num; i++) {
-        const name = getCopyName(namesAll.concat(data.names), fromName);
-        data.names.push(name);
-        result.push({
-          type: "string",
-          label: "",
-          model: {data: data.names, key: i},
-          validators: () => {
-            const val = data.names[i];
-            if (!val) {
-              return {不能为空: true};
+      let i = 0;
+      for (const xinghao of xinghaos) {
+        const fromName = xinghao.mingzi;
+        for (let _ = 0; _ < data.num; _++) {
+          const j = i;
+          const name = getCopyName(namesAll.concat(data.names), fromName);
+          data.names.push(name);
+          result.push({
+            type: "string",
+            label: "",
+            model: {data: data.names, key: j},
+            validators: () => {
+              const val = data.names[j];
+              console.log(data.names, j);
+              if (!val) {
+                return {不能为空: true};
+              }
+              if (namesAll.includes(val)) {
+                return {不能重复: true};
+              }
+              if (data.names.some((v, k) => j !== k && v === val)) {
+                return {不能重复: true};
+              }
+              return null;
+            },
+            style: {
+              flex: `0 0 calc(${w} - 20px * ${(numPerRow - 1) / numPerRow})`,
+              width: "0",
+              marginLeft: j % numPerRow === 0 ? "0" : "20px"
             }
-            if (namesAll.includes(val)) {
-              return {不能重复: true};
-            }
-            if (data.names.some((v, j) => i !== j && v === val)) {
-              return {不能重复: true};
-            }
-            return null;
-          },
-          style: {
-            flex: `0 0 calc(${w} - 20px * ${(numPerRow - 1) / numPerRow})`,
-            width: "0",
-            marginLeft: i % numPerRow === 0 ? "0" : "20px"
-          }
-        });
+          });
+          i++;
+        }
       }
       return result;
     };
@@ -340,6 +348,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         type: "number",
         label: "复制数量",
         model: {data, key: "num"},
+        disabled: isMulti,
         validators: () => {
           const num = data.num;
           const min = 1;
@@ -363,13 +372,36 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       namesGroupInput
     ];
     const result = await this.message.form(form, {}, {width: "100%", height: "100%", maxWidth: "900px"});
+    return {result, data};
+  }
+  async copyXinghao(xinghao: XinghaoData) {
+    const {result, data} = await this._getCopyXinghaoInfo([xinghao], false);
     if (result) {
       if (data.num > 1 && !(await this.message.confirm(`确定复制吗？`))) {
         return;
       }
       await this.http.getData<boolean>(
         "shuju/api/copyXinghao",
-        {fromName, toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
+        {fromName: xinghao.mingzi, toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
+        {spinner: false}
+      );
+      await this.lrsjStatus.getXinghaos();
+    }
+  }
+  async copyXinghaos() {
+    const xinghaos = this.xinghaosSelected();
+    if (xinghaos.length < 1) {
+      await this.message.alert("请先选择型号");
+      return;
+    }
+    const {result, data} = await this._getCopyXinghaoInfo(xinghaos, true);
+    if (result) {
+      if (!(await this.message.confirm(`确定复制吗？`))) {
+        return;
+      }
+      await this.http.getData<boolean>(
+        "shuju/api/copyXinghaos",
+        {fromNames: xinghaos.map((v) => v.mingzi), toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
         {spinner: false}
       );
       await this.lrsjStatus.getXinghaos();

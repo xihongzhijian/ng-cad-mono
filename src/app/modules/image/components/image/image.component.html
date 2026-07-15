@@ -2,19 +2,19 @@
   @if (loading()) {
     <img
       [src]="loadingSrc()"
-      (wheel)="onWheel($event)"
-      (pointerdown)="onPointerDown($event)"
-      (pointermove)="onPointerMove($event)"
-      (pointerup)="onPointerUp($event)"
+      (wheel)="onSmallPicWheel($event)"
+      (pointerdown)="onSmallPicPointerDown($event)"
+      (pointermove)="onSmallPicPointerMove($event)"
+      (pointerup)="onSmallPicPointerUp($event)"
     />
   }
   @if (error()) {
     <img
       [src]="emptySrc()"
-      (wheel)="onWheel($event)"
-      (pointerdown)="onPointerDown($event)"
-      (pointermove)="onPointerMove($event)"
-      (pointerup)="onPointerUp($event)"
+      (wheel)="onSmallPicWheel($event)"
+      (pointerdown)="onSmallPicPointerDown($event)"
+      (pointermove)="onSmallPicPointerMove($event)"
+      (pointerup)="onSmallPicPointerUp($event)"
     />
   }
   @if (currSrc(); as currSrc) {
@@ -22,28 +22,37 @@
       [src]="currSrc"
       [class.hidden]="loading() || error()"
       [style.object-fit]="objectFit()"
-      (wheel)="onWheel($event)"
-      (pointerdown)="onPointerDown($event)"
-      (pointermove)="onPointerMove($event)"
-      (pointerup)="onPointerUp($event)"
+      (wheel)="onSmallPicWheel($event)"
+      (pointerdown)="onSmallPicPointerDown($event)"
+      (pointermove)="onSmallPicPointerMove($event)"
+      (pointerup)="onSmallPicPointerUp($event)"
       (load)="onLoad($event)"
       (error)="onError($event)"
     />
   } @else {
     <img
       [src]="emptySrc()"
-      (wheel)="onWheel($event)"
-      (pointerdown)="onPointerDown($event)"
-      (pointermove)="onPointerMove($event)"
-      (pointerup)="onPointerUp($event)"
+      (wheel)="onSmallPicWheel($event)"
+      (pointerdown)="onSmallPicPointerDown($event)"
+      (pointermove)="onSmallPicPointerMove($event)"
+      (pointerup)="onSmallPicPointerUp($event)"
     />
   }
 </div>
 
 @if (currBigPicSrc(); as currBigPicSrc) {
-  <div #bigPicDiv class="big-pic" style="display: none" (click)="hideBigPic()">
+  <div #bigPicDiv class="big-pic" style="display: none" (pointerup)="hideBigPic()">
     @if (bigPicVisible()) {
-      <img [src]="currBigPicSrc" [style.object-fit]="objectFit()" @toggle />
+      <div class="big-pic-container" (animate.enter)="onBigPicEnter($event)" (animate.leave)="onBigPicLeave($event)">
+        <img
+          [src]="currBigPicSrc"
+          [style.object-fit]="objectFit()"
+          (wheel)="onBigPicWheel($event)"
+          (pointerdown)="onBigPicPointerDown($event)"
+          (pointermove)="onBigPicPointerMove($event)"
+          (pointerup)="onBigPicPointerUp($event)"
+        />
+      </div>
     }
   </div>
 }

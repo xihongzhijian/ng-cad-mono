@@ -2,8 +2,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "esModuleInterop": true,
@@ -18,22 +16,22 @@
     "module": "ESNext",
     "lib": ["DOM", "ESNext"],
     "paths": {
-      "@components/*": ["src/app/components/*"],
-      "@decorators/*": ["src/app/decorators/*"],
-      "@guards/*": ["src/app/guards/*"],
-      "@mixins/*": ["src/app/mixins/*"],
-      "@modules/*": ["src/app/modules/*"],
-      "@services/*": ["src/app/services/*"],
-      "@views/*": ["src/app/views/*"],
-      "@app/*": ["src/app/*"],
-      "@assets/*": ["src/assets/*"],
-      "@env": ["src/environments/environment.ts"]
+      "@components/*": ["./src/app/components/*"],
+      "@decorators/*": ["./src/app/decorators/*"],
+      "@guards/*": ["./src/app/guards/*"],
+      "@mixins/*": ["./src/app/mixins/*"],
+      "@modules/*": ["./src/app/modules/*"],
+      "@services/*": ["./src/app/services/*"],
+      "@views/*": ["./src/app/views/*"],
+      "@app/*": ["./src/app/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@env": ["./src/environments/environment.ts"]
     },
+    "types": ["vitest/globals"],
     "allowJs": true,
-    "resolveJsonModule": true,
-    "useDefineForClassFields": false
+    "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "./eslint.config.ts"],
   "exclude": ["node_modules", "packages"],
   "references": [{"path": "./scripts/tsconfig.scripts.json"}],
   "angularCompilerOptions": {

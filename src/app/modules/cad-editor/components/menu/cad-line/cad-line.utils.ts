@@ -1,8 +1,8 @@
 import {CadCollection} from "@app/cad/collections";
 import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
-import {keysOf} from "@lucilor/utils";
+import {CadData, CadEntity, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoArray} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -19,10 +19,10 @@ export const cadLineFields = {
   双向折弯附加值: "双向折弯附加值",
   线长字体大小: "lengthTextSize",
   企料位置识别: "企料位置识别",
-  圆弧显示: "圆弧显示"
-} as const;
-
-export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
+  圆弧显示: "圆弧显示",
+  展开方式: "zhankaifangshi",
+  指定展开长: "zidingzhankaichang"
+} as const satisfies ObjectOf<keyof CadLineLike>;
 
 export const stringifyLineNames = (list: string[]) => {
   const mingzi = list[0]?.trim() ?? "";
@@ -39,6 +39,45 @@ export const parseLineNames = (mingzi: string, mingzi2: string) => {
   return names;
 };
 
+export const getLineNames = (line: CadLineLike) => {
+  const names: string[] = [];
+  if (line.mingzi) {
+    names.push(line.mingzi);
+  }
+  if (line.mingzi2) {
+    const names2 = line.mingzi2.split("*").filter((v) => !!v && v !== line.mingzi);
+    names.push(...new Set(names2));
+  }
+  return names;
+};
+export const addLineName = (line: CadLineLike, name: string) => {
+  if (!name) {
+    return;
+  }
+  if (!line.mingzi) {
+    line.mingzi = name;
+  } else if (line.mingzi !== name) {
+    if (line.mingzi2) {
+      const names = line.mingzi2.split("*");
+      if (!names.includes(name)) {
+        line.mingzi2 = [...names, name].join("*");
+      }
+    } else {
+      line.mingzi2 = name;
+    }
+  }
+};
+export const removeLineName = (line: CadLineLike, name: string) => {
+  if (line.mingzi === name) {
+    line.mingzi = "";
+  } else if (line.mingzi2) {
+    const names = line.mingzi2.split("*");
+    if (names.includes(name)) {
+      line.mingzi2 = names.filter((v) => v !== name).join("*");
+    }
+  }
+};
+
 export const getCadLineInputs = (
   keys: string[],
   data: CadData | (() => CadData),
@@ -47,6 +86,7 @@ export const getCadLineInputs = (
   gongshis: 算料公式[] | null | undefined
 ) => {
   const result: InputInfo<CadLineLike>[] = [];
+  const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
   line = getLine(line);
   const isLine = line instanceof CadLine;
   const lineLength = Number(line.length.toFixed(2));
@@ -56,7 +96,7 @@ export const getCadLineInputs = (
     if (result.some((v) => v.label === key)) {
       continue;
     }
-    let info: InputInfo | undefined;
+    let info: InputInfo | InputInfo[] | undefined;
     const getter = new InputInfoWithDataGetter(line, {clearable: true});
     const getter2 = new InputInfoWithDataGetter(line.info, {clearable: true});
     switch (key) {
@@ -70,6 +110,14 @@ export const getCadLineInputs = (
             type: "array",
             label: "",
             valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+            valueHint: (_, value) => {
+              const data2 = getData(data);
+              const bancaihoudufangxiang = data2.bancaihoudufangxiang;
+              if (value === "起始线" && bancaihoudufangxiang && bancaihoudufangxiang !== "none") {
+                return "修改起始线后请确认板材厚度方向是否正确";
+              }
+              return "";
+            },
             sortable: true,
             value: parseLineNames(line.mingzi, line.mingzi2),
             onChange: (val) => {
@@ -146,11 +194,31 @@ export const getCadLineInputs = (
       case "门框分体模板跳过折弯线识别":
         info = getter2.boolean(key);
         break;
+      case "展开方式":
+        {
+          const 展开方式 = getter.selectSingle(cadLineFields[key], cadLineOptions.zhankaifangshi.values.slice(), {
+            label: key,
+            onChange: () => {
+              update指定展开长();
+            }
+          });
+          const 指定展开长 = getter.string(cadLineFields.指定展开长, {label: "指定展开长"});
+          const update指定展开长 = () => {
+            指定展开长.hidden = line.zhankaifangshi !== "指定长度";
+          };
+          update指定展开长();
+          info = [展开方式, 指定展开长];
+        }
+        break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};
     }
     if (info) {
-      result.push(info);
+      if (Array.isArray(info)) {
+        result.push(...info);
+      } else {
+        result.push(info);
+      }
     }
   }
   return result;
@@ -170,10 +238,11 @@ export const openCadLineForm = async (
   const data = cad.data;
   const yaoqiu = await status.fetchAndGetCadYaoqiu(data.type);
   const vars = cloneDeep(data.info.vars);
-  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], data, line2, status, gongshis);
-  if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {
-    form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
+  const keys = yaoqiu?.线段弹窗修改属性 || [];
+  if (collection === "kailiaocadmuban" && !keys.includes("关联变化公式")) {
+    keys.push("关联变化公式");
   }
+  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], data, line2, status, gongshis);
   let title = "编辑线";
   const name = line.mingzi || line.mingzi2;
   if (name) {
@@ -194,9 +263,24 @@ export const openCadLineForm = async (
         setLinesLength(data, [line], result.线长);
       }
     }
+    status.emitChangeCadSignal();
     await cad.render(toChange);
   } else {
     data.info.vars = vars;
   }
   return result;
+};
+
+const angularDimensionInfoKey = "角度标注";
+export const isCadEntityHasAngularDimension = (entity: CadEntity) => {
+  return entity.children.filter((child) => child.info[angularDimensionInfoKey]).length > 0;
+};
+export const addCadEntityAngularDimension = (entity: CadEntity, dim: CadEntity[]) => {
+  for (const d of dim) {
+    d.info[angularDimensionInfoKey] = true;
+    entity.addChild(d);
+  }
+};
+export const getCadEntityAngularDimension = (entity: CadEntity) => {
+  return entity.children.filter((child) => child.info[angularDimensionInfoKey]);
 };

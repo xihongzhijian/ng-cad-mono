@@ -39,6 +39,7 @@ export interface OrderBancaiInfo {
   kailiaocanshuzhiUrl: string;
   sortedCads: BancaiCadExtend[][];
   bancaiInfos: {
+    bancai: BancaiCad["bancai"];
     cads: string[];
     oversized: boolean;
     inputInfos: InputInfo[];
@@ -83,4 +84,14 @@ export interface XikongOptions {
   showCN?: boolean;
   codeFormat?: boolean;
   autoWrap?: boolean;
+}
+
+export interface PaiBanSummaryItem {
+  板材: string;
+  材料: string;
+  厚度: string;
+  规格: [number, number];
+  数量: number;
+  厂里烤漆: string;
+  排版序号: string;
 }

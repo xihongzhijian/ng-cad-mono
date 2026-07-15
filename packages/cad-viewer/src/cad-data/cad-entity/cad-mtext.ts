@@ -1,6 +1,6 @@
-import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {Matrix, MatrixLike, ObjectOf, Point, purgeObject, Rectangle} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
-import {getVectorFromArray, purgeObject} from "../../cad-utils";
+import {getVectorFromArray} from "../../cad-utils";
 import {FontStyle} from "../cad-styles";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
@@ -18,6 +18,10 @@ export class CadMtext extends CadEntity {
   insert: Point;
   text: string;
   anchor: Point;
+  /**
+   * additional transform matrix for text rotation and scaling, not applied to insert point
+   */
+  transformMatrix: Matrix;
   fontStyle: FontStyle;
   info: CadMtextInfo;
 
@@ -38,14 +42,21 @@ export class CadMtext extends CadEntity {
     if (data.font_size) {
       this.fontStyle.size = data.font_size;
     }
+    this.transformMatrix = new Matrix(data.transformMatrix);
     this.info = data.info ?? {};
   }
 
-  export(): ObjectOf<any> {
+  export() {
     const anchor = this.anchor.toArray();
     return {
       ...super.export(),
-      ...purgeObject({insert: this.insert.toArray(), fontStyle: this.fontStyle, text: this.text, anchor})
+      ...purgeObject<ObjectOf<any>>({
+        insert: this.insert.toArray(),
+        fontStyle: this.fontStyle,
+        text: this.text,
+        anchor,
+        transformMatrix: this.transformMatrix.toArray()
+      })
     };
   }
 
@@ -66,6 +77,14 @@ export class CadMtext extends CadEntity {
         }
         this.info.offset[0] += m.e;
         this.info.offset[1] += m.f;
+      }
+      if (this.info.offset) {
+        if (scale[0] < 0) {
+          this.info.offset[0] = -this.info.offset[0];
+        }
+        if (scale[1] < 0) {
+          this.info.offset[1] = -this.info.offset[1];
+        }
       }
     }
   }

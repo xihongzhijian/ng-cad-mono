@@ -1,5 +1,6 @@
 import {Component, effect, inject, input, signal, untracked, viewChild} from "@angular/core";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {spinnerConfig} from "@modules/spinner/spinner.config";
 import {isEqual} from "lodash";
 import {NgxUiLoaderComponent, NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
 
@@ -22,7 +23,7 @@ export class SpinnerComponent {
   text = signal("");
   textEff = effect(() => this.text.set(this.textIn()));
   config = signal<NgxUiLoaderConfig>({});
-  configEff = effect(() => this.config.set(this.configIn()));
+  configEff = effect(() => this.config.set({...spinnerConfig, ...this.configIn()}));
 
   inlineEff = effect(() => {
     const configPrev = untracked(() => this.config());

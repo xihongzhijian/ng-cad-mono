@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, signal, untracked, viewChildren} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal, untracked, viewChildren} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -8,18 +8,22 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
+import {getBooleanStr, getValueString} from "@app/utils/get-value";
+import {AboutComponent} from "@components/about/about.component";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
+import {BancaiCad, BancaiList, ExcelSheet, HouduInfo} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
+import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep, difference, intersection} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbar} from "ngx-scrollbar";
 import {
@@ -27,8 +31,8 @@ import {
   BancaisInfo,
   DakongSummary,
   guigePattern,
-  houduPattern,
   OrderBancaiInfo,
+  PaiBanSummaryItem,
   SelectBancaiDlHistory,
   XikongData,
   XikongOptions
@@ -39,6 +43,7 @@ import {
   templateUrl: "./select-bancai.component.html",
   styleUrls: ["./select-bancai.component.scss"],
   imports: [
+    AboutComponent,
     FormsModule,
     InputComponent,
     MatButtonModule,
@@ -89,6 +94,7 @@ export class SelectBancaiComponent {
     {value: "H-N2", label: "高压氮气"}
   ] as const;
   bancaiList: ObjectOf<BancaiList> = {};
+  houduInfos: ObjectOf<HouduInfo[]> = {};
   xikongStrings = signal<[string, string][][][]>([]);
   xikongData = signal<XikongData | null>(null);
   hiddenCadNames = ["左包边", "右包边", "顶包边", "锁框", "铰框", "顶框"];
@@ -111,6 +117,14 @@ export class SelectBancaiComponent {
           const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
           const errMsgs: string[] = [];
           const orderBancaiInfos: ReturnType<typeof this.orderBancaiInfos> = [];
+          this.houduInfos = {};
+          for (const bancai of result.bancaiList) {
+            for (const [key, group] of Object.entries(bancai.houduInfos || {})) {
+              if (!this.houduInfos[key]) {
+                this.houduInfos[key] = group;
+              }
+            }
+          }
           for (const orderBancai of result.orderBancais) {
             const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
             let hiddenCadNames = this.hiddenCadNames;
@@ -236,6 +250,12 @@ export class SelectBancaiComponent {
           sortedCads.push([this.getBancaiCadExtend(bancaiCad)]);
         }
       }
+      for (const [j, group] of sortedCads.entries()) {
+        for (const cad of group) {
+          cad.bancai.index = j;
+          cad.bancai.超出规格时激光开料留边 ??= cad.bancai.激光开料留边;
+        }
+      }
       info.sortedCads = sortedCads;
     } else if (typeof i === "number") {
       const sortedCads = info.sortedCads;
@@ -266,7 +286,7 @@ export class SelectBancaiComponent {
       info.bancaiInfos = [];
       for (const [i, group] of info.sortedCads.entries()) {
         const bancai = cloneDeep(group[0].bancai);
-        const onChange = (key: keyof BancaiCad["bancai"], value: string) => {
+        const onChange = (key: Exclude<keyof BancaiCad["bancai"], "index">, value: string) => {
           if (key === "guige") {
             const match = value.match(guigePattern);
             if (match) {
@@ -278,25 +298,89 @@ export class SelectBancaiComponent {
           this.updateSortedCads(info, bancai, i);
         };
         const bancaiList = this.bancaiList[bancai.mingzi];
-        const cailiaos = bancaiList.cailiaoList || [];
-        const houdus = bancaiList.houduList || [];
-        const guiges = (bancaiList.guigeList || []).map((v) => v.join(" × "));
+        if (!bancaiList) {
+          console.warn("缺少板材数据：", bancai.mingzi);
+          continue;
+        }
+        const cailiaos = bancaiList?.cailiaoList.slice() ?? [];
+        cailiaos.sort((a, b) => a.localeCompare(b));
+        const houdus = bancaiList?.houduList.slice() ?? [];
+        houdus.sort((a, b) => {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (isNaN(numA) || isNaN(numB) || numA === numB) {
+            return a.localeCompare(b);
+          }
+          return numA - numB;
+        });
         const gasOptions = this.gasOptions.slice();
-        const bancaiInfo: (typeof info.bancaiInfos)[0] = {
+        const guigeInput: InputInfo = {
+          label: "规格",
+          type: "string",
+          noSortOptions: true,
+          onChange: (value) => {
+            onChange("guige", value);
+          },
+          validators: [
+            Validators.required,
+            (control) => {
+              if (!guigePattern.test(control.value)) {
+                return {pattern: "规格必须为两个数字(如: 10 × 10)"};
+              }
+              return null;
+            }
+          ],
+          style: {flex: "3"}
+        };
+        const updateGuigeOptions = () => {
+          const cailiao = bancai.cailiao || "";
+          const houdu = bancai.houdu || "";
+          let guigeList = bancaiList.kailiaoGuiges?.[cailiao]?.[houdu];
+          if (!guigeList || guigeList.length < 1) {
+            guigeList = bancaiList.guigeList;
+          }
+          if (!Array.isArray(guigeList)) {
+            guigeList = [];
+          }
+          guigeList.sort((a, b) => {
+            if (a[0] === b[0]) {
+              return a[1] - b[1];
+            } else {
+              return a[0] - b[0];
+            }
+          });
+          const guiges = guigeList.map((v) => v.join(" × "));
+          guigeInput.value = bancai.guige?.join(" × ") || "";
+          guigeInput.fixedOptions = guiges;
+          guigeInput.options = guiges.slice();
+        };
+        updateGuigeOptions();
+        const bancaiInfo: (typeof info.bancaiInfos)[number] = {
+          bancai,
           cads: group.map((v) => v.id),
           oversized: group.some((v) => v.oversized),
           inputInfos: [
-            {label: "板材", type: "string", readonly: true, value: bancai.mingzi, validators: Validators.required},
+            {
+              label: "板材",
+              type: "string",
+              readonly: true,
+              value: bancai.mingzi,
+              validators: Validators.required,
+              style: {flex: "3"}
+            },
             {
               label: "材料",
               type: "string",
               value: bancai.cailiao || "",
               options: cailiaos,
               fixedOptions: cailiaos,
+              noSortOptions: true,
               onChange: (value) => {
                 onChange("cailiao", value);
+                updateGuigeOptions();
               },
-              validators: Validators.required
+              validators: Validators.required,
+              style: {flex: "1.5"}
             },
             {
               label: "厚度",
@@ -304,37 +388,32 @@ export class SelectBancaiComponent {
               value: bancai.houdu || "",
               options: houdus,
               fixedOptions: houdus,
+              noSortOptions: true,
               onChange: (value) => {
                 onChange("houdu", value);
+                updateGuigeOptions();
               },
-              validators: [
-                Validators.required,
-                (control) => {
-                  if (!houduPattern.test(control.value)) {
-                    return {pattern: "厚度必须为数字"};
-                  }
-                  return null;
-                }
-              ]
+              validators: [Validators.required],
+              style: {flex: "1"}
+            },
+            guigeInput,
+            {
+              type: "string",
+              label: "四周留边",
+              value: bancai.激光开料留边 || "",
+              onChange: (value) => {
+                onChange("激光开料留边", value);
+              },
+              style: {flex: "1.5"}
             },
             {
-              label: "规格",
               type: "string",
-              value: bancai.guige?.join(" × ") || "",
-              options: guiges,
-              fixedOptions: guiges,
+              label: "超出规格时四周留边",
+              value: bancai.超出规格时激光开料留边 || "",
               onChange: (value) => {
-                onChange("guige", value);
+                onChange("超出规格时激光开料留边", value);
               },
-              validators: [
-                Validators.required,
-                (control) => {
-                  if (!guigePattern.test(control.value)) {
-                    return {pattern: "规格必须为两个数字(如: 10,10)"};
-                  }
-                  return null;
-                }
-              ]
+              style: {flex: "1.5"}
             }
           ]
         };
@@ -390,21 +469,21 @@ export class SelectBancaiComponent {
     this.updateOrderBancaiInfos();
   }
 
-  bancaiInfoInputs = viewChildren<InputComponent>("bancaiInfoInputs");
+  bancaiInfoInputs = viewChildren<InputComponent>("bancaiInfoInput");
   async submit(selectCad?: boolean, noPaiban?: boolean) {
-    await timeout(0);
-    for (const bancaiInfoInput of this.bancaiInfoInputs()) {
-      if (!bancaiInfoInput.isValid()) {
-        this.message.error("输入有误，请检查");
-        return;
-      }
+    await timeout(100);
+    const inputResult = await validateForm(this.bancaiInfoInputs());
+    if (inputResult.errorMsg) {
+      await this.message.error(inputResult.errorMsg);
+      return;
     }
-    const getCadOptions: {namesExclude?: string[]}[] = [];
+    const getCadOptions: {namesInclude?: string[]}[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
     const codes: string[] = [];
     for (const info of this.orderBancaiInfos()) {
       const arr1: BancaiCad[] = [];
       const namesExclude: string[] = [];
+      const names: string[] = [];
       for (const group of info.sortedCads) {
         for (const cad of group) {
           if (cad.disabled || (selectCad && !cad.checked)) {
@@ -416,13 +495,14 @@ export class SelectBancaiComponent {
             delete clone.disabled;
             arr1.push(clone as BancaiCad);
           }
+          names.push(cad.name);
         }
       }
       codes.push(info.code);
       const getCadOptionsItem: (typeof getCadOptions)[number] = {};
       getCadOptions.push(getCadOptionsItem);
       if (namesExclude.length > 0) {
-        getCadOptionsItem.namesExclude = namesExclude;
+        getCadOptionsItem.namesInclude = difference(names, namesExclude);
       }
       bancaiCadsArr.push(arr1);
     }
@@ -430,31 +510,36 @@ export class SelectBancaiComponent {
     const {table} = this;
     const type = this.type();
     const autoGuige = this.autoGuige();
+    const expandGuige = this.expandGuige();
     const projectConfigOverride: ObjectOf<string> = {};
     if (noPaiban) {
       projectConfigOverride.激光开料结果不用排版 = "是";
     }
-    let url: string | string[] | null = null;
+    if (this.showQiegemuban()) {
+      projectConfigOverride["开启45度切角"] = getBooleanStr(this.enable45duQiejiao());
+      projectConfigOverride["45度切角微连"] = getBooleanStr(this.enable45duQiejiaoWeilian());
+    }
     const data: ObjectOf<any> = {
       codes,
       bancaiCadsArr,
+      houduInfos: this.houduInfos,
       table,
       autoGuige,
+      expandGuige,
       type,
       getCadOptions,
       projectConfigOverride,
-      verbose: this.verbose()
+      verbose: this.verbose(),
+      testMode: this.config.getConfig("testMode")
     };
-    try {
-      url = await this.http.getData<string | string[]>(api, data);
-      await this.refreshDownloadHistory();
-    } catch {}
+    const url = await this.http.getData<string | string[]>(api, data);
     if (url) {
+      await this.refreshDownloadHistory();
       this.xikongData.set(null);
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
       } else {
-        this.downloadDxf(replaceRemoteHost(url));
+        this.downloadFile(replaceRemoteHost(url));
       }
     }
   }
@@ -481,16 +566,13 @@ export class SelectBancaiComponent {
     window.open(url);
   }
 
-  downloadDxf(url: string, isName = false) {
+  downloadFile(url: string, isName = false) {
     const downloadName = this.downloadName || this.codesStr();
     if (isName) {
       url = getFilepathUrl(`tmp/${url}.dxf`);
     }
-    if (url.endsWith(".zip")) {
-      downloadByUrl(url, {filename: downloadName + ".zip"});
-    } else {
-      downloadByUrl(url, {filename: downloadName + ".dxf"});
-    }
+    const suffix = url.slice(url.lastIndexOf("."));
+    downloadByUrl(url, {filename: downloadName + suffix});
   }
 
   returnZero() {
@@ -519,11 +601,25 @@ export class SelectBancaiComponent {
   onAutoGuigeChange() {
     this.config.setConfig("kailiaoAutoGuige", this.autoGuige());
   }
+  expandGuige = signal(this.config.getConfig("kailiaoExpandGuige"));
+  onExpandGuigeChange() {
+    this.config.setConfig("kailiaoExpandGuige", this.expandGuige());
+  }
   verbose = signal(this.config.getConfig("kailiaoVerbose"));
   toggleVerbose() {
     this.verbose.update((v) => !v);
     this.config.setConfig("kailiaoVerbose", this.verbose());
   }
+
+  showQiegemuban = computed(() => this.status.projectConfig.getBoolean("开启45度切角"));
+  enable45duQiejiao = signal(true);
+  enable45duQiejiaoWeilian = signal(true);
+
+  @HostBinding("class.verbose")
+  verboseClass = false;
+  verboseClassEff = effect(() => {
+    this.verboseClass = this.verbose();
+  });
 
   xikongOptions = signal(session.load<XikongOptions>("xikongOptions") || {});
   onXikongOptionsChange() {
@@ -630,6 +726,52 @@ export class SelectBancaiComponent {
     }
     this.xikongStrings.set(xikongStrings);
     return result;
+  }
+
+  async getPaiBanSummaryItems() {
+    const codes = this.codes();
+    const data = await this.http.getData<ObjectOf<PaiBanSummaryItem[]>>("order/order/getPaibanSummaryItems", {codes});
+    if (!data) {
+      return;
+    }
+    if (Object.keys(data).length < 1) {
+      await this.message.alert("没有排版结果，请先开一次料");
+      return;
+    }
+    const keys = ["板材", "材料", "厚度", "规格", "数量", "厂里烤漆", "排版序号"] as const;
+    const sheets: ExcelSheet[] = [];
+    for (const [code, items] of Object.entries(data)) {
+      const dataArray: string[][] = [];
+      dataArray.push(keys.slice());
+      let maxBancaiLen = 0;
+      for (const item of items) {
+        const row: string[] = [];
+        for (const key of keys) {
+          let val = item[key];
+          if (key === "规格") {
+            val = item.规格.join("x");
+          }
+          row.push(getValueString(val));
+        }
+        maxBancaiLen = Math.max(maxBancaiLen, item.板材.length);
+        dataArray.push(row);
+      }
+      sheets.push({
+        title: code,
+        titleCell: "板材材料单",
+        dataArray,
+        colInfos: [
+          {id: "A", width: maxBancaiLen * 2.5, numberFormat: "@"},
+          {id: "B", width: 12, numberFormat: "@"},
+          {id: "C", width: 5, numberFormat: "@"},
+          {id: "D", width: 10},
+          {id: "E", width: 8, numberFormat: "@"},
+          {id: "F", width: 12},
+          {id: "G", width: 15}
+        ]
+      });
+    }
+    this.http.exportExcel({data: {name: this.downloadName, sheets}});
   }
 
   setType(type: string) {

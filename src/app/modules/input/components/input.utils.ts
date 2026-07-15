@@ -12,6 +12,7 @@ import {
   InputInfo,
   InputInfoArray,
   InputInfoBoolean,
+  InputInfoColor,
   InputInfoCommon,
   InputInfoCoordinate,
   InputInfoGroup,
@@ -173,7 +174,7 @@ export const getUnifiedInputs = <T>(
   );
 };
 
-export type InputInfoWithDataPart<R extends InputInfo> = Omit<InputInfoPart<R>, "model" | "value">;
+export type InputInfoWithDataPart<R extends InputInfo> = InputInfoPart<R>;
 export class InputInfoWithDataGetter<T> {
   constructor(
     public data: Value<T>,
@@ -297,12 +298,12 @@ export class InputInfoWithDataGetter<T> {
 
   image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage<T>>): InputInfoImage<T> {
     const data = getValue(this.data);
-    return {
+    const info: InputInfoImage<T> = {
       type: "image",
       label: String(key),
       value: data[key],
       prefix: filePathUrl,
-      onChange: async (val, info) => {
+      onChange: async (val) => {
         if (val) {
           const result = await http.uploadImage(val);
           if (result?.url) {
@@ -317,10 +318,15 @@ export class InputInfoWithDataGetter<T> {
       ...this.others,
       ...others
     };
+    return info;
   }
 
   coordinate(key: keyof T, others?: InputInfoWithDataPart<InputInfoCoordinate<T>>): InputInfoCoordinate<T> {
     return {type: "coordinate", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  color(key: keyof T, others?: InputInfoWithDataPart<InputInfoColor<T>>): InputInfoColor<T> {
+    return {type: "color", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 }
 
@@ -388,7 +394,7 @@ export const getErrorMsgs = (errors: ValidationErrors | null) => {
   const msgs: string[] = [];
   for (const key in errors) {
     const value = errors[key];
-    let msg = "";
+    let msg: string;
     if (typeof value === "string") {
       msg = value;
     } else {
@@ -501,16 +507,19 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
   let errors: ValidationErrors | null = null;
   let hasValidatorRequired = false;
   let hasValidatorOther = false;
-  const errorMsgDetails = new Set<string>();
+  const errorMsgDetails: {info: InputInfo; component: InputComponent; errorMsgs: string[]}[] = [];
   const values: ObjectOf<string> = {};
   for (const input of inputs) {
     if (input.onChangeDelay) {
       await timeout(input.onChangeDelayTime);
     }
     const errors2 = input.validateValue();
+    const errorMsgs = getErrorMsgs(errors2);
+    if (errorMsgs.length > 0) {
+      errorMsgDetails.push({info: input.info(), component: input, errorMsgs});
+    }
     for (const key in errors2) {
       if (errors2[key]) {
-        errorMsgDetails.add(input.info().label + errors2[key]);
         if (key === "required") {
           hasValidatorRequired = true;
         } else {
@@ -533,5 +542,5 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
   } else if (hasValidatorOther) {
     errorMsg = "数据有误，请检查";
   }
-  return {errors, values, errorMsg, errorMsgDetails: Array.from(errorMsgDetails)};
+  return {errors, values, errorMsg, errorMsgDetails};
 };

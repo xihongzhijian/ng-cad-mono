@@ -164,7 +164,7 @@ export class PageComponentsDiaplayComponent {
   moveComponentStart(component: PageComponentTypeAny) {
     const activeComponents = this.pageStatus.activeComponents();
     const activeGroup = activeComponents.find((v) => v instanceof PageComponentGroup);
-    let components: PageComponentTypeAny[] = [];
+    let components: PageComponentTypeAny[];
     if (activeGroup instanceof PageComponentGroup && activeGroup.findChild(component.id)) {
       component = activeGroup;
     }

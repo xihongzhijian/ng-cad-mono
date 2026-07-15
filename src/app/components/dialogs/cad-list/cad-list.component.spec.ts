@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {CadListComponent} from "./cad-list.component";
 import {CadListInput} from "./cad-list.types";
@@ -13,7 +12,7 @@ describe("CadListComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CadListComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
   });
 

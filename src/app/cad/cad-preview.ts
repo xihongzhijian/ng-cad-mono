@@ -5,18 +5,21 @@ import {prepareCadViewer} from "./utils";
 
 export interface CadPreviewRawParams {
   fixedLengthTextSize?: number;
+  clearLengthTextOffset?: boolean;
   fixedDimTextSize?: number;
   fixedMtextSize?: number;
   config?: Partial<CadViewerConfig>;
   autoSize?: boolean;
   maxZoom?: number;
   showFenti?: boolean;
+  showIntersections?: boolean;
 }
 export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>): Partial<CadViewerConfig> => ({
   width: 300,
   height: 150,
   padding: [5],
   backgroundColor: "transparent",
+  reverseSimilarColor: {backgroundColor: "black"},
   hideLineLength: collection === "CADmuban",
   hideLineGongshi: false,
   lineGongshi: 8,
@@ -51,12 +54,20 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
     cad.render(fentiMtext);
   }
   if (params.autoSize) {
-    const {width, height} = cad.data.getBoundingRect();
+    let {width, height} = cad.getConfig();
+    const {width: width2, height: height2} = cad.data.getBoundingRect();
+    const ratio = width / height;
+    const ratio2 = width2 / height2;
+    if (ratio2 > ratio) {
+      height = width / ratio2;
+    } else {
+      width = height * ratio2;
+    }
     cad.resize(width, height);
   }
   cad.center();
 
-  const {fixedLengthTextSize, fixedDimTextSize, fixedMtextSize} = params;
+  const {fixedLengthTextSize, clearLengthTextOffset, fixedDimTextSize, fixedMtextSize} = params;
   if ([fixedLengthTextSize, fixedDimTextSize, fixedMtextSize].some((size) => size !== undefined)) {
     const resize = () => {
       const zoom = cad.zoom();
@@ -64,11 +75,15 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
       const dimTextSize = typeof fixedDimTextSize === "number" ? fixedDimTextSize / zoom : null;
       const mtextSize = typeof fixedMtextSize === "number" ? fixedMtextSize / zoom : null;
       cad.data.entities.forEach((e) => {
-        if (e instanceof CadLineLike && lengthTextSize !== null) {
-          e.lengthTextSize = lengthTextSize;
-          e.children.mtext.forEach((mtext) => {
-            mtext.info.offset = [0, 0];
-          });
+        if (e instanceof CadLineLike) {
+          if (lengthTextSize !== null) {
+            e.lengthTextSize = lengthTextSize;
+          }
+          if (clearLengthTextOffset) {
+            e.children.mtext.forEach((mtext) => {
+              mtext.info.offset = [0, 0];
+            });
+          }
           cad.render(e);
         } else if (e instanceof CadDimension && dimTextSize !== null) {
           e.setStyle({text: {size: dimTextSize}});

@@ -44,33 +44,91 @@
   right: 0;
 }
 
-.content .table-container app-table {
-  --border: 1px solid var(--mat-sys-on-surface);
-  --row-min-height: 36px;
-  --row-max-height: 36px;
-  --cell-active-color: #b2b2b2;
-  ::ng-deep {
-    .title {
-      text-align: left;
-      font-size: 1.2em;
-      border-left: var(--border);
-      border-right: var(--border);
+.content .table-container {
+  > * {
+    &.hide-title {
+      .table-title {
+        display: none;
+      }
+
+      &[type="main"] {
+        app-table ::ng-deep {
+          mat-table mat-header-row:first-child mat-header-cell .cell-content {
+            border-top: none;
+          }
+        }
+      }
     }
 
-    .table-container {
-      .table-body {
-        box-shadow: none;
+    &[type="header"] {
+      app-table {
+        --row-max-height: auto;
+      }
+    }
 
-        .mat-mdc-header-cell,
-        .mat-mdc-cell,
-        .mat-mdc-footer-cell {
-          padding: 2px;
+    &[type="footer"] {
+      &:first-of-type {
+        margin-top: 10px;
+      }
+
+      app-table {
+        border: none;
+      }
+    }
+
+    &.has-sum {
+      app-table ::ng-deep {
+        .table-body mat-row:last-child {
+          .mat-mdc-cell {
+            overflow: visible;
+            width: auto;
+
+            .cell-content {
+              border: none;
+              white-space: nowrap;
+              padding: 0;
+              &:hover,
+              &.active {
+                background-color: transparent;
+              }
+            }
+          }
         }
       }
     }
   }
-  &:not(:first-child) {
-    border-top: none;
+
+  app-table {
+    --border: 1px solid var(--mat-sys-on-surface);
+    --row-min-height: 36px;
+    --row-max-height: 36px;
+    --cell-active-color: #b2b2b2;
+    --cell-padding: 2px;
+    ::ng-deep {
+      .title {
+        text-align: left;
+        font-size: 1.2em;
+        border-left: var(--border);
+        border-right: var(--border);
+      }
+
+      .table-container {
+        .table-body {
+          box-shadow: none;
+
+          .mat-mdc-header-cell,
+          .mat-mdc-cell,
+          .mat-mdc-footer-cell {
+            &.no-border-bottom .cell-content {
+              border-bottom: none;
+            }
+          }
+        }
+      }
+    }
+    &:not(:first-child) {
+      border-top: none;
+    }
   }
 }
 
@@ -109,7 +167,7 @@
   padding: 5px;
 
   & + .xingcai-info {
-    border-top: var(--border);
+    border-bottom: var(--border);
   }
 }
 

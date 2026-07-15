@@ -4,9 +4,9 @@ import {setGlobal} from "@app/app.common";
 import {ObjectOf, Timer} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {CustomResponse} from "@modules/http/services/http.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {NgScrollbar} from "ngx-scrollbar";
-import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-clean",
@@ -163,7 +163,7 @@ export class CleanComponent implements OnInit {
   async step4() {
     this.pushMsgDivider();
     this.pushMsg("info", "获取要删除的文件");
-    let count = 0;
+    let count: number;
     let initial = true;
     if (this.deleteLimit() <= 0) {
       this.end();

@@ -1,5 +1,5 @@
 import {getTypeOf, ObjectOf, Point} from "@lucilor/utils";
-import {cloneDeep, isEqual} from "lodash";
+import {cloneDeep} from "lodash";
 
 export class Defaults {
   static get DASH_ARRAY() {
@@ -150,34 +150,6 @@ export const toFixedTrim = (num: number, fractionDigits?: number) => {
   return Number(str).toString();
 };
 
-const purgeObject2 = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>) => {
-  const isEmpty = (val: any) => val === undefined || val === null;
-  Object.keys(obj).forEach((key) => {
-    let value = obj[key];
-    if (isEmpty(value) || key === "") {
-      delete obj[key];
-    } else if (defaultObj && isEqual(value, defaultObj[key])) {
-      delete obj[key];
-    } else if (Array.isArray(value)) {
-      value = value.filter((v) => !isEmpty(v));
-      if (value.length < 1) {
-        delete obj[key];
-      }
-    } else if (typeof value === "object") {
-      purgeObject2(value, defaultObj);
-      if (Object.keys(value).length < 1) {
-        delete obj[key];
-      }
-    }
-  });
-};
-
-export const purgeObject = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>): ObjectOf<any> => {
-  const result = cloneDeep(obj);
-  purgeObject2(result, defaultObj);
-  return result;
-};
-
 export const importObjProps = <T extends object>(obj: T, data: ObjectOf<any>, propertyKeys: (keyof T)[]) => {
   for (const key of propertyKeys) {
     if (!(key in data)) {
@@ -198,7 +170,7 @@ export const importObjProps = <T extends object>(obj: T, data: ObjectOf<any>, pr
 export const exportObjProps = <T extends object>(obj: T, propertyKeys: (keyof T)[]) => {
   const result: ObjectOf<any> = {};
   for (const key of propertyKeys) {
-    (result as any)[key] = obj[key];
+    (result as any)[key] = cloneDeep(obj[key]);
   }
   return result;
 };

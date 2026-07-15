@@ -4,23 +4,37 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 
 export const getLineTable = (data: CadLineLike[]) => {
+  console.log("getLineTable", data);
   const info: TableRenderInfo<CadLineLike> = {
     data,
     editMode: true,
     noScroll: true,
     rowSelection: {mode: "multiple"},
     columns: [
-      {type: "number", field: "length", name: "线长", ndigits: 2, editable: true, width: "80px"},
-      {type: "string", field: "mingzi", name: "线名字", editable: true, width: "120px"},
+      {type: "number", field: "length", name: "线长", ndigits: 2, editable: true, style: {flex: "0 1 60px"}},
+      {type: "string", field: "mingzi", name: "线名字", editable: true, style: {flex: "1 1 80px"}},
+      {type: "string", field: "gongshi", name: "线公式", editable: true, style: {flex: "1 1 120px"}},
       {
         type: "select",
         field: "zhankaifangshi",
         name: "展开方式",
-        options: cadLineOptions.zhankaifangshi.values.slice(),
+        options: cadLineOptions.zhankaifangshi.values,
         editable: true,
-        width: "120px"
+        width: "140px"
       },
-      {type: "string", field: "zidingzhankaichang", name: "指定展开长", editable: true, width: "120px"}
+      {
+        type: "string",
+        field: "zidingzhankaichang",
+        name: "指定展开长",
+        inputInfoOverride: ({item}) => {
+          if (item.zhankaifangshi === "指定长度") {
+            return {};
+          }
+          return {value: "", disabled: true};
+        },
+        editable: true,
+        style: {flex: "1 1 120px"}
+      }
     ]
   };
   return info;
@@ -47,8 +61,10 @@ export const getMultiSetInputInfos = (dataSignal: WritableSignal<MultiSetData>) 
     } satisfies Partial<InputInfo<MultiSetData>>;
   };
   const infos: InputInfo<MultiSetData>[] = [
-    {type: "select", options: cadLineOptions.zhankaifangshi.values.slice(), ...get("展开方式")},
-    {type: "string", ...get("指定展开长")}
+    {type: "select", options: cadLineOptions.zhankaifangshi.values, ...get("展开方式")},
+    data.展开方式 === "指定长度"
+      ? {type: "string", ...get("指定展开长")}
+      : {type: "string", ...get("指定展开长"), model: undefined, value: "", disabled: true}
   ];
   return infos;
 };

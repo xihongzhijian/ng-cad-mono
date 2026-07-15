@@ -1,4 +1,4 @@
-import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point} from "@lucilor/utils";
+import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point, purgeObject} from "@lucilor/utils";
 import {cloneDeep, intersection, uniqWith} from "lodash";
 import {v4} from "uuid";
 import {
@@ -8,7 +8,6 @@ import {
   importObjProps,
   mergeArray,
   mergeObject,
-  purgeObject,
   separateArray,
   separateObject
 } from "../cad-utils";
@@ -124,6 +123,7 @@ export class CadData {
   gudingkailiaobancai = "";
   suanliaochuli = "";
   showKuandubiaozhu = false;
+  unrecognizedProps: ObjectOf<any> = {};
   info: CadDataInfo = {};
   attributes: ObjectOf<string> = {};
   bancaihoudufangxiang = "";
@@ -238,6 +238,11 @@ export class CadData {
     if (resetIds) {
       this.resetIds();
     }
+    for (const key in data) {
+      if (!(key in this)) {
+        this.unrecognizedProps[key] = data[key];
+      }
+    }
     return this;
   }
 
@@ -272,6 +277,9 @@ export class CadData {
       zhankai: this.zhankai.map((v) => v.export()),
       ...exportObjProps(this, propertyKeys)
     };
+    for (const [key, value] of Object.entries(this.unrecognizedProps)) {
+      result[key] ??= value;
+    }
     if (Array.isArray(result.conditions)) {
       result.conditions = result.conditions.filter(Boolean);
     }
@@ -575,12 +583,12 @@ export class CadData {
           for (const child of children) {
             if (!cad1Changed && child.findEntity(e.entity1.id)) {
               e.cad1 = child.name;
-              cad1Changed = true;
+              // cad1Changed = true;
               break;
             }
             if (!cad2Changed && child.findEntity(e.entity2.id)) {
               e.cad2 = child.name;
-              cad2Changed = true;
+              // cad2Changed = true;
               break;
             }
           }

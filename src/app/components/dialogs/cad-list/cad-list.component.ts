@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, forwardRef, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
+import {AfterViewInit, Component, computed, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -21,12 +21,12 @@ import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -37,9 +37,9 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   templateUrl: "./cad-list.component.html",
   styleUrls: ["./cad-list.component.scss"],
   imports: [
+    CadItemComponent,
     FormsModule,
-    forwardRef(() => CadItemComponent),
-    forwardRef(() => InputComponent),
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,
@@ -275,13 +275,19 @@ export class CadListComponent implements AfterViewInit {
     return result;
   }
 
+  private _searchPromise: ReturnType<typeof this.getData> | null = null;
   async search(matchType: "and" | "or" = "and") {
+    if (this._searchPromise) {
+      return;
+    }
     const paginator = this.paginator();
     if (!paginator) {
       return;
     }
     paginator.pageIndex = 0;
-    await this.getData(paginator.pageIndex + 1, {}, matchType);
+    this._searchPromise = this.getData(paginator.pageIndex + 1, {}, matchType);
+    await this._searchPromise;
+    this._searchPromise = null;
   }
 
   async advancedSearch() {
@@ -513,7 +519,7 @@ export class CadListComponent implements AfterViewInit {
       params = {ids, collection};
     }
     const {cads} = await this.http.getCad(params);
-    const title = getDateTimeString();
+    const title = getDateTimeString({fmt: "yyyyMMdd"});
     const cads2 = cads.map((v) => v.export());
     await this.message.exportData(cads2, `cads_${title}`);
   }

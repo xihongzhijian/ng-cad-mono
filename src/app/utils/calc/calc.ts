@@ -5,22 +5,99 @@ import {CalcCircularReferenceError, CalcSelfReferenceError} from "./errors";
 import {ExpressionDeps, ExpressionInfo, FormulaInfo, Formulas} from "./types";
 
 export class Calc {
-  private static _builtins: string[] = [
-    "round",
-    "floor",
-    "ceil",
-    "rand",
-    "abs",
-    "min",
-    "max",
-    "sqrt",
-    "log",
-    "exp",
-    "pow",
-    "=",
-    "strpos",
-    "true",
-    "false"
+  private static _builtins: [string[], string?][] = [
+    [
+      ["round", "四舍五入"],
+      String((num: number, fractionDigits = 0) => {
+        const factor = Math.pow(10, fractionDigits);
+        return Math.round(num * factor) / factor;
+      })
+    ],
+    [["floor", "去除小数"], "Math.floor"],
+    [["ceil", "小数进一"], "Math.ceil"],
+    [["rand", "随机数"], "Math.random"],
+    [["abs", "绝对值"], "Math.abs"],
+    [["min", "取最小值"], "Math.min"],
+    [["max", "取最大值"], "Math.max"],
+    [["sqrt", "平方根"], "Math.sqrt"],
+    [["log", "自然对数"], "Math.log"],
+    [["exp", "自然指数"], "Math.exp"],
+    [["pow", "求幂"], "Math.pow"],
+    [["=", "等于号"]],
+    [
+      ["strpos"],
+      String((str: string, needle: string) => {
+        const index = str.indexOf(needle);
+        if (index === -1) {
+          return false;
+        }
+        return index;
+      })
+    ],
+    [["asin"], "Math.asin"],
+    [["acos"], "Math.acos"],
+    [["atan"], "Math.atan"],
+    [["atan2"], "Math.atan2"],
+    [["sin"], "Math.sin"],
+    [["cos"], "Math.cos"],
+    [["tan"], "Math.tan"],
+    [["sinh"], "Math.sinh"],
+    [["cosh"], "Math.cosh"],
+    [["tanh"], "Math.tanh"],
+    [["pi"], "Math.PI"],
+    [["e"], "Math.E"],
+    [["in_array"], String((needle: any, stack: any[]) => stack.includes(needle))],
+    [["有小数"], String((num: number) => num - Math.floor(num) !== 0)],
+    [["有整除余数"], String((num: number, num2: number) => num % num2 !== 0)],
+    [["是整数"], String((num: number) => num - Math.floor(num) === 0)],
+    [["是奇数"], String((num: number) => num % 2 !== 0)],
+    [["是偶数"], String((num: number) => num % 2 === 0)],
+    [["求整除余数"], String((num: number, num2: number) => num % num2)],
+    [["求小数"], String((num: number) => num - Math.floor(num))],
+    [
+      ["包含"],
+      String((str1: any, str2: any) => {
+        if (!str1 || !str2) {
+          return false;
+        }
+        if (typeof str1 !== "string" || typeof str2 !== "string") {
+          return false;
+        }
+        return str1.includes(str2);
+      })
+    ],
+    [
+      ["取子字符串"],
+      String((str: string, start: number, length = 1) => {
+        if (typeof str !== "string" || !str) {
+          return "";
+        }
+        if (start < 1) {
+          start = 1;
+        }
+        return str.slice(start - 1, start - 1 + length);
+      })
+    ],
+    [
+      ["取整或取一半"],
+      String((num: number) => {
+        if (typeof num === "string") {
+          num = Number(num);
+        }
+        if (typeof num !== "number" || isNaN(num)) {
+          return NaN;
+        }
+        const int = Math.floor(num);
+        const dec = num - int;
+        if (dec <= 0.3) {
+          return int;
+        } else if (dec <= 0.6) {
+          return int + 0.5;
+        } else {
+          return int + 1;
+        }
+      })
+    ]
   ];
   private static _opsReg = /[+\\\-x*/()|&!?:>< =,%]+/g;
   private static _opsArr = ["+", "\\", "-", "x", "*", "/", "(", ")", "|", "&", "!", "?", ":", ">", "<", " ", "=", ",", "%"];
@@ -30,12 +107,48 @@ export class Calc {
     return str;
   }
 
+  private static _fnStrCache: string | null = null;
+  private static _buildFnStr() {
+    if (this._fnStrCache) {
+      return this._fnStrCache;
+    }
+    const {_builtins} = this;
+    let valsStr = "";
+    for (const [names, val] of _builtins) {
+      if (val === undefined) {
+        continue;
+      }
+      for (const [i, name] of names.entries()) {
+        const nameLower = name.toLowerCase();
+        if (i === 0) {
+          valsStr += `const ${name} = ${val};\n`;
+          if (nameLower !== name) {
+            valsStr += `const ${nameLower} = ${name};\n`;
+          }
+        } else {
+          valsStr += `const ${nameLower} = ${names[0]};\n`;
+        }
+      }
+    }
+    this._fnStrCache = `"use strict";\n${valsStr}\n`;
+    return this._fnStrCache;
+  }
+
   /**
    * 提取公式中的变量
    */
   public static getVars(expression: string) {
     const {_opsReg, _builtins} = this;
-    return uniq(expression.split(_opsReg)).filter((v) => !_builtins.includes(v.toLowerCase()) && isNaN(Number(v)) && v.match(/^[^'^"]+/));
+    return uniq(expression.split(_opsReg)).filter((str) => {
+      const strLower = str.toLowerCase();
+      if (_builtins.some((list) => list[0].includes(strLower))) {
+        return false;
+      }
+      if (!isNaN(Number(str)) || /[.]/.test(str)) {
+        return false;
+      }
+      return str.match(/^[^'^"]+/);
+    });
   }
 
   /**
@@ -164,6 +277,17 @@ export class Calc {
     }
   }
 
+  public static separateFormulas(target: Formulas, ...sources: (Formulas | null | undefined)[]) {
+    for (const source of sources) {
+      if (!isTypeOf(source, "object")) {
+        continue;
+      }
+      for (const key in source) {
+        delete target[key];
+      }
+    }
+  }
+
   public static generateExpressDirect(expression: string, dic: Formulas = {}): string {
     // dic中可能有中文
     if (typeof dic !== "object") {
@@ -195,7 +319,16 @@ export class Calc {
    * @returns
    */
   public static calcExpressDirect(expression: string) {
-    return window.eval(expression);
+    const fn = new Function(`${this._buildFnStr()}return ${expression.toLocaleLowerCase()};`);
+    try {
+      return fn();
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new Error(`无法计算: ${expression}\n${e.message}`, {cause: e});
+      } else {
+        throw new Error(`无法计算: ${expression}\n${e}`, {cause: e});
+      }
+    }
   }
 
   /**
@@ -206,7 +339,6 @@ export class Calc {
    * @returns
    */
   public static calcExpress(expression: string, dic: Formulas = {}) {
-    initCalc();
     const rawExpression = expression;
 
     const result: {
@@ -385,13 +517,13 @@ export class Calc {
       }
     }
 
-    const replace: ObjectOf<string> = {};
+    let replace: {key: string; value: string}[] = [];
     const extractReplace = (obj: Formulas) => {
       for (const aname of Object.keys(obj)) {
         const expression = obj[aname];
         if (typeof expression === "string" && expression.split("#").length - 1 > 1) {
           // 含一个#的没问题
-          replace[aname] = expression;
+          replace.push({key: aname, value: expression});
           delete obj[aname];
           continue;
         }
@@ -428,10 +560,23 @@ export class Calc {
 
     // 处理需要替换的字符串，含##的表达式
     if (!isEmpty(replace)) {
+      const getItemDepth = ({value}: (typeof replace)[number]) => {
+        const matches = value.match(/#(.*?)#/g);
+        let count = 0;
+        for (const match_v of matches || []) {
+          const expressionK = trim(match_v, "#");
+          if (replace.some((v) => v.key === expressionK)) {
+            count++;
+          }
+        }
+        return count;
+      };
+      replace.sort((a, b) => getItemDepth(a) - getItemDepth(b));
       while (true) {
         const ok2: ObjectOf<string> = {};
-        for (const key in replace) {
-          let value = replace[key];
+        for (const item of replace) {
+          const {key} = item;
+          let {value} = item;
           const matches = value.match(/#(.*?)#/g);
           // (1)没有匹配到##
           if (!matches || matches.length < 1) {
@@ -443,7 +588,7 @@ export class Calc {
           const replaceTo = "*****";
           for (const match_v of matches) {
             const expressionK = trim(match_v, "#");
-            let replaceV = "";
+            let replaceV: string;
 
             if (vars[expressionK] !== undefined) {
               // 直接替换, 这种情况是选项，选项里可能有#
@@ -471,7 +616,7 @@ export class Calc {
 
           // ##, 全部替换完了
           const replaceValue = value.replaceAll(replaceTo, "#");
-          replace[key] = replaceValue;
+          item.value = replaceValue;
           ok2[key] = replaceValue;
           vars[key] = replaceValue;
           for (const k in formulasRaw) {
@@ -484,9 +629,7 @@ export class Calc {
 
         // 有替换掉的
         if (!isEmpty(ok2)) {
-          for (const k in ok2) {
-            delete replace[k];
-          }
+          replace = replace.filter((v) => !(v.key in ok2));
         }
 
         // 替换完了
@@ -496,8 +639,8 @@ export class Calc {
 
         // 替换不下去了，提示替换不出来的表达式
         if (isEmpty(ok2) && !isEmpty(replace)) {
-          for (const name in replace) {
-            error[name] = replace[name];
+          for (const {key, value} of replace) {
+            error[key] = value;
           }
           break;
         }
@@ -545,60 +688,88 @@ export class Calc {
 
 export type CalcResult = ReturnType<(typeof Calc)["calcFormulas"]>;
 
-let inited = false;
-const initCalc = () => {
-  if (inited) {
-    return;
-  }
-  const funcs = {
-    round: (num: string | number, decimal = 0) => {
-      if (typeof num === "number" && isNaN(num)) {
-        return 0;
-      }
-      const res = toFixed(num, decimal);
-      return Number(res);
-    },
-    ceil: Math.ceil,
-    floor: Math.floor,
-    in_array: (needle: any, stack: any[]) => stack.includes(needle),
-    strpos: (str: string, needle: string) => {
-      const index = str.indexOf(needle);
-      if (index === -1) {
-        return false;
-      }
-      return index;
-    },
-    sqrt: Math.sqrt,
-    tan: Math.tan,
-    atan: Math.atan,
-    sin: Math.sin,
-    asin: Math.asin,
-    cos: Math.cos,
-    acos: Math.acos,
-    pi: Math.PI,
-    有小数: (num: number) => num - Math.floor(num) !== 0,
-    有整除余数: (num: number, num2: number) => num % num2 !== 0,
-    是整数: (num: number) => num - Math.floor(num) === 0,
-    是奇数: (num: number) => num % 2 !== 0,
-    是偶数: (num: number) => num % 2 === 0,
-    求整除余数: (num: number, num2: number) => num % num2,
-    求小数: (num: number) => num - Math.floor(num),
-    包含: (str1: any, str2: any) => {
-      if (!str1 || !str2) {
-        return false;
-      }
-      if (typeof str1 !== "string" || typeof str2 !== "string") {
-        return false;
-      }
+// let inited = false;
+// const initCalc = () => {
+//   if (inited) {
+//     return;
+//   }
+//   const funcs = {
+//     round: (num: string | number, decimal = 0) => {
+//       if (typeof num === "number" && isNaN(num)) {
+//         return 0;
+//       }
+//       const res = toFixed(num, decimal);
+//       return Number(res);
+//     },
+//     ceil: Math.ceil,
+//     floor: Math.floor,
+//     in_array: (needle: any, stack: any[]) => stack.includes(needle),
+//     strpos: (str: string, needle: string) => {
+//       const index = str.indexOf(needle);
+//       if (index === -1) {
+//         return false;
+//       }
+//       return index;
+//     },
+//     sqrt: Math.sqrt,
+//     tan: Math.tan,
+//     atan: Math.atan,
+//     sin: Math.sin,
+//     asin: Math.asin,
+//     cos: Math.cos,
+//     acos: Math.acos,
+//     pi: Math.PI,
+//     e: Math.E,
+//     有小数: (num: number) => num - Math.floor(num) !== 0,
+//     有整除余数: (num: number, num2: number) => num % num2 !== 0,
+//     是整数: (num: number) => num - Math.floor(num) === 0,
+//     是奇数: (num: number) => num % 2 !== 0,
+//     是偶数: (num: number) => num % 2 === 0,
+//     求整除余数: (num: number, num2: number) => num % num2,
+//     求小数: (num: number) => num - Math.floor(num),
+//     包含: (str1: any, str2: any) => {
+//       if (!str1 || !str2) {
+//         return false;
+//       }
+//       if (typeof str1 !== "string" || typeof str2 !== "string") {
+//         return false;
+//       }
 
-      return str1.includes(str2);
-    }
-  };
+//       return str1.includes(str2);
+//     },
+//     取子字符串: (str: string, start: number, length = 1) => {
+//       if (typeof str !== "string" || !str) {
+//         return "";
+//       }
+//       if (start < 1) {
+//         start = 1;
+//       }
+//       return str.slice(start - 1, start - 1 + length);
+//     },
+//     取整或取一半: (num: number) => {
+//       if (typeof num === "string") {
+//         num = Number(num);
+//       }
+//       if (typeof num !== "number" || isNaN(num)) {
+//         return NaN;
+//       }
+//       const 小数 = funcs.求小数(num);
+//       const 整数 = num - 小数;
+//       if (小数 <= 0.3) {
+//         return 整数;
+//       } else if (小数 <= 0.6) {
+//         return 整数 + 0.5;
+//       } else {
+//         return 整数 + 1;
+//       }
+//     }
+//   };
 
-  for (const name in funcs) {
-    const func = (funcs as any)[name];
-    Reflect.defineProperty(window, name, {value: func});
-    Reflect.defineProperty(window, name.toUpperCase(), {value: func});
-  }
-  inited = true;
-};
+//   for (const name in funcs) {
+//     const func = (funcs as any)[name];
+//     Reflect.defineProperty(window, name, {value: func});
+//     Reflect.defineProperty(window, name.toUpperCase(), {value: func});
+//     console.log(name);
+//   }
+//   inited = true;
+// };

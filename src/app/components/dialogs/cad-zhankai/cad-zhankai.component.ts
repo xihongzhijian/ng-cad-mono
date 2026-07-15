@@ -1,23 +1,35 @@
-import {Component, computed, inject, signal} from "@angular/core";
+import {Component, computed, inject, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
-import {ErrorStateMatcher} from "@angular/material/core";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {joinOptions, splitOptions} from "@app/app.common";
+import {
+  CadQiegemuban,
+  CadQiegemubanGroup,
+  emptyQiegemubanGroup,
+  getQiegemubanFilledCount,
+  initQiegemubanGroup,
+  purgeQiegemubanGroup,
+  replaceQiegemubanGroup
+} from "@app/cad/cad-qiegemuban";
 import {flipOptions} from "@app/cad/options";
+import {tryParseJson} from "@app/utils/json-helper";
 import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
+import {isTypeOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
-import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {openCadListDialog} from "../cad-list/cad-list.component";
 import {openCadOptionsDialog} from "../cad-options/cad-options.component";
+import {openCadQiegemubanGroupDialog} from "../cad-qiegemuban-group/cad-qiegemuban-group.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -27,8 +39,9 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [InputComponent, MatButtonModule, MatCheckboxModule, MatIconModule, NgScrollbar]
 })
 export class CadZhankaiComponent extends Utils() {
-  dialogRef = inject<MatDialogRef<CadZhankaiComponent, CadZhankai[]>>(MatDialogRef);
-  data = inject<CadData["zhankai"]>(MAT_DIALOG_DATA, {optional: true}) ?? [];
+  dialogRef = inject<MatDialogRef<CadZhankaiComponent, CadZhankaiDialogOutput>>(MatDialogRef);
+  data = inject<CadZhankaiDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {zhankais: [], qiegemubanGroups: []};
+  private config = inject(AppConfigService);
   private dialog = inject(MatDialog);
 
   private message = inject(MessageService);
@@ -44,29 +57,26 @@ export class CadZhankaiComponent extends Utils() {
   get emptyFlipItem(): CadZhankai["flip"][0] {
     return {kaiqi: "", chanpinfenlei: "", fanzhuanfangshi: ""};
   }
-  nameErrorMsgs = signal<string[]>([]);
-  nameMatcher: ErrorStateMatcher = {
-    isErrorState: (control) => {
-      const value = control?.value;
-      if (!value) {
-        return true;
-      }
-      return false;
-      // return this.data.filter((v) => v.name === value).length > 1;
-    }
-  };
 
   zhankais = signal<CadData["zhankai"]>([]);
+  qiegemubanGroups = signal<CadQiegemubanGroup[]>([]);
 
   constructor() {
     super();
-    this.zhankais.set(cloneDeep(this.data));
+    this.zhankais.set(cloneDeep(this.data.zhankais));
+    this.qiegemubanGroups.set(cloneDeep(this.data.qiegemubanGroups));
   }
 
-  submit() {
-    if (this.valid()) {
-      this.dialogRef.close(this.zhankais());
+  inputComponents = viewChildren(InputComponent);
+
+  async submit() {
+    const {errorMsg} = await validateForm(this.inputComponents());
+    if (errorMsg) {
+      this.message.error(errorMsg);
+      return;
     }
+    const qiegemubanGroups = purgeQiegemubanGroup(this.qiegemubanGroups());
+    this.dialogRef.close({zhankais: this.zhankais(), qiegemubanGroups});
   }
 
   cancel() {
@@ -77,13 +87,13 @@ export class CadZhankaiComponent extends Utils() {
     this.status.openCadInNewTab(item[key], "kailiaocadmuban");
   }
 
-  async selectCadmuban(item: CadZhankai, key: "kailiaomuban" | "neikaimuban") {
+  async selectCadmuban(item: CadZhankai, key: "kailiaomuban" | "neikaimuban", i: number) {
     const checkedItems = [item[key]];
     const result = await openCadListDialog(this.dialog, {data: {selectMode: "single", collection: "kailiaocadmuban", checkedItems}});
     if (result) {
       item[key] = result[0]?.id || "";
       this.zhankais.update((v) => {
-        v[0][key] = item[key];
+        v[i][key] = item[key];
         return [...v];
       });
     }
@@ -98,7 +108,7 @@ export class CadZhankaiComponent extends Utils() {
   }
 
   selectAll() {
-    const indices = this.data.map((_v, i) => i);
+    const indices = this.data.zhankais.map((_v, i) => i);
     this.checkedIndices.set(indices.slice(1));
   }
   unselectAll() {
@@ -115,13 +125,18 @@ export class CadZhankaiComponent extends Utils() {
 
   addItem() {
     this.zhankais.update((v) => [...v, new CadZhankai()]);
-    this.validate();
   }
   copyItem(i: number) {
     const zhankais = this.zhankais().slice();
     zhankais.splice(i + 1, 0, cloneDeep(zhankais[i]));
+    const qiegemubanGroups = this.qiegemubanGroups();
     this.zhankais.set(zhankais);
-    this.validate();
+    const group = qiegemubanGroups.find((g) => g.index === i);
+    if (group) {
+      const newGroup = {...group, index: zhankais.length - 1, qiegemubans: cloneDeep(group.qiegemubans)};
+      qiegemubanGroups.push(newGroup);
+      this.qiegemubanGroups.set([...qiegemubanGroups]);
+    }
   }
   removeItem(i: number) {
     if (i === 0) {
@@ -131,8 +146,8 @@ export class CadZhankaiComponent extends Utils() {
       const zhankais = this.zhankais().slice();
       zhankais.splice(i, 1);
       this.zhankais.set(zhankais);
+      this.qiegemubanGroups.update((groups) => groups.filter((g) => g.index !== i));
     }
-    this.validate();
   }
 
   async selectOptions(obj: any, field: string) {
@@ -161,7 +176,8 @@ export class CadZhankaiComponent extends Utils() {
             {name: "复制", onClick: () => this.copyItem(i)},
             {name: "删除", onClick: () => this.removeItem(i)}
           ],
-          validators: Validators.required
+          validators: Validators.required,
+          style: {width: "200px"}
         }),
         getInputInfoGroup([
           getter.string("kailiaomuban", {
@@ -169,7 +185,7 @@ export class CadZhankaiComponent extends Utils() {
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "kailiaomuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban")}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban", i)}
             ]
           }),
           getter.string("neikaimuban", {
@@ -177,7 +193,7 @@ export class CadZhankaiComponent extends Utils() {
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "neikaimuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban")}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban", i)}
             ]
           })
         ]),
@@ -254,7 +270,7 @@ export class CadZhankaiComponent extends Utils() {
   }
 
   async addFlipChai(i: number) {
-    const num = await this.message.prompt({label: "序号", type: "number", validators: Validators.min(0)});
+    const num = await this.message.prompt({label: "序号", type: "number", validators: Validators.min(0), hint: "本体是第1个，后面往下数"});
     if (num === null) {
       return;
     }
@@ -278,27 +294,93 @@ export class CadZhankaiComponent extends Utils() {
     });
   }
 
-  valid = computed(() => {
-    return this.nameErrorMsgs().every((v) => !v);
-  });
-  validate() {
-    const zhankais = this.zhankais();
-    this.nameErrorMsgs.set(
-      zhankais.map((zhankai) => {
-        return zhankai.name ? "" : "名字不能为空";
-      })
-    );
+  showQiegemuban = computed(() => this.status.projectConfig.getBoolean("开启45度切角"));
+  qiegemubanGroupInfos = computed(() =>
+    this.qiegemubanGroups().map((group) => {
+      return {filledCount: getQiegemubanFilledCount(group)};
+    })
+  );
+
+  getQiegemubanGroup(i: number, createIfEmpty: false): Promise<CadQiegemubanGroup | undefined>;
+  getQiegemubanGroup(i: number, createIfEmpty: true): Promise<CadQiegemubanGroup>;
+  async getQiegemubanGroup(i: number, createIfEmpty: boolean) {
+    const qiegemubanGroups = this.qiegemubanGroups();
+    let group = qiegemubanGroups.find((g) => g.index === i);
+    if (!group && createIfEmpty) {
+      group = initQiegemubanGroup(qiegemubanGroups, i);
+    }
+    if (!group) {
+      await this.message.error("切割模板为空");
+    }
+    return group;
+  }
+
+  async editQiegemuban(i: number) {
+    const group = await this.getQiegemubanGroup(i, true);
+    const result = await openCadQiegemubanGroupDialog(this.dialog, {data: {group}});
+    if (result) {
+      const groups = this.qiegemubanGroups();
+      replaceQiegemubanGroup(groups, result.group);
+      this.qiegemubanGroups.set([...groups]);
+    }
+  }
+  async copyQiegemuban(i: number) {
+    const group = await this.getQiegemubanGroup(i, false);
+    if (!group) {
+      return;
+    }
+    const data = {id: "cad-zhankai-qiegemuban", qiegemubans: group.qiegemubans};
+    await this.message.copyText(JSON.stringify(data));
+  }
+  async pasteQiegemuban(i: number) {
+    const text = await this.message.pasteText();
+    const data = tryParseJson(text || "");
+    if (!isTypeOf(data, "object") || data.id !== "cad-zhankai-qiegemuban") {
+      await this.message.error("没有切割模板数据");
+      return;
+    }
+    const qiegemubans = data.qiegemubans as CadQiegemuban[];
+    const group = await this.getQiegemubanGroup(i, true);
+    group.qiegemubans = qiegemubans;
+    this.qiegemubanGroups.update((v) => [...v]);
+  }
+  async emptyQiegemuban(i: number) {
+    if (!(await this.message.confirm("是否确定删除切割模板？"))) {
+      return;
+    }
+    const qiegemubanGroups = this.qiegemubanGroups();
+    emptyQiegemubanGroup(qiegemubanGroups, i);
+    this.qiegemubanGroups.set([...qiegemubanGroups]);
   }
 }
 
-export const openCadZhankaiDialog = getOpenDialogFunc<CadZhankaiComponent, CadZhankai[], CadZhankai[]>(CadZhankaiComponent);
+export interface CadZhankaiDialogInput {
+  zhankais: CadZhankai[];
+  qiegemubanGroups: CadQiegemubanGroup[];
+}
+export interface CadZhankaiDialogOutput {
+  zhankais: CadZhankai[];
+  qiegemubanGroups: CadQiegemubanGroup[];
+}
+export const openCadZhankaiDialog = getOpenDialogFunc<CadZhankaiComponent, CadZhankaiDialogInput, CadZhankaiDialogOutput>(
+  CadZhankaiComponent
+);
 
 export const editCadZhankai = async (dialog: MatDialog, data: CadData) => {
-  const result = await openCadZhankaiDialog(dialog, {data: data.zhankai});
+  let qiegemubanGroups = data.info.切割模板;
+  if (!Array.isArray(qiegemubanGroups)) {
+    qiegemubanGroups = [];
+  }
+  const result = await openCadZhankaiDialog(dialog, {data: {zhankais: data.zhankai, qiegemubanGroups}});
   if (result) {
-    data.zhankai = result;
-    if (result.length) {
-      data.name = result[0].name;
+    data.zhankai = result.zhankais;
+    if (result.zhankais.length > 0) {
+      data.name = result.zhankais[0].name;
+    }
+    if (result.qiegemubanGroups.length > 0) {
+      data.info.切割模板 = result.qiegemubanGroups;
+    } else {
+      delete data.info.切割模板;
     }
   }
 };

@@ -1,4 +1,4 @@
-import {Component, computed, HostBinding, HostListener, inject} from "@angular/core";
+import {Component, computed, HostBinding, HostListener, inject, output, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -10,6 +10,7 @@ import {CadCollection} from "@app/cad/collections";
 import {printCads} from "@app/cad/print";
 import {isLengthTextSizeSetKey, isShiyitu} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
+import {CadPreviewGeneratorComponent} from "@components/cad-preview-generator/cad-preview-generator.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -17,6 +18,8 @@ import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.compon
 import {environment} from "@env";
 import {CadArc, CadData, CadDimensionLinear, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
 import {Angle, downloadByString, Line, Matrix, MatrixLike, Point, timeout} from "@lucilor/utils";
+import {FloatingDialogComponent} from "@modules/floating-dialog/components/floating-dialog/floating-dialog.component";
+import {FloatingDialogTitleDirective} from "@modules/floating-dialog/directives/floating-dialog-title.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -38,7 +41,16 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule]
+  imports: [
+    AboutComponent,
+    CadPreviewGeneratorComponent,
+    FloatingDialogComponent,
+    MatButtonModule,
+    MatDividerModule,
+    MatMenuModule,
+    RouterModule,
+    FloatingDialogTitleDirective
+  ]
 })
 export class ToolbarComponent {
   private config = inject(AppConfigService);
@@ -49,6 +61,8 @@ export class ToolbarComponent {
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
+
+  focusZhuangpeixinxiOut = output({alias: "focusZhuangpeixinxi"});
 
   keyEventItems: KeyEventItem[] = [
     {
@@ -258,7 +272,7 @@ export class ToolbarComponent {
       }
     }
     const rotateDimension = Math.round(angle / 90) % 2 !== 0;
-    this.transform({rotate: new Angle(angle, "deg").rad}, rotateDimension);
+    this.transform({rotate: Angle.degToRad(angle)}, rotateDimension);
   }
 
   assembleCads() {
@@ -680,5 +694,17 @@ export class ToolbarComponent {
 
   async searchCadsUsingMuban() {
     return await openCadListDialog(this.dialog, {data: {collection: "cad", selectMode: "none", search: {模板: this.status.cad.data.id}}});
+  }
+
+  focusZhuangpeixinxi() {
+    this.focusZhuangpeixinxiOut.emit();
+  }
+
+  openedCadPreviewGenerator = signal(false);
+  openCadPreviewGenerator() {
+    this.openedCadPreviewGenerator.set(true);
+  }
+  closeCadPreviewGenerator() {
+    this.openedCadPreviewGenerator.set(false);
   }
 }

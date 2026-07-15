@@ -1,5 +1,6 @@
 import {getOrderBarcode, replaceRemoteHost} from "@app/app.common";
 import {getPdfInfo, getPrintInfo} from "@app/utils/print";
+import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadCircle,
   CadData,
@@ -12,16 +13,18 @@ import {
   CadLine,
   CadLineLike,
   CadMtext,
+  CadStylizer,
   CadViewer,
   CadViewerConfig,
   Defaults,
   FontStyle,
+  generatePointsMap,
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
-import {createPdf} from "pdfmake/build/pdfmake";
-import {ContentImage} from "pdfmake/interfaces";
+import pdfmake from "pdfmake";
+import {type ContentImage} from "pdfmake/interfaces";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
 import {
@@ -372,7 +375,7 @@ export const configCadDataForPrint = async (
     }
   };
   const configMText = (e: CadMtext) => {
-    const {text, insert} = e;
+    const {insert} = e;
     const offsetInsert = (x: number, y: number) => {
       const configBefore = getConfigBefore(e);
       const insertOffsetBefore = configBefore.insertOffset;
@@ -401,7 +404,7 @@ export const configCadDataForPrint = async (
       } else if (e.fontStyle.size === 22) {
         offsetInsert(3, -7);
       }
-      e.text = text.replace("     ", "");
+      e.text = e.text.replace("     ", "");
       e.fontStyle.family = "仿宋";
       e.fontStyle.weight = "bolder";
       offsetFontSize(8);
@@ -416,14 +419,15 @@ export const configCadDataForPrint = async (
     if ((e.fontStyle.size || -1) < 24) {
       e.fontStyle.weight = "bolder";
     }
+    e.text = e.text.trim();
     if ([" ×  = 1", "=1"].includes(e.text) || !/\S+/.test(e.text)) {
       e.visible = false;
     }
 
     // * 自动换行
     const wrapedTextReg = /(^花件信息|自动换行)/;
-    if (wrapedTextReg.test(text)) {
-      let wrapedText = text.replace(wrapedTextReg, "");
+    if (wrapedTextReg.test(e.text)) {
+      let wrapedText = e.text.replace(wrapedTextReg, "");
       let lines = es.line;
       lines = lines.filter((ee) => ee.isVertical() && isBetween(insert.y, ee.minY, ee.maxY) && ee.start.x - insert.x > 50);
       let dMin = Infinity;
@@ -458,7 +462,28 @@ export const configCadDataForPrint = async (
 
   if (isZxpj && data instanceof CadData) {
     const lineLengthMap: ObjectOf<{text: string; mtext: CadMtext; 显示线长?: string}> = {};
-    const shaungxiangCads = splitShuangxiangCad(data);
+    const data2 = data.clone();
+    for (const e of data2.entities.line) {
+      if (e.显示线长) {
+        const length = Number(e.显示线长);
+        if (!isNaN(length)) {
+          setLinesLength(data2, [e], length);
+        }
+      }
+    }
+    const shaungxiangCads0 = splitShuangxiangCad(data2);
+    let shaungxiangCads: typeof shaungxiangCads0 = null;
+    if (shaungxiangCads0) {
+      shaungxiangCads = [new CadData(), new CadData()];
+      for (const [i, shaungxiangCad0] of shaungxiangCads0.entries()) {
+        shaungxiangCad0.entities.forEach((e) => {
+          const e2 = data.findEntity(e.id);
+          if (shaungxiangCads && e2) {
+            shaungxiangCads[i].entities.add(e2);
+          }
+        });
+      }
+    }
     await cad.render(data.getAllEntities());
     let rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect(false);
     const 宽度标注文本 = Math.round(rect2.width).toFixed();
@@ -482,12 +507,11 @@ export const configCadDataForPrint = async (
         }
       }
     });
-    let rect = data.getBoundingRect();
     // data.transform({scale: data.suanliaodanZoom, origin: [rect.x, rect.y]}, true);
     await cad.render(data.getAllEntities());
     setShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
-    data.entities.toArray().forEach((e) => {
+    data.entities.forEach((e) => {
       if (e instanceof CadLineLike && e.id in lineLengthMap) {
         e.hideLength = true;
         const {text, mtext, 显示线长} = lineLengthMap[e.id];
@@ -517,7 +541,7 @@ export const configCadDataForPrint = async (
         data.entities.add(宽度标注2);
         宽度标注2.info.宽度标注 = true;
       }
-      rect = data.getBoundingRect();
+      const rect = data.getBoundingRect();
       rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect();
       rect2.top = rect.top;
       const space = 20;
@@ -701,7 +725,7 @@ const getUnfoldCadViewers = async (
           if (qrcodeSuccess && qrcodeEl.width <= boxRect.width && qrcodeEl.height <= boxRect.height) {
             const img = new CadImage();
             img.objectFit = "contain";
-            img.anchor.set(0.5, 1);
+            img.anchor.set(0.5, 0);
             img.targetSize = new Point(qrcodeEl.width, qrcodeEl.height);
             img.url = qrcodeEl.toDataURL();
             img.position.set(boxRect.x, y);
@@ -751,13 +775,17 @@ const getUnfoldCadViewers = async (
       }
       cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
 
-      const startLines = [];
-      cad.entities.forEach((e) => {
-        if (e instanceof CadLineLike && e.info.startLine) {
-          startLines.push(e);
+      const pointsMap = generatePointsMap(cad.entities);
+      for (const {point, lines} of pointsMap) {
+        if (lines.length !== 1) {
+          continue;
+        }
+        const e = lines[0];
+        if (e.info.startLine) {
           const leader = new CadLeader();
           leader.setColor("red");
-          const to = e.start.clone().add(-1, 1);
+          const targetPoint = e.start.equals(point) ? e.start : e.end;
+          const to = targetPoint.clone().add(-1, 1);
           const from = to.clone().add(-10, 10);
           leader.vertices = [to, from];
           unfoldCad.entities.add(leader);
@@ -769,7 +797,7 @@ const getUnfoldCadViewers = async (
           text.anchor.set(0.5, 1);
           unfoldCad.entities.add(text);
         }
-      });
+      }
     } else {
       const cadName = new CadMtext();
       cadName.text = cad.name;
@@ -876,38 +904,23 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
 };
 
 export const printCads = async (params: PrintCadsParams) => {
+  读取算料单项目配置(params);
   const cads = params.cads.map((v) => v.clone());
   const config = params.config || {};
   const extra = params.extra || {};
   const {width, height, scaleX, scaleY, scale} = getPrintInfo(210, 297);
   const errors: string[] = [];
 
-  const pdfPadding: number[] = [];
-  const 算料单页边距 = params.projectConfig.get("算料单页边距");
-  const defaultPadding = 18;
-  const 算料单页边距Num = Number(算料单页边距);
-  if (isNaN(算料单页边距Num)) {
-    const 算料单页边距Arr = 算料单页边距.split("+");
-    for (const char of "上右下左") {
-      const str = 算料单页边距Arr.find((v) => v.startsWith(char))?.slice(char.length);
-      const num = Number(str);
-      if (isNaN(num)) {
-        pdfPadding.push(defaultPadding);
-      } else {
-        pdfPadding.push(num);
-      }
-    }
-  } else {
-    pdfPadding.push(算料单页边距 ? 算料单页边距Num : defaultPadding);
-  }
   const config2: Partial<CadViewerConfig> = {
     backgroundColor: "white",
-    padding: pdfPadding.map((v) => v * scale),
     hideLineLength: true,
     hideLineGongshi: true,
     minLinewidth: 0,
     ...config
   };
+  if (config2.padding) {
+    config2.padding = config2.padding.map((v) => v * scale);
+  }
   const cad = new CadViewer(new CadData(), config2);
   cad.appendTo(document.body);
   cad.dom.style.opacity = "0";
@@ -958,7 +971,6 @@ export const printCads = async (params: PrintCadsParams) => {
     }
 
     const designPics = params.designPics;
-    let img: string | undefined;
     let img2: string | undefined;
     if (designPics) {
       for (const keyword in designPics) {
@@ -981,10 +993,7 @@ export const printCads = async (params: PrintCadsParams) => {
               await setImagesUrl(cadImages, currUrls);
               await cad.render(cadImages);
               cad.center();
-              img = await cad.toDataURL();
             }
-          } else {
-            img = await cad.toDataURL();
           }
           if (showLarge && isOwn) {
             const data2 = new CadData();
@@ -1034,9 +1043,15 @@ export const printCads = async (params: PrintCadsParams) => {
         }
       }
     }
-    await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细);
-    img = await cad.toDataURL();
-    imageContents1.push({image: img, width: localWidth, height: localHeight});
+    const {imgs} = await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
+    if (imgs.length > 0) {
+      for (const img of imgs) {
+        imageContents1.push({image: img, width: localWidth, height: localHeight});
+      }
+    } else {
+      const img = await cad.toDataURL();
+      imageContents1.push({image: img, width: localWidth, height: localHeight});
+    }
     if (img2) {
       imageContents2.push({image: img2, width: localWidth, height: localHeight});
     }
@@ -1052,8 +1067,8 @@ export const printCads = async (params: PrintCadsParams) => {
 
     const bomTable = params.orders?.[i]?.bomTable;
     if (bomTable) {
-      const imgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
-      for (const image of imgs) {
+      const bomTableImgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
+      for (const image of bomTableImgs) {
         imageContents2.push({image, width: localWidth, height: localHeight});
       }
     }
@@ -1068,7 +1083,7 @@ export const printCads = async (params: PrintCadsParams) => {
   }
 
   const imageContents = [...imageContents1, ...imageContents2];
-  const pdf = createPdf(
+  const pdf = pdfmake.createPdf(
     {
       info: {
         ...getPdfInfo(),
@@ -1083,40 +1098,91 @@ export const printCads = async (params: PrintCadsParams) => {
     },
     {}
   );
-  const {pdfFile, url} = await new Promise<{pdfFile: File; url: string}>((resolve) => {
-    pdf.getBlob((blob) => {
-      const url2 = URL.createObjectURL(blob);
-      const name = params.codes?.join(",") || "print";
-      const file = new File([blob], `${name}.pdf`, {type: "application/pdf"});
-      resolve({pdfFile: file, url: url2});
-    });
-  });
+  const blob = await pdf.getBlob();
+  const url = URL.createObjectURL(blob);
+  const name = params.codes?.join(",") || "print";
+  const pdfFile = new File([blob], `${name}.pdf`, {type: "application/pdf"});
   return {url, errors, cad, pdfFile, imageContents};
 };
 
-const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细List | undefined) => {
-  if (!型材物料明细 || !型材物料明细.items) {
-    return;
+const 读取算料单项目配置 = (params: PrintCadsParams) => {
+  const {projectConfig} = params;
+  params.linewidth = 1.5;
+  if (projectConfig.getBoolean("算料单CAD线宽加粗")) {
+    params.linewidth = 2;
   }
-  const lines = findRectLines(data, "型材物料明细", true);
-  if (lines.errors.length > 0 || !lines.locator || !lines.rect.isFinite) {
-    console.warn("型材物料明细定位出错");
-    return;
+  const linewidth = projectConfig.getNumber("算料单CAD线宽");
+  if (linewidth > 0) {
+    params.linewidth = linewidth;
   }
 
-  const ps: Promise<void>[] = [];
+  if (!params.config) {
+    params.config = {};
+  }
+
+  if (!params.config.fontStyle) {
+    params.config.fontStyle = {};
+  }
+  const fontFamily = projectConfig.get("算料单字体");
+  if (fontFamily) {
+    CadStylizer.mergeFontStyle(params.config.fontStyle, {family: fontFamily});
+  }
+  // fixme: 会被后续逻辑覆盖
+  const fontSize = projectConfig.getNumber("算料单字体大小", 0);
+  if (fontSize > 0) {
+    CadStylizer.mergeFontStyle(params.config.fontStyle, {size: fontSize});
+  }
+
+  if (!params.config.dimStyle) {
+    params.config.dimStyle = {};
+  }
+  const 算料单CAD隐藏尺寸线 = projectConfig.getBoolean("算料单CAD隐藏尺寸线");
+  if (算料单CAD隐藏尺寸线) {
+    CadStylizer.mergeDimStyle(params.config.dimStyle, {extensionLines: {hidden: true}});
+  }
+
+  const 算料单页边距 = params.projectConfig.getTrbl("算料单页边距", 18);
+  params.config.padding = 算料单页边距;
+};
+
+const draw型材物料明细 = async (
+  cad: CadViewer,
+  dataRaw: CadData,
+  型材物料明细: 型材物料明细List | undefined,
+  projectConfig: ProjectConfig
+) => {
+  const result = {imgs: [] as string[]};
+  if (!型材物料明细 || !型材物料明细.items) {
+    return result;
+  }
+  const lines = findRectLines(dataRaw, "型材物料明细", true);
+  if (lines.errors.length > 0 || !lines.locator || !lines.rect.isFinite) {
+    console.warn("型材物料明细定位出错");
+    return result;
+  }
+  lines.locator.visible = false;
+
+  let data = dataRaw;
+  const dataRawCopy = dataRaw.clone();
+  const dataList: CadData[] = [];
+  const entitiesToRender: CadEntity[] = [];
+  const addEntityToRender = (e: CadEntity) => {
+    if (data === dataRaw) {
+      entitiesToRender.push(e);
+    }
+  };
   const addLine = (x1: number, y1: number, x2: number, y2: number) => {
     const line = new CadLine({start: [x1, y1], end: [x2, y2]});
     line.linewidth = 1;
     data.entities.add(line);
-    ps.push(cad.render(line));
+    addEntityToRender(line);
     return line;
   };
   const addText = (maxLength: number, text: string, insert: [number, number], anchor: [number, number], fontStyle?: FontStyle) => {
     const mtext = new CadMtext({text, insert, anchor, fontStyle});
     mtext.text = getWrapedText(cad, text, mtext, {maxLength}).join("\n");
     data.entities.add(mtext);
-    ps.push(cad.render(mtext));
+    addEntityToRender(mtext);
     return mtext;
   };
   const cellPadding = 10;
@@ -1128,7 +1194,7 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
   let widths: number[] = [];
   const getWidth = (i: number) => widths.slice(0, i === -1 ? undefined : i + 1).reduce((a, b) => a + b, 0);
   let fontSizeText = 30;
-  let fontSizeTitle = 40;
+  let fontSizeTitle: number;
   let lineHeight = 0;
   const drawRowTexts = (texts: string[], fontSize = fontSizeText) => {
     for (const [i, text] of texts.entries()) {
@@ -1168,7 +1234,35 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
   } else {
     const items0 = 型材物料明细.items;
     const items1: typeof items0 = [];
-    const itemsGroup: (typeof items0)[] = [];
+    const itemsGroupPlain: (typeof items0)[] = [];
+    const 切角分隔符 = projectConfig.get("算料单型材物料明细切角分隔符");
+    const get切角Str = (items2: 型材物料明细Item[]) => {
+      if (items2.length < 1) {
+        return "";
+      }
+      const {左切角, 右切角} = items2[0];
+      if (切角分隔符) {
+        const arr = [Number(左切角), Number(右切角)];
+        if (arr.some((v) => isNaN(v))) {
+          return "";
+        }
+        return arr.join(切角分隔符);
+      } else {
+        if (左切角 === "45" && 右切角 === "45") {
+          return "双45";
+        }
+        if (左切角 === "90" && 右切角 === "90") {
+          return "双90";
+        }
+        if (左切角 === "45" || 右切角 === "45") {
+          return "单45";
+        }
+        if (左切角 === "90" && 右切角 === "90") {
+          return "双90";
+        }
+        return "";
+      }
+    };
     for (const item of items0) {
       const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色", "型材长度", "是横料", "左切角", "右切角"];
       const itemPrev = items1.find((v) => keys.every((k) => v[k] === item[k]));
@@ -1180,100 +1274,120 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
     }
     for (const item of items1) {
       const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
-      const itemsPrev = itemsGroup.find((v) => {
+      const itemsPrev = itemsGroupPlain.find((v) => {
         if (!v.find((v2) => keys.every((k) => v2[k] === item[k]))) {
           return false;
         }
         const target = v.find((v2) => v2.是横料 === item.是横料);
-        return !target || target.型材长度 === item.型材长度;
+        return !target || (get切角Str([target]) === get切角Str([item]) && target.型材长度 === item.型材长度);
       });
       if (itemsPrev) {
         itemsPrev.push(item);
       } else {
-        itemsGroup.push([item]);
+        itemsGroupPlain.push([item]);
       }
     }
-    itemsGroup.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
+    itemsGroupPlain.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
+    const itemsGroups: (typeof itemsGroupPlain)[] = [];
+    lineHeight = 119;
+    const itemsPerPage = Math.floor(lines.rect.height / lineHeight);
+    for (let i = 0; i < itemsGroupPlain.length / itemsPerPage; i++) {
+      itemsGroups.push(itemsGroupPlain.slice(i * itemsPerPage, (i + 1) * itemsPerPage));
+    }
 
     widths = [180, 120, 80, 140, 80];
     widths.push(rowWidth - widths.reduce((a, b) => a + b, 0));
-    lineHeight = 119;
     fontSizeText = 30;
     fontSizeTitle = 40;
-    for (const w of widths) {
-      x += w;
-      addLine(x, y, x, y - lineHeight * itemsGroup.length);
-    }
-    x = x0;
-    for (const items of itemsGroup) {
-      addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
-      addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+    for (const [i, itemsGroup] of itemsGroups.entries()) {
+      if (i > 0) {
+        data = dataRawCopy.clone();
+      }
+      dataList.push(data);
+      x = x0;
+      y = y0;
+      for (const w of widths) {
+        x += w;
+        addLine(x, y, x, y - lineHeight * itemsGroup.length);
+      }
+      x = x0;
+      for (const items of itemsGroup) {
+        addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
 
-      const img = new CadImage();
-      img.position.set(x + widths[0] / 2, y - lineHeight / 2);
-      img.anchor.set(0.5, 0.5);
-      img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
-      img.objectFit = "contain";
-      await setImageUrl(img, items[0].截面图);
-      data.entities.add(img);
-      ps.push(cad.render(img));
-      x += widths[0];
-
-      addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
-      x += widths[1];
-
-      addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
-      addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
-      x += widths[2];
-
-      const get切角Str = (items2: typeof items) => {
-        const 双45Count = items2.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
-        if (双45Count > 0) {
-          return "双45";
+        const 横料 = items.filter((v) => v.是横料 === "是");
+        const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
+        const 竖料 = items.filter((v) => v.是横料 === "否");
+        const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
+        let 横料Y: number;
+        let 竖料Y: number;
+        if (横料Count > 0 && 竖料Count > 0) {
+          横料Y = y - lineHeight * 0.25;
+          竖料Y = y - lineHeight * 0.75;
+          addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+        } else {
+          横料Y = 竖料Y = y - lineHeight * 0.5;
         }
-        const 单45Count = items2.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
-        if (单45Count > 0) {
-          return "单45";
+
+        const img = new CadImage();
+        img.position.set(x + widths[0] / 2, y - lineHeight / 2);
+        img.anchor.set(0.5, 0.5);
+        img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
+        img.objectFit = "contain";
+        await setImageUrl(img, items[0].截面图);
+        data.entities.add(img);
+        addEntityToRender(img);
+        x += widths[0];
+
+        addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
+        x += widths[1];
+
+        if (横料Count > 0) {
+          addText(widths[2], "横料", [x + widths[2] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
         }
-        const 双90Count = items2.filter((v) => v.左切角 === "90" && v.右切角 === "90").length;
-        if (双90Count > 0) {
-          return "双90";
+        if (竖料Count > 0) {
+          addText(widths[2], "竖料", [x + widths[2] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
         }
-        return "";
-      };
+        x += widths[2];
 
-      const 横料 = items.filter((v) => v.是横料 === "是");
-      const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
-      if (横料Count > 0) {
-        const text = `${横料[0].型材长度}=${横料Count}`;
-        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
-      }
-      const 竖料 = items.filter((v) => v.是横料 === "否");
-      const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
-      if (竖料Count > 0) {
-        const text = `${竖料[0].型材长度}=${竖料Count}`;
-        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
-      }
-      x += widths[3];
+        if (横料Count > 0) {
+          const text = `${横料[0].型材长度}=${横料Count}`;
+          addText(widths[3], text, [x + widths[3] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
+        }
+        if (竖料Count > 0) {
+          const text = `${竖料[0].型材长度}=${竖料Count}`;
+          addText(widths[3], text, [x + widths[3] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
+        }
+        x += widths[3];
 
-      const 横料切角Str = get切角Str(横料);
-      if (横料切角Str) {
-        addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
-      }
-      const 竖料切角Str = get切角Str(竖料);
-      if (竖料切角Str) {
-        addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
-      }
-      x += widths[4];
+        const 横料切角Str = get切角Str(横料);
+        if (横料切角Str) {
+          addText(widths[4], 横料切角Str, [x + widths[4] / 2, 横料Y], [0.5, 0.5], {size: fontSizeText});
+        }
+        const 竖料切角Str = get切角Str(竖料);
+        if (竖料切角Str) {
+          addText(widths[4], 竖料切角Str, [x + widths[4] / 2, 竖料Y], [0.5, 0.5], {size: fontSizeText});
+        }
+        x += widths[4];
 
-      addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeText});
+        addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeText});
 
-      x = lines.rect.left;
-      y -= lineHeight;
+        x = lines.rect.left;
+        y -= lineHeight;
+      }
     }
   }
 
-  await Promise.all(ps);
-  lines.locator.visible = false;
-  await cad.render(lines.locator);
+  addEntityToRender(lines.locator);
+  await cad.render(entitiesToRender);
+  await timeout(0);
+  for (const [i, dataCurr] of dataList.entries()) {
+    let img: string;
+    if (i === 0) {
+      img = await cad.toDataURL();
+    } else {
+      img = await getCadPreview("cad", dataCurr, {config: cad.getConfig()});
+    }
+    result.imgs.push(img);
+  }
+  return result;
 };

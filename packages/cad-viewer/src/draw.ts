@@ -1,6 +1,6 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
-import {CadAxis, CadDimensionBlock, CadImage} from "./cad-data";
+import {CadAxis, CadDimensionBlock, CadImage, CadSpline} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
 import {CadDimensionStyle, FontStyle, LineStyle} from "./cad-data/cad-styles";
 
@@ -8,7 +8,7 @@ const setLineStyle = (el: Element, style: LineStyle) => {
   const {color, width, dashArray} = style;
   el.stroke({width, color});
   if (dashArray) {
-    el.css("stroke-dasharray" as any, dashArray.join(", "));
+    el.css("stroke-dasharray", dashArray.join(", "));
   }
 };
 
@@ -99,7 +99,15 @@ export const drawArc = (
   return [el];
 };
 
-export const drawText = (draw: Container, text: string, position: Point, anchor: Point, style?: FontStyle, i = 0) => {
+export const drawText = (
+  draw: Container,
+  text: string,
+  position: Point,
+  anchor: Point,
+  transformMatrix?: Matrix,
+  style?: FontStyle,
+  i = 0
+) => {
   const {size, family, weight, color, vertical, vertical2} = style || {};
   if (!text || !size || !(size > 0)) {
     draw.remove();
@@ -107,22 +115,9 @@ export const drawText = (draw: Container, text: string, position: Point, anchor:
   }
   let el = draw.children()[i] as Text;
   if (el instanceof Text) {
-    el.text(text).font({size});
+    el.text(text);
   } else {
-    el = draw.text(text).addClass("fill").stroke("none");
-    el.font({size}).leading(1);
-  }
-  el.css("transform-box" as any, "fill-box");
-  el.css("white-space" as any, "pre");
-  el.css("transform-origin" as any, `${anchor.x * 100}% ${anchor.y * 100}%`);
-  const {width, height} = el.bbox();
-  let tx = -width * anchor.x;
-  let ty = -height * anchor.y;
-  let deg = 0;
-  if (vertical) {
-    tx += height / 2;
-    ty -= width / 2;
-    deg = 90;
+    el = draw.text(text);
   }
   const getStr = (val: any) => {
     switch (getTypeOf(val)) {
@@ -134,14 +129,39 @@ export const drawText = (draw: Container, text: string, position: Point, anchor:
         return "";
     }
   };
-  if (vertical2) {
-    el.css("writing-mode" as any, "vertical-lr");
-  } else {
-    el.css("writing-mode" as any, "");
+  el.font({size}).leading(1);
+  el.addClass("fill").stroke("none");
+  el.css({
+    "transform-origin": `${anchor.x * 100}% ${anchor.y * 100}%`,
+    "transform-box": "fill-box",
+    "white-space": "pre",
+    "font-family": getStr(family),
+    "font-weight": getStr(weight)
+  });
+  el.font({size}).leading(1);
+  const {width, height} = el.bbox();
+  let tx = -width * anchor.x;
+  let ty = -height * anchor.y;
+  let deg = 0;
+  if (vertical) {
+    tx += height / 2;
+    ty -= width / 2;
+    deg = 90;
   }
-  el.css("transform", `translate(${tx}px, ${ty}px) scale(1, -1) rotate(${deg}deg)`);
-  el.css("font-family" as any, getStr(family));
-  el.css("font-weight" as any, getStr(weight));
+  if (vertical2) {
+    el.css("writing-mode", "vertical-lr");
+  } else {
+    el.css("writing-mode", "");
+  }
+  let scaleX = 1;
+  let scaleY = -1;
+  if (transformMatrix) {
+    deg -= Angle.radToDeg(transformMatrix.rotate());
+    const scale = transformMatrix.scale();
+    scaleX *= scale[0];
+    scaleY *= scale[1];
+  }
+  el.css("transform", `translate(${tx}px, ${ty}px) scale(${scaleX}, ${scaleY}) rotate(${deg}deg)`);
   if (color) {
     el.fill(color);
   } else {
@@ -512,13 +532,13 @@ export const drawDimensionLinear = (
     }
     const middle = p3.clone().add(p4).divide(2);
     if (axis === "x") {
-      textEls = drawText(draw, text, middle, new Point(0.5, 1), textStyle, i);
+      textEls = drawText(draw, text, middle, new Point(0.5, 1), undefined, textStyle, i);
     } else if (axis === "y") {
       textStyle.vertical = true;
-      textEls = drawText(draw, text, middle, new Point(1, 0.5), textStyle, i);
+      textEls = drawText(draw, text, middle, new Point(1, 0.5), undefined, textStyle, i);
     }
     textEls.forEach((el) => el.addClass("dim-text"));
-    i += textEls.length;
+    // i += textEls.length;
   }
 
   return [...dimLine, ...extLine1, ...extLine2, ...arrow1, ...arrow2, ...textEls].filter((v) => v);
@@ -529,7 +549,7 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
   i += line.length;
   const arrowInfo = getArrowInfo("");
   const triangle = drawArrow(draw, start, end, size, {info: arrowInfo, color, i});
-  i += triangle.length;
+  // i += triangle.length;
   return [...line, ...triangle];
 };
 
@@ -548,12 +568,12 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
       transform: "scale(1, -1)",
       "transform-origin": "50% 50%",
       "transform-box": "fill-box"
-    } as any);
+    });
     imageEl = imageContainer.image();
     imageEl.css({
       "transform-origin": `${anchor.x * 100}% ${anchor.y * 100}%`,
       "transform-box": "fill-box"
-    } as any);
+    });
   }
   if (url && imageEl.attr("href") !== url) {
     imageEl.load(url);
@@ -631,4 +651,60 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
   matrix.transform(transformMatrix);
   imageEl.transform(matrix);
   return [imageContainer];
+};
+
+export const drawSpline = async (draw: Container, e: CadSpline, style?: LineStyle, i = 0) => {
+  const getBezierPathFromPoints = (points: Point[]) => {
+    const [start, ...controlPoints] = points;
+
+    const path = [`M ${ptToStr(start)}`];
+
+    // if only one point, draw a straight line
+    if (controlPoints.length === 1) {
+      path.push(`L ${ptToStr(controlPoints[0])}`);
+    }
+    // if there are groups of 3 points, draw cubic bezier curves
+    else if (controlPoints.length % 3 === 0) {
+      for (let j = 0; j < controlPoints.length; j = j + 3) {
+        const [c1, c2, p] = controlPoints.slice(j, j + 3);
+        path.push(`C ${ptToStr(c1)}, ${ptToStr(c2)}, ${ptToStr(p)}`);
+      }
+    }
+    // if there's an even number of points, draw quadratic curves
+    else if (controlPoints.length % 2 === 0) {
+      for (let j = 0; j < controlPoints.length; j = j + 2) {
+        const [c, p] = controlPoints.slice(j, j + 2);
+        path.push(`Q ${ptToStr(c)}, ${ptToStr(p)}`);
+      }
+    }
+    // else, add missing points and try again
+    // https://stackoverflow.com/a/72577667/1010492
+    else {
+      for (let j = controlPoints.length - 3; j >= 2; j = j - 2) {
+        const missingPoint = midPoint(controlPoints[j - 1], controlPoints[j]);
+        controlPoints.splice(j, 0, missingPoint);
+      }
+      return getBezierPathFromPoints([start, ...controlPoints]);
+    }
+
+    return path.join(" ");
+  };
+
+  const midPoint = (pt1: Point, pt2: Point) => {
+    return pt1.clone().add(pt2).divide(2);
+  };
+
+  const ptToStr = ({x, y}: Point) => {
+    return `${x} ${y}`;
+  };
+
+  const path = getBezierPathFromPoints(e.controlPoints);
+  let el = draw.children()[i] as Path;
+  if (el instanceof Path) {
+    el.plot(path);
+  } else {
+    el = draw.path(path).addClass("stroke").fill("none");
+  }
+  setLineStyle(el, style || {});
+  return [el];
 };

@@ -27,12 +27,16 @@
   }
 
   .bancai-attrs {
-    > * > * {
-      width: 0;
-      box-sizing: border-box;
+    > * {
+      flex-wrap: wrap;
 
-      &:not(:last-child) {
-        padding-right: 5px;
+      > * {
+        width: 0;
+        box-sizing: border-box;
+
+        &:not(:last-child) {
+          padding-right: 5px;
+        }
       }
     }
   }

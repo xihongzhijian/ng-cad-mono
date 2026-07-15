@@ -3,6 +3,21 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  &.verbose::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    top: 45px;
+    left: 0;
+    z-index: -1;
+    opacity: 0.5;
+    background-position-x: center;
+    background-image: url("../../../assets/images/verbose-mode.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
 }
 
 .toolbar {

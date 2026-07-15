@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {CadEditorComponent} from "./cad-editor.component";
 
@@ -10,7 +9,7 @@ describe("CadEditorComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CadEditorComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CadEditorComponent);

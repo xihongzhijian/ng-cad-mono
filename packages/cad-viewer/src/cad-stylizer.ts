@@ -1,5 +1,7 @@
 import {keysOf} from "@lucilor/utils";
 import Color, {ColorInstance} from "color";
+import {Property} from "csstype";
+import {getDeltaE00, LAB} from "delta-e";
 import {cloneDeep} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
@@ -8,7 +10,7 @@ import {CadViewerConfig} from "./cad-viewer.types";
 
 export class CadStylizer {
   static get(entity: CadEntity, config: CadViewerConfig, params: CadStyle = {}) {
-    const {dashedLinePadding, minLinewidth, reverseSimilarColor, validateLines} = config;
+    const {dashedLinePadding, minLinewidth, validateLines} = config;
     const defaultStyle: Required<CadStyle> = {
       color: "white",
       fontStyle: {size: Defaults.FONT_SIZE, family: "", weight: "", ...config.fontStyle, ...params.fontStyle},
@@ -44,9 +46,7 @@ export class CadStylizer {
         color = new Color(0xff0000);
       }
     }
-    if (reverseSimilarColor) {
-      color = this.correctColor(color, config);
-    }
+    color = this.correctColor(color, config);
     result.color = color.hex();
     if (!(entity instanceof CadHatch)) {
       // ? make lines easier to select
@@ -55,27 +55,54 @@ export class CadStylizer {
 
     if (entity instanceof CadMtext) {
       this.mergeFontStyle(result.fontStyle, entity.fontStyle);
-      if (!result.fontStyle.color) {
-        result.fontStyle.color = result.color;
-      }
     }
 
     if (entity instanceof CadDimension) {
       this.mergeDimStyle(result.dimStyle, entity.style);
       // this.mergeFontStyle(result.dimStyle.text, result.fontStyle, false);
-      result.dimStyle.color = result.color;
     }
 
     result.lineStyle.width = linewidth;
-    result.lineStyle.color = result.color;
+    const correctColorObj = (obj: {color?: Property.Color} | undefined) => {
+      if (!obj) {
+        return;
+      }
+      if (obj.color) {
+        obj.color = this.correctColor(new Color(obj.color), config).hex();
+      } else {
+        obj.color = result.color;
+      }
+    };
+    correctColorObj(result.lineStyle);
+    correctColorObj(result.fontStyle);
+    correctColorObj(result.dimStyle);
+    correctColorObj(result.dimStyle.arrows);
+    correctColorObj(result.dimStyle.dimensionLine);
+    correctColorObj(result.dimStyle.extensionLines);
+    correctColorObj(result.dimStyle.text);
     return result;
   }
 
-  static correctColor(color: ColorInstance, config: CadViewerConfig, threshold = 5) {
-    const {reverseSimilarColor, backgroundColor} = config;
+  static correctColor(color: ColorInstance, config: CadViewerConfig) {
+    const {reverseSimilarColor} = config;
+    if (!reverseSimilarColor) {
+      return color;
+    }
+    let {backgroundColor} = config;
+    if (typeof reverseSimilarColor === "object" && reverseSimilarColor.backgroundColor) {
+      backgroundColor = reverseSimilarColor.backgroundColor;
+    }
+    if (typeof color === "string") {
+      color = new Color(color);
+    }
     if (reverseSimilarColor) {
       const color2 = new Color(backgroundColor);
-      if (Math.abs(color.rgbNumber() - color2.rgbNumber()) <= threshold) {
+      const getLAB = (c: ColorInstance): LAB => {
+        const [L, A, B] = c.lab().array();
+        return {L, A, B};
+      };
+      const delta = getDeltaE00(getLAB(color), getLAB(color2));
+      if (color2.alpha() > 0 && delta <= 10) {
         return color.negate();
       }
     }

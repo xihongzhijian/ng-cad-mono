@@ -7,7 +7,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {environment} from "@env";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {uniqueId} from "lodash";
@@ -18,7 +18,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-changelog",
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
-  imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerModule]
+  imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerComponent]
 })
 export class ChangelogComponent implements OnInit {
   dialogRef = inject<MatDialogRef<ChangelogComponent, void>>(MatDialogRef);
@@ -52,14 +52,18 @@ export class ChangelogComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.getData();
+    this.getUpdateTimeStamp();
   }
 
-  private async getData() {
-    const pageSize = this.pageSize();
-    const branch = this.branch();
+  async getUpdateTimeStamp() {
     const updateTime = await this.status.getUpdateTimeStamp();
     this.updateTime.set(updateTime);
+  }
+
+  async getCommits() {
+    const pageSize = this.pageSize();
+    const branch = this.branch();
+    const updateTime = this.updateTime();
     const changelogRaw = await this.http.getChangelog({page: 1, pageSize, branch}, {spinner: this.loaderId});
     let updateDivideIndex = -1;
     const changelog: ReturnType<typeof this.changelog> = [];

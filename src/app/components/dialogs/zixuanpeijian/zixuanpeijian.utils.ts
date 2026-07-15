@@ -411,6 +411,7 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
+  calc.calc.separateFormulas(materialResult, tongyongGongshi);
   const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
   calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim);
   const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
@@ -871,6 +872,15 @@ export const calcZxpj = async (
             e.mingzi = e.info.显示公式;
           }
         }
+        const xsgsMatch = e.mingzi.match(/显示公式[ ]*[:：](.*)/);
+        if (xsgsMatch && xsgsMatch[1]) {
+          const 显示公式 = xsgsMatch[1].trim();
+          if (显示公式 in vars2) {
+            e.info.显示公式值 = toFixed(vars2[显示公式], fractionDigits);
+          } else {
+            e.info.显示公式值 = 显示公式;
+          }
+        }
       }
 
       const mokuaiTitle = mokuai ? `（${getCalcMokuaiTitle(mokuai)}）` : "";
@@ -1041,10 +1051,24 @@ export const calcZxpj = async (
   if (!gongshiCalcResult2?.fulfilled) {
     return {
       fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
+      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult2}}
     };
   }
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
+  const textFormulas: Formulas = {};
+  for (const [key, value] of Object.entries(materialResult)) {
+    if (typeof value === "string" && value.split("#").length > 2) {
+      textFormulas[key] = value;
+    }
+  }
+  const textCalcResult2 = await calc.calcFormulas(textFormulas, materialResult, {title: "计算算料公式"});
+  if (!textCalcResult2?.fulfilled) {
+    return {
+      fulfilled: false,
+      error: {message: "计算算料公式出错", calc: {formulas: textFormulas, vars: materialResult, result: textCalcResult2}}
+    };
+  }
+  calc.calc.mergeFormulas(materialResult, textCalcResult2.succeedTrim);
   const 模块公式输入: Formulas = {};
   for (const mokuai of mokuais) {
     for (const [k] of getMokuaiInfoSrbl2(mokuai)) {
@@ -1095,7 +1119,7 @@ export const step3FetchData = async (
   lingsanOptions?: ZixuanpeijianInput["lingsanOptions"] | null,
   noCache = false
 ) => {
-  let responseData: {cads: CadData[]} | null = null;
+  let responseData: {cads: CadData[]} | null;
   const {getAll, useTypePrefix, xinghao} = lingsanOptions || {};
   const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, useTypePrefix, xinghao}));
   if (noCache || !(window as any)[cacheKey]) {

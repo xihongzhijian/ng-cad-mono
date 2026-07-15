@@ -28,8 +28,10 @@ import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/banca
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -38,8 +40,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {clone, isEmpty, uniqueId, values} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, first, lastValueFrom} from "rxjs";
-import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
   ListItemKey,
   listItemKeys,
@@ -99,7 +99,7 @@ export class MrbcjfzComponent {
 
   idIn = input(0, {alias: "id"});
   tableIn = input("", {alias: "table"});
-  collection = input<CadCollection>();
+  collectionIn = input<CadCollection | undefined>(undefined, {alias: "collection"});
   closeable = input(false, {transform: booleanAttribute});
   inputData = input<MrbcjfzInputData>();
   forceSubmit = input(false, {transform: booleanAttribute});
@@ -115,6 +115,13 @@ export class MrbcjfzComponent {
   idEff = effect(() => this.id.set(this.idIn()));
   table = signal("");
   tableEff = effect(() => this.table.set(this.tableIn()));
+  collection = signal<CadCollection>("cad");
+  CollectionEff = effect(() => {
+    const collection = this.collectionIn();
+    if (collection) {
+      this.collection.set(collection);
+    }
+  });
 
   cads = signal<ObjectOf<MrbcjfzCadInfo>>({});
   huajians = signal<ObjectOf<MrbcjfzHuajianInfo>>({});
@@ -171,7 +178,7 @@ export class MrbcjfzComponent {
     let resData: MrbcjfzResponseData | undefined;
     let id = this.id();
     let table = this.table();
-    const collection = this.collection();
+    let collection = this.collection();
     const inputData = this.inputData();
     if (inputData) {
       if (inputData.resData) {
@@ -199,6 +206,10 @@ export class MrbcjfzComponent {
         this.isFromOrder.set(!(id && table));
       } else {
         await timeout(0);
+      }
+      if (params.collection) {
+        collection = params.collection;
+        this.collection.set(collection);
       }
     }
     if (this.isFromOrder()) {
@@ -524,7 +535,23 @@ export class MrbcjfzComponent {
     }
     const result = await validateForm(this.bancaiInputComponents());
     if (result.errorMsgDetails.length > 0) {
-      errorMsg.push(`板材输入有误：${result.errorMsgDetails.join("，")}`);
+      const indentPx = 20;
+      let msg = "板材输入有误：<br>";
+      const map: ObjectOf<string[]> = {};
+      for (const {info, component, errorMsgs} of result.errorMsgDetails) {
+        const key = component.el.dataset["bancaiKey"] || "";
+        if (!map[key]) {
+          map[key] = [];
+        }
+        map[key].push(`${info.label}：${errorMsgs.join("，")}`);
+      }
+      for (const key in map) {
+        msg += `<span style="margin-left: ${indentPx}px;font-weight: bold">${key}：</span><br>`;
+        for (const line of map[key]) {
+          msg += `<span style="margin-left: ${indentPx * 2}px">${line}</span><br>`;
+        }
+      }
+      errorMsg.push(msg);
     }
     return errorMsg;
   }

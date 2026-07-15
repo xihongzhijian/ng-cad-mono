@@ -1,6 +1,6 @@
 <div class="pages flex-column">
   @for (order of orders(); track i; let i = $index) {
-    <div class="page flex-row" [style]="order.style">
+    <div [class]="['page', 'flex-row', type()]" [style]="order.style">
       @if (order.info) {
         <div class="info">
           @for (section of order.info; track $index) {
@@ -8,74 +8,63 @@
               @for (row of sectionConfig().rows; track $index) {
                 <div class="row">
                   @for (cell of row.cells; track $index) {
-                    <div class="cell border" [class]="cell.class || ''">
-                      <div class="label center">{{ cell.label || cell.key }}</div>
-                      <div class="value center">{{ getValue(section, cell) }}</div>
+                    <div class="cell border" [class]="cell.class" [class.is-boolean]="cell.isBoolean" [class.auto-width]="cell.autoWidth">
+                      @if (getLabel(cell); as label) {
+                        <div class="label center" [style]="cell.labelStyle">{{ label }}</div>
+                      }
+                      @if (getValue(section, cell); as value) {
+                        <div class="value center" [style]="cell.valueStyle">{{ value }}</div>
+                      }
                     </div>
                   }
                 </div>
               }
               <div class="row flex-row">
-                <div class="cell" style="height: 40px">
-                  <svg class="barcode value" [attr.jsbarcode-value]="order.code"></svg>
+                <div class="cell">
+                  <svg #barcode class="barcode value" height="40" [attr.jsbarcode-value]="order.code" [attr.jsbarcode-height]="40"></svg>
                 </div>
                 <div class="cell" style="flex: 0 0 auto">
-                  <div class="value">{{ section["制单"] }}</div>
+                  <div class="value">{{ section["制单工号"] || section["制单"] }}</div>
                 </div>
               </div>
-              <div class="row flex-column" style="border-bottom: none">
-                <div class="flex-row" style="width: 100%">
-                  <div class="flex-column flex-110 info-border-right">
-                    <div class="cell">
-                      <div class="value center">宽×高×厚</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">外尺&nbsp;</div>
-                      <div class="value info-border-bottom">{{ section["包框规格"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">外门板</div>
-                      <div class="value info-border-bottom">{{ section["订货单门扇信息"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">内门板</div>
-                      <div class="value info-border-bottom">{{ section["套门门扇信息"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">门花&nbsp;</div>
-                      <div class="value info-border-bottom">{{ section["花件尺寸"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">门头花</div>
-                      <div class="value">{{ section["门头花尺寸"] }}</div>
-                    </div>
+              <div class="order-info border-bottom">
+                <div class="flex-column" style="width: 200px">
+                  <div class="cell">
+                    <div class="value center">宽×高×厚</div>
                   </div>
-                  <div class="flex-column flex-110">
-                    <div class="cell">
-                      <div class="value">{{ section["其他备注"] }}</div>
-                    </div>
+                  <div class="cell">
+                    <div class="label">外尺&nbsp;</div>
+                    <div class="value border-bottom">{{ section["包框规格"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">外门板</div>
+                    <div class="value border-bottom">{{ section["订货单门扇信息"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">内门板</div>
+                    <div class="value border-bottom">{{ section["套门门扇信息"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">门花&nbsp;</div>
+                    <div class="value border-bottom">{{ section["花件尺寸"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">门头花</div>
+                    <div class="value">{{ section["门头花尺寸"] }}</div>
+                  </div>
+                </div>
+                <div class="flex-column flex-110">
+                  <div class="cell">
+                    <div class="value">特别要求：<br />{{ section["其他备注"] }}</div>
                   </div>
                 </div>
               </div>
-              <div class="row" style="height: 60px; border-bottom: none">
-                <div class="cell">
-                  <div class="value center">{{ section["花件备注"] }}</div>
-                </div>
-              </div>
-              <div class="示意图">
-                @if (order["开启锁向示意图"]) {
-                  <div class="开启锁向示意图" [style]="order['开启锁向示意图'].style">
-                    <app-image [src]="order['开启锁向示意图'].img" [bigPicSrc]="order['开启锁向示意图'].img"></app-image>
-                  </div>
-                }
-                @if (order["配合框"]) {
-                  <div class="配合框-group">
-                    @for (item of order["配合框"]; track $index) {
-                      <div class="配合框" [style]="item.style">
-                        @if (order["配合框"].length > 1) {
-                          <div class="name">{{ item.data.name }}</div>
-                        }
-                        <app-image [src]="item.img" [bigPicSrc]="item.img"></app-image>
+              <div class="示意图" #shiyitusContainer>
+                @for (shiyitu of order.shiyitus; track $index) {
+                  <div [class]="shiyitu.name" class="shiyitu-container">
+                    @for (cadInfo of shiyitu.cads; track $index) {
+                      <div class="shiyitu-inner" [style]="cadInfo.style">
+                        <app-image [src]="cadInfo.img" [bigPicSrc]="cadInfo.imgLarge"></app-image>
                       </div>
                     }
                   </div>
@@ -132,7 +121,7 @@
           }
           <div #cadsEls class="cads flex-110 flex-row">
             @for (cad of order.cads; track $index) {
-              <div class="cad flex-column" [style]="cad.style">
+              <div class="cad flex-column" [class.large]="cad.isLarge" [style]="cad.style">
                 <div class="cad-tags flex-column">
                   @for (item of cad.data.info["标签信息"]; track $index) {
                     <div [style]="isArray(item) ? item[1] : {}">
@@ -142,7 +131,13 @@
                 </div>
                 @if (config().showBarcode) {
                   <div>
-                    <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
+                    <svg
+                      #barcode
+                      class="barcode"
+                      height="40"
+                      [attr.jsbarcode-value]="cad.data.info.groupId"
+                      [attr.jsbarcode-height]="40"
+                    ></svg>
                   </div>
                 }
                 <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
@@ -156,12 +151,20 @@
                       @if (isLvxingcai()) {
                         <span>长{{ zhankai.height }}mm</span>
                       } @else {
-                        <span class="highlight">{{ zhankai.width }}</span>
-                        <span class="sign">×</span>
-                        <span>{{ zhankai.height }}</span>
-                        @if (hasZhankaiNum(zhankai)) {
-                          <span class="sign">=</span>
-                          <span>{{ zhankai.num }}</span>
+                        @if (cad.zhankaiDisplayInfos?.[$index]; as info) {
+                          @if (info.kuan) {
+                            <span class="highlight">{{ zhankai.width }}</span>
+                          }
+                          @if (info.sign) {
+                            <span class="sign">×</span>
+                          }
+                          @if (info.gao) {
+                            <span>{{ zhankai.height }}</span>
+                          }
+                          @if (info.num) {
+                            <span class="sign">=</span>
+                            <span>{{ zhankai.num }}</span>
+                          }
                         }
                       }
                     </div>
@@ -176,44 +179,71 @@
   }
 </div>
 
+<ng-template #formTitle [appTypedTemplate]="formTitleTplType" let-title>
+  @if (typeof title === "string") {
+    <div class="title">{{ title }}</div>
+  } @else if (title) {
+    <div class="title" [style]="title.style">{{ title.content }}</div>
+  }
+</ng-template>
+
 <div class="forms">
   @for (form of forms(); track $index) {
-    <div class="form" [class]="type()">
-      @if (form.title) {
-        <div class="title">{{ form.title }}</div>
+    <div class="form flex-column" [class]="type()" [style]="getFormStyle(form)">
+      @if (form.title && !form.isTitleInner) {
+        <ng-container *ngTemplateOutlet="formTitle; context: {$implicit: form.title}"></ng-container>
       }
-      <div class="form-inner">
-        <ng-template *ngTemplateOutlet="formItem; context: {$implicit: form}"></ng-template>
+      <div class="form-inner flex-110">
+        @if (form.title && form.isTitleInner) {
+          <ng-container *ngTemplateOutlet="formTitle; context: {$implicit: form.title}"></ng-container>
+        }
+        <ng-template *ngTemplateOutlet="formTpl; context: {$implicit: form}"></ng-template>
         @if (form.barCode) {
           <div class="barcode-container">
-            <svg class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
+            <svg #barcode class="barcode value" height="40" [attr.jsbarcode-value]="form.barCode" [attr.jsbarcode-height]="40"></svg>
           </div>
         }
       </div>
-    </div>
-  }
-</div>
-
-<ng-template #formItem let-form [appTypedTemplate]="{$implicit: forms()[0]}">
-  @for (row of form.rows; track $index) {
-    <div class="row">
-      @for (item of row; track $index) {
-        <div class="item" [style]="item.style">
-          <div class="label" [style]="item.labelStyle">{{ item.label }}</div>
-          <div class="value" [style]="item.valueStyle">
-            @switch (item.type) {
-              @case ("image") {
-                <app-image [src]="item.value" [prefix]="remoteFilePath"></app-image>
-              }
-              @default {
-                {{ item.value }}
-              }
-            }
-          </div>
+      @if (form.footer?.content; as content) {
+        <div class="footer" [style]="form.footer.style">
+          <span>{{ content }}</span>
         </div>
       }
     </div>
   }
+</div>
+
+<ng-template #formTpl let-form [appTypedTemplate]="{$implicit: forms()[0]}">
+  @for (row of form.rows; track $index) {
+    @if (isArray(row)) {
+      <div class="row" [class.row-border]="!!form.rowBorder">
+        @for (item of row; track $index) {
+          <ng-container *ngTemplateOutlet="formItemTpl; context: {$implicit: item}"></ng-container>
+        }
+      </div>
+    } @else {
+      <div class="row" [class.row-border]="!!form.rowBorder" [style]="row.style">
+        @for (item of row.items; track $index) {
+          <ng-container *ngTemplateOutlet="formItemTpl; context: {$implicit: item}"></ng-container>
+        }
+      </div>
+    }
+  }
+</ng-template>
+<ng-template #formItemTpl let-item [appTypedTemplate]="formItemTplType">
+  <div class="item" [style]="item.style">
+    <div class="label" [style]="item.labelStyle">{{ item.label }}</div>
+    <div class="value" [style]="item.valueStyle">
+      @switch (item.type) {
+        @case ("image") {
+          <app-image [src]="item.value" [prefix]="remoteFilePath"></app-image>
+        }
+        @default {
+          <span>{{ item.value }}</span>
+        }
+      }
+    </div>
+  </div>
 </ng-template>
 
 <div class="toolbar toolbar no-print">

@@ -8,7 +8,6 @@ import {
   DoCheck,
   effect,
   ElementRef,
-  forwardRef,
   HostBinding,
   inject,
   input,
@@ -33,7 +32,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
 import {getArray, getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
-import {getValueString} from "@app/utils/get-value";
+import {getValue, getValueString} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -42,6 +41,7 @@ import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types
 import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, isTypeOf, queryString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -49,7 +49,6 @@ import {OpenCadOptions} from "@services/app-status.types";
 import {Properties} from "csstype";
 import {cloneDeep, debounce, intersection, isEmpty, isEqual, uniqueId} from "lodash";
 import {Subscription} from "rxjs";
-import {ImageComponent} from "../../../image/components/image/image.component";
 import {
   CellChangeEvent,
   CellEvent,
@@ -62,18 +61,19 @@ import {
   RowSelectionChange,
   TableButton,
   TableRenderInfo,
+  TableRenderInfoFilterable,
   ToolbarButtonEvent
 } from "./table.types";
-import {getInputInfosFromTableColumns} from "./table.utils";
+import {getCellMergeInfo, getInputInfosFromTableColumns} from "./table.utils";
 
 @Component({
   selector: "app-table",
   templateUrl: "./table.component.html",
   styleUrls: ["./table.component.scss"],
   imports: [
-    forwardRef(() => CadImageComponent),
-    forwardRef(() => InputComponent),
+    CadImageComponent,
     ImageComponent,
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
@@ -94,6 +94,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
   private message = inject(MessageService);
 
   @HostBinding("class") class: string | string[] | undefined;
+  @HostBinding("style") style: Properties | undefined;
 
   infoIn = input.required<TableRenderInfo<T>>({alias: "info"});
   rowButtonClick = output<RowButtonEvent<T>>();
@@ -142,7 +143,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     if (!filterable) {
       return null;
     }
-    let fields: (keyof T)[] | undefined;
+    let fields: TableRenderInfoFilterable<T>["fields"];
     if (typeof filterable === "object") {
       fields = filterable.fields;
     }
@@ -152,27 +153,39 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     }
     const form = this.filterForm;
     return fields.map((field) => {
-      const column = columns.find((v) => v.field === field);
+      let fieldStr: keyof T;
+      if (field && typeof field === "object") {
+        fieldStr = field.field;
+      } else {
+        fieldStr = field;
+      }
       let label = "搜索";
+      const column = columns.find((v) => v.field === fieldStr);
       if (column) {
-        label += `：${column.name || String(column.field)}`;
+        label += `：${column.name || String(fieldStr)}`;
       }
       const options = new Set<string>();
       for (const item of info.data) {
-        const value = getValueString(item[field]);
+        let value: string;
+        if (field && typeof field === "object" && typeof field.valueGetter === "function") {
+          value = field.valueGetter(item);
+        } else {
+          value = getValueString(item[fieldStr]);
+        }
         if (value) {
           options.add(value);
         }
       }
       const onChange = (val: string) => {
-        form.set(field, val);
+        form.set(fieldStr, val);
         this.filterTable();
+        this.cd.markForCheck();
       };
       const info2: InputInfo = {
         type: "string",
         label,
         clearable: true,
-        value: form.get(field) || "",
+        value: form.get(fieldStr) || "",
         options: Array.from(options),
         onInput: debounce(onChange, 100),
         onChange,
@@ -258,8 +271,20 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       }
       this.filterTable();
     }
-    if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
-      this.class = info.class;
+    if (intersection<InfoKey>(changedKeys, ["class", "noBorder"]).length > 0) {
+      const classes: string[] = [];
+      if (typeof info.class === "string") {
+        classes.push(info.class);
+      } else if (Array.isArray(info.class)) {
+        classes.push(...info.class);
+      }
+      if (info.noBorder) {
+        classes.push("no-border");
+      }
+      this.class = classes;
+    }
+    if (intersection<InfoKey>(changedKeys, ["style"]).length > 0) {
+      this.style = info.style;
     }
     if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
       this.updateCellInputInfos();
@@ -426,7 +451,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       const errors: ValidationErrors = {};
       const control = new FormControl(valueAfter, column.validators);
       for (const validator of getArray(column.validators2)) {
-        const errors2 = validator({column, item, rowIdx, colIdx});
+        const errors2 = validator({column, item, rowIdx, colIdx, component: this});
         Object.assign(errors, errors2);
       }
       const item2 = item as TableDataBase;
@@ -489,6 +514,8 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       }
       if (Array.isArray(data)) {
         data.forEach((v) => info.data.push(v));
+        this.dataSource.data = info.data;
+        this.updateCellInputInfos();
       } else {
         this.message.alert("数据格式错误");
       }
@@ -542,8 +569,8 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     return true;
   }
 
-  toTypeString(str: any) {
-    return str as string;
+  getColId(column: ColumnInfo<T>) {
+    return String(column.field);
   }
 
   getCheckBoxStyle() {
@@ -553,33 +580,46 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     return style;
   }
 
+  getHeaderName(column: ColumnInfo<T>) {
+    const {name, field} = column;
+    if (typeof name === "string") {
+      return name;
+    }
+    return field;
+  }
+
   getCellClass(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
     const classes = new Set(["column-type-" + column.type]);
-    const {activeRows, rowSelection, getCellClass} = this.info();
-    let active = activeRows?.includes(rowIdx);
-    if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
-      active = true;
-    }
-    if (active) {
-      classes.add("active");
-    }
-    if (item && getCellClass) {
-      const classes2 = getCellClass({column, item, rowIdx, colIdx});
-      if (classes2 && typeof classes2 === "string") {
-        for (const cls of classes2.split(" ")) {
-          classes.add(cls);
+    const {getCellClass, cellMergeInfos} = this.info();
+    const addCls = (cls: string | string[] | undefined) => {
+      if (!cls) {
+        return;
+      }
+      if (typeof cls === "string") {
+        for (const c of cls.split(" ")) {
+          classes.add(c);
         }
-      } else if (Array.isArray(classes2)) {
-        for (const cls of classes2) {
-          classes.add(cls);
+      } else if (Array.isArray(cls)) {
+        for (const c of cls) {
+          classes.add(c);
         }
       }
+    };
+    addCls(column.class);
+    if (item && getCellClass) {
+      addCls(getCellClass({column, item, rowIdx, colIdx}));
     }
+    const mergeInfo = getCellMergeInfo(cellMergeInfos || [], column, rowIdx);
+    if (mergeInfo) {
+      classes.add(`cell-merge-rows-${mergeInfo.position}`);
+    }
+    const align = column.align || "center";
+    classes.add(`align-${align}`);
     return Array.from(classes);
   }
 
   getCellStyle(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
-    const {getCellStyle} = this.info();
+    const {getCellStyle, cellMergeInfos} = this.info();
     const style = {...column.style};
     if (item && getCellStyle) {
       Object.assign(style, getCellStyle({column, item, rowIdx, colIdx}));
@@ -589,7 +629,24 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     } else if (!style.flex) {
       style.flex = "1 1 0";
     }
+    const mergeInfo = getCellMergeInfo(cellMergeInfos || [], column, rowIdx);
+    if (mergeInfo) {
+      style[`--merge-rows-n`] = `${mergeInfo.n}`;
+    }
     return style;
+  }
+
+  getCellContentClass(column: ColumnInfo<T>, item: T | null, rowIdx: number) {
+    const classes = new Set(["column-type-" + column.type]);
+    const {activeRows, rowSelection} = this.info();
+    let active = activeRows?.includes(rowIdx);
+    if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
+      active = true;
+    }
+    if (active) {
+      classes.add("active");
+    }
+    return Array.from(classes);
   }
 
   getItemImgSmall(item: T, column: ColumnInfo<T>) {
@@ -785,10 +842,17 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
 
   getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
     let info: InputInfo = {type: "string", label: ""};
+    const {item, column} = event;
     const onChange = (value: any) => {
+      let descriptor = Object.getOwnPropertyDescriptor(item, column.field);
+      if (!descriptor && item instanceof Object) {
+        descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), column.field);
+      }
+      if (!descriptor || descriptor?.set || descriptor?.writable) {
+        item[column.field] = value;
+      }
       this.cellChange.emit({...event, value});
     };
-    const column = event.column;
     switch (column.type) {
       case "string":
       case "boolean":
@@ -801,24 +865,19 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       case "select":
         info = {type: column.type, label: "", options: column.options, onChange};
     }
-    const {item} = event;
-    let descriptor = Object.getOwnPropertyDescriptor(item, event.column.field);
-    if (!descriptor && item instanceof Object) {
-      descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), event.column.field);
-    }
-    if (!descriptor || descriptor?.set || descriptor?.writable) {
-      info.model = {data: item, key: column.field};
-    } else {
-      info.value = item[column.field];
-    }
+    info.value = item[column.field];
     const {rowIdx, colIdx} = event;
     info.validators = [
       ...getArray(column.validators),
       ...getArray(column.validators2).map((validator) => {
-        return () => validator({column, item, rowIdx, colIdx});
+        return () => validator({column, item, rowIdx, colIdx, component: this});
       })
     ];
     info.style = {width: "0", flex: "1 1 0"};
+    if (column.inputInfoOverride) {
+      const override = getValue(column.inputInfoOverride, this.message, {column, item, rowIdx, colIdx});
+      Object.assign(info, override);
+    }
     return info;
   }
 

@@ -40,7 +40,6 @@ import {getValue} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
-import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
@@ -54,12 +53,12 @@ import {Properties} from "csstype";
 import {intersectionWith, isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
-import {ColorCircleModule} from "ngx-color/circle";
+import {ColorGithubModule} from "ngx-color/github";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOptions, InputInfoString} from "./input.types";
 import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
 
 @Component({
@@ -73,7 +72,7 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
     CdkDropList,
     ClickStopPropagationDirective,
     ColorChromeModule,
-    ColorCircleModule,
+    ColorGithubModule,
     FormsModule,
     ImageComponent,
     KeyValuePipe,
@@ -188,8 +187,6 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const type = this.info().type;
     if (type === "color") {
       this.setColor(val);
-    } else if (type === "formulas") {
-      this.updateFormulasStr();
     }
     this.updateDisplayValue();
   }
@@ -350,7 +347,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const {filterValuesGetter} = info;
     let sortOptions: boolean;
     const getFilterValues = (option: (typeof this.options)[number]) => {
-      let values: string[] = [];
+      let values: string[];
       if (typeof filterValuesGetter === "function") {
         values = filterValuesGetter(option);
       } else {
@@ -363,9 +360,11 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     };
     let fixedOptions: string[] | undefined;
     let optionsDisplayLimit: number | undefined;
+    let noSortOptions: boolean | undefined;
     if (info.type === "string") {
       fixedOptions = info.fixedOptions;
       optionsDisplayLimit = info.optionsDisplayLimit;
+      noSortOptions = info.noSortOptions;
     }
     let result: typeof this.options;
     if (value) {
@@ -389,7 +388,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     if (typeof optionsDisplayLimit === "number") {
       result = result.slice(0, optionsDisplayLimit);
     }
-    if (sortOptions) {
+    if (sortOptions && !noSortOptions) {
       const value2 = this.value;
       if (typeof value2 === "string") {
         sortArrayByLevenshtein(result, getFilterValues, value2);
@@ -501,8 +500,6 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
       if (!isTypeOf(this.value, "array")) {
         this.value = [];
       }
-    } else if (type === "formulas") {
-      this.updateFormulasStr();
     }
     this.class = [type];
     if (typeof info.label === "string" && info.label && !info.label.includes(" ")) {
@@ -560,9 +557,9 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     if (shouldValidate) {
       this.validateValue();
     }
+    this.info.set({...info});
     this.valueChange$.next(this.value);
     this._filterXuanxiangOptions();
-    this.info.set({...info});
   }
 
   clear() {
@@ -611,20 +608,16 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const copy = (str: string) => {
       this.message.copyText(str, {successText: `${info.label}已复制`});
     };
-    if (info.type === "formulas") {
-      copy(this.formulasStr);
-    } else {
-      const value = this.value;
-      switch (typeof value) {
-        case "string":
-          copy(value);
-          break;
-        case "number":
-          copy(String(value));
-          break;
-        default:
-          copy(JSON.stringify(value));
-      }
+    const value = this.value;
+    switch (typeof value) {
+      case "string":
+        copy(value);
+        break;
+      case "number":
+        copy(String(value));
+        break;
+      default:
+        copy(JSON.stringify(value));
     }
   }
 
@@ -773,7 +766,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const {type, suffixIcons} = info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
-      let result = defaultSuffixIcon.onClick?.();
+      let result = this.clickInputInfoBtn(defaultSuffixIcon);
       if (result instanceof Promise) {
         result = await result;
       }
@@ -790,8 +783,12 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         this.selectOptions(this.model.key);
       }
     }
-    info.onClick?.(this as any);
+    info.onClick?.(this.infoIn() as any);
     this.click.emit(event);
+  }
+
+  clickInputInfoBtn(btn: InputInfoButtonInfo) {
+    return btn.onClick?.(this.infoIn());
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
@@ -866,6 +863,10 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         }
         return {vid, name, label: v.label, img: v.img || "", disabled: false};
       });
+    }
+    if (!optionKey && !hasOptions) {
+      this.message.snack("选项名字为空");
+      return;
     }
     const dialogData: CadOptionsInput = {
       ...optionsDialog,
@@ -998,7 +999,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         .map((v) => v.name)
         .join(", ");
     } else if (info.type === "image" && files[0]) {
-      info.onChange?.(files[0], info);
+      await info.onChange?.(files[0], info);
+      this.cd.markForCheck();
     }
   }
 
@@ -1025,13 +1027,24 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const value = target.value;
     this._filterXuanxiangOptions(i, value);
   }
-  getObjectKeyLabel(key: string, label: any) {
+  getObjectKeyLabel(key: string, value: any) {
     const info = this.info();
     if (info.type === "object" && info.keyLabel) {
       if (typeof info.keyLabel === "function") {
-        return info.keyLabel(key, label, info);
+        return info.keyLabel(key, value, info);
       } else if (typeof info.keyLabel === "string") {
         return info.keyLabel;
+      }
+    }
+    return "";
+  }
+  getObjectKeyHint(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.keyHint) {
+      if (typeof info.keyHint === "function") {
+        return info.keyHint(key, value, info);
+      } else if (typeof info.keyHint === "string") {
+        return info.keyHint;
       }
     }
     return "";
@@ -1043,6 +1056,17 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return info.valueLabel(key, value, info);
       } else if (typeof info.valueLabel === "string") {
         return info.valueLabel;
+      }
+    }
+    return "";
+  }
+  getObjectValueHint(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.valueHint) {
+      if (typeof info.valueHint === "function") {
+        return info.valueHint(key, value, info);
+      } else if (typeof info.valueHint === "string") {
+        return info.valueHint;
       }
     }
     return "";
@@ -1079,36 +1103,16 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
     return "";
   }
-
-  updateFormulasStr() {
+  getArrayValueHint(i: number, value: any) {
     const info = this.info();
-    if (info.type !== "formulas") {
-      return;
+    if (info.type === "array" && info.valueHint) {
+      if (typeof info.valueHint === "function") {
+        return info.valueHint(i, value, info);
+      } else if (typeof info.valueHint === "string") {
+        return info.valueHint;
+      }
     }
-    const {value} = this;
-    if (!isTypeOf(value, "object")) {
-      return;
-    }
-    this.formulasStr = Object.entries(value)
-      .map(([k, v]) => `${k}=${v}`)
-      .join(";");
-  }
-
-  async editFormulas() {
-    const info = this.info();
-    if (info.type !== "formulas" || !this.editable()) {
-      return;
-    }
-    let {value} = this;
-    const params = getValue(info.params, this.message);
-    if (!isTypeOf(value, "object")) {
-      value = {};
-    }
-    const result = await openEditFormulasDialog(this.dialog, {data: {...params, formulas: value}});
-    if (result) {
-      this.value = result;
-      info.onChange?.(result, info);
-    }
+    return "";
   }
 
   displayValue = signal("");

@@ -3,8 +3,8 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
+import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
-import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({

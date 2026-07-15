@@ -1,5 +1,6 @@
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {ObjectOf} from "@lucilor/utils";
 
 export const importComponentConfigNames = ["requireLineId", "pruneLines", "addUniqCode", "dryRun", "noFilterEntities"] as const;
 export type ImportComponentConfigName = (typeof importComponentConfigNames)[number];
@@ -12,4 +13,5 @@ export interface ImportCache {
   xinghao?: string;
   lurushuju?: boolean;
   sbjbReplace?: boolean;
+  extraData?: ObjectOf<any>;
 }

@@ -1,3 +1,4 @@
+import {compose, decomposeTSR, rotate, scale, skew, translate} from "transformation-matrix";
 import {PointLike} from "./point";
 
 export interface MatrixParams {
@@ -77,6 +78,15 @@ export class Matrix {
     }
   }
 
+  private _setMatrix(source: ReturnType<typeof compose>) {
+    this.a = source.a;
+    this.b = source.b;
+    this.c = source.c;
+    this.d = source.d;
+    this.e = source.e;
+    this.f = source.f;
+  }
+
   compose(source: MatrixLike = {}) {
     if (Array.isArray(source)) {
       matrixKeys.forEach((k, i) => {
@@ -87,24 +97,23 @@ export class Matrix {
         this[k] = source[k] ?? matrixValues[k];
       });
       this.origin = getPoint(source.origin);
+      const matrixs: Parameters<typeof compose> = [];
       if (!(source instanceof Matrix)) {
         if (source.translate !== undefined) {
-          const translate = getPoint(source.translate);
-          this.translate(translate[0], translate[1]);
+          matrixs.push(translate(...getPoint(source.translate)));
         }
         if (source.scale !== undefined) {
-          const scale = getPoint(source.scale, 1);
-          this.scale(scale[0], scale[1]);
+          matrixs.push(scale(...getPoint(source.scale, 1)));
         }
         if (source.skew !== undefined) {
-          const skew = getPoint(source.skew);
-          this.skew(skew[0], skew[1]);
+          matrixs.push(skew(...getPoint(source.skew, 0)));
         }
-        const rotate = Number(source.rotate);
-        if (!isNaN(rotate)) {
-          this.rotate(rotate);
+        const rotateNum = Number(source.rotate);
+        if (!isNaN(rotateNum)) {
+          matrixs.push(rotate(rotateNum));
         }
       }
+      this._setMatrix(compose(this, ...matrixs));
     }
   }
 
@@ -114,6 +123,11 @@ export class Matrix {
       result[k] = this[k];
     });
     return result;
+  }
+
+  decomposeTSR() {
+    const {a, d} = this;
+    return decomposeTSR(this, d < 0, a < 0);
   }
 
   toArray() {
@@ -126,13 +140,7 @@ export class Matrix {
 
   transform(matrix: MatrixLike) {
     matrix = new Matrix(matrix);
-    this.a *= matrix.a;
-    this.d *= matrix.d;
-    this.e += matrix.e;
-    this.f += matrix.f;
-    const skew1 = this.skew();
-    const skew2 = matrix.skew();
-    this.skew(skew1[0] + skew2[0], skew1[1] + skew2[1]);
+    this._setMatrix(compose(this, matrix));
     return this;
   }
 
@@ -140,22 +148,20 @@ export class Matrix {
   scale(x: number, y?: number): this;
   scale(x?: number, y = x) {
     if (typeof x !== "number" || typeof y !== "number") {
-      return [this.a, this.d];
+      const {sx, sy} = this.decomposeTSR().scale;
+      return [sx, sy];
     }
-    this.a = x;
-    this.d = y;
-    return this;
+    return this.transform(scale(x, y));
   }
 
   translate(): [number, number];
   translate(x: number, y?: number): this;
   translate(x?: number, y = x) {
     if (typeof x !== "number" || typeof y !== "number") {
-      return [this.e, this.f];
+      const {tx, ty} = this.decomposeTSR().translate;
+      return [tx, ty];
     }
-    this.e = x;
-    this.f = y;
-    return this;
+    return this.transform(translate(x, y));
   }
 
   skew(): [number, number];
@@ -164,25 +170,16 @@ export class Matrix {
     if (typeof radX !== "number" || typeof radY !== "number") {
       return [Math.atan(this.b), Math.atan(this.c)];
     }
-    this.b = Math.tan(radX);
-    this.c = Math.tan(radY);
-    return this;
+    return this.transform(skew(radX, radY));
   }
 
   rotate(): number;
   rotate(rad: number): this;
   rotate(rad?: number) {
     if (typeof rad === "number") {
-      this.a = Math.cos(rad);
-      this.d = this.a;
-      this.b = Math.sin(rad);
-      this.c = -this.b;
-      return this;
+      return this.transform(rotate(rad));
     }
-    if (this.a !== this.d || this.b !== -this.c) {
-      return 0;
-    }
-    return Math.asin(this.b);
+    return this.decomposeTSR().rotation.angle;
   }
 
   equals(matrix: MatrixLike) {

@@ -24,7 +24,7 @@ export interface HttpOptions extends AxiosRequestConfig {
 export class HttpServiceResponseError extends Error {
   constructor(public response: CustomResponse<any>) {
     const {msg} = response;
-    let message = "";
+    let message: string;
     if (msg) {
       message = msg;
     } else {

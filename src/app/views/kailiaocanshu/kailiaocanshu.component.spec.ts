@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {defaultQiezhongkongItem, QiezhongkongItem} from "@components/klcs/klcs.component";
 import {importObject} from "@lucilor/utils";
@@ -12,7 +11,7 @@ describe("KailiaocanshuComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [KailiaocanshuComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KailiaocanshuComponent);

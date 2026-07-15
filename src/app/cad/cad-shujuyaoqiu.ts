@@ -1,9 +1,9 @@
 import {getValueString} from "@app/utils/get-value";
-import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import type {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData, CadLineLike, CadZhankai, intersectionKeysTranslate} from "@lucilor/cad-viewer";
 import {downloadByUrl, isTypeOf, keysOf, ObjectOf, queryString} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import type {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {importComponentConfigNames} from "@views/import/import.types";
 
@@ -170,7 +170,7 @@ export const validateCad = (data: CadData, yaoqiu: Cad数据要求 | null | unde
   }
   const isEmpty = (v: any) => [undefined, null, ""].includes(v);
   const yaoqiuItems = type === "add" ? yaoqiu.新建CAD要求 : yaoqiu.选中CAD要求;
-  for (const {key, key2, cadKey, required, value} of yaoqiuItems) {
+  for (const {key, key2, cadKey, required, value, override} of yaoqiuItems) {
     if (!required) {
       continue;
     }
@@ -184,7 +184,7 @@ export const validateCad = (data: CadData, yaoqiu: Cad数据要求 | null | unde
       if (isEmpty(value2)) {
         return false;
       }
-      if (!isEmpty(value) && value2 !== value) {
+      if (override && value2 !== value) {
         return false;
       }
     } else if (key === "展开信息") {
@@ -336,7 +336,7 @@ export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undef
 };
 
 export const getCadQueryFields = (yaoqiu?: Cad数据要求 | null) => {
-  return {"json.entities": false};
+  return {"json.entities": false, "json.layers": false, "json.blocks": false, "json.info.removedDimensions": false};
   const fields = new Set<string>([
     "_id",
     "名字",

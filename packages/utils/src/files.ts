@@ -32,16 +32,16 @@ const fileSizeArray: FileSizeUnit[] = ["B", "KB", "MB", "GB", "TB", "PB", "EB", 
 export interface FileSizeOptions {
   inputUnit?: FileSizeUnit;
   outputUnit?: FileSizeUnit;
-  fractionDigits?: number;
-  stringGetter?: (size: string, unit: string) => string;
+  digits?: number;
+  stringGetter?: (size: number, unit: string) => string;
 }
 
 export const getFileSize = (raw: number, options: FileSizeOptions = {}) => {
   const {inputUnit, outputUnit} = options;
-  const fractionDigits = options.fractionDigits ?? 2;
+  const digits = options.digits;
   let stringGetter = options.stringGetter;
   if (typeof stringGetter !== "function") {
-    stringGetter = (size: string, unit: string) => `${size} ${unit}`;
+    stringGetter = (size: number, unit: string) => `${size}${unit}`;
   }
   let size: number;
   let unit: FileSizeUnit;
@@ -59,17 +59,29 @@ export const getFileSize = (raw: number, options: FileSizeOptions = {}) => {
     size = raw;
     unit = fileSizeArray[index];
   }
-  return stringGetter(size.toFixed(fractionDigits), unit);
+  if (typeof digits === "number") {
+    size = Number(size.toFixed(digits));
+  }
+  return stringGetter(size, unit);
 };
 
-export const selectFiles = (opts?: {multiple?: boolean; accept?: string}) => {
+export interface SelectFilesOptions {
+  multiple?: boolean;
+  accept?: string;
+  directory?: boolean;
+}
+export const selectFiles = (opts?: SelectFilesOptions) => {
   return new Promise<FileList | null>((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
     input.multiple = opts?.multiple ?? false;
     input.accept = opts?.accept ?? "";
+    input.webkitdirectory = opts?.directory ?? false;
     input.addEventListener("change", () => {
       resolve(input.files);
+    });
+    input.addEventListener("cancel", () => {
+      resolve(null);
     });
     input.click();
   });

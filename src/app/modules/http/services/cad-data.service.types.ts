@@ -27,6 +27,7 @@ export interface SetCadParams {
   restore?: boolean;
   importConfig?: {pruneLines: boolean};
   sbjbReplace?: boolean;
+  extraData?: ObjectOf<any>;
 }
 
 export type CadSearchData = {
@@ -70,7 +71,9 @@ export interface BancaiList {
   mingzi: string;
   cailiaoList: string[];
   houduList: string[];
+  houduInfos?: ObjectOf<HouduInfo[]>;
   guigeList: number[][];
+  kailiaoGuiges?: ObjectOf<ObjectOf<number[][]>>;
   zidingyi?: string;
   bancaileixing?: string;
   img?: string;
@@ -82,8 +85,20 @@ export interface BancaiCad {
   width: number;
   height: number;
   num: number;
-  bancai: {mingzi: string; cailiao: string | null; houdu: string | null; guige: number[] | null; gas?: string};
+  bancai: {
+    mingzi: string;
+    cailiao: string | null;
+    houdu: string | null;
+    guige: number[] | null;
+    gas?: string;
+    激光开料留边?: string;
+    超出规格时激光开料留边?: string;
+    index?: number;
+  };
   hidden?: boolean;
+}
+export interface HouduInfo extends TableDataBase {
+  kailiaohoudu: string;
 }
 
 export type Changelog = ObjectOf<any>[];
@@ -245,5 +260,13 @@ export interface ExcelData {
 }
 export interface ExcelSheet {
   title?: string;
+  titleCell?: string;
   dataArray?: string[][];
+  colInfos?: ExcelColInfo[];
+}
+export interface ExcelColInfo {
+  id: string;
+  autoSize?: boolean;
+  width?: number;
+  numberFormat?: string;
 }
