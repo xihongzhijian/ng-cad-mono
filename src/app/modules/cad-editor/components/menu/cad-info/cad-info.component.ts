@@ -22,7 +22,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {timeout} from "@lucilor/utils";
+import {isTypeOf, timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -551,25 +551,41 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
           if (typeof data.info.刨坑深度[i] !== "string") {
             data.info.刨坑深度[i] = "";
           }
-          arr2.push({
-            type: "string",
-            label: "刨坑深度",
-            model: {data: data.info.刨坑深度, key: i},
-            options: ["默认"],
-            suffixTexts: [{name: "mm"}],
-            validators: () => {
-              const val = data.info.刨坑深度[i];
-              if (val === "默认") {
+          if (!Array.isArray(data.info.刨坑信息)) {
+            data.info.刨坑信息 = [];
+          }
+          if (!isTypeOf(data.info.刨坑信息[i], "object")) {
+            data.info.刨坑信息[i] = {};
+          }
+          arr2.push(
+            {
+              type: "string",
+              label: "刨坑深度",
+              model: {data: data.info.刨坑深度, key: i},
+              options: ["默认"],
+              suffixTexts: [{name: "mm"}],
+              validators: () => {
+                const val = data.info.刨坑深度[i];
+                if (val === "默认") {
+                  return null;
+                }
+                const num = Number(val);
+                if (isNaN(num) || num < 0) {
+                  return {请输入不小于0的数字: true};
+                }
                 return null;
-              }
-              const num = Number(val);
-              if (isNaN(num) || num < 0) {
-                return {请输入不小于0的数字: true};
-              }
-              return null;
+              },
+              style: {flex: "1 1 0", width: 0}
             },
-            style: {flex: "1 1 0", width: 0}
-          });
+            {
+              type: "string",
+              label: "正反面",
+              model: {data: data.info.刨坑信息[i], key: "正反面"},
+              options: ["正面", "反面"],
+              clearable: true,
+              style: {flex: "1 1 0", width: 0}
+            }
+          );
         }
         inputs[key].push(arr2);
       }
@@ -748,6 +764,10 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
         data.info.刨坑深度 = [];
       }
       this.arrayAdd(data.info.刨坑深度, "", i);
+      if (!Array.isArray(data.info.刨坑信息)) {
+        data.info.刨坑信息 = [];
+      }
+      this.arrayAdd(data.info.刨坑信息, {}, i);
     }
     this.updateIntersectionInputs();
   }
@@ -756,6 +776,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.arrayRemove(data[key], i);
     if (key === "zhidingweizhipaokeng") {
       this.arrayRemove(data.info.刨坑深度, i);
+      this.arrayRemove(data.info.刨坑信息, i);
     }
     this.updateIntersectionInputs();
   }
