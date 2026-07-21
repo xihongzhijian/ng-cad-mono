@@ -223,7 +223,7 @@ export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<InputInfoCo
   onBlur?: (info: R) => void;
 };
 
-export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
+export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string; imgLarge?: string; vid?: number};
 
 export type InputInfoOptions<T = string> = (InputInfoOption<T> | string)[] | readonly (InputInfoOption<T> | string)[];
 

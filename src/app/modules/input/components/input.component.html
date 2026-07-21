@@ -393,6 +393,12 @@
       }
     }
     @case ("select") {
+      <ng-template #optionValue [appTypedTemplate]="{$implicit: options[0]}" let-option>
+        @if (option.img) {
+          <app-image [src]="option.img" [bigPicSrc]="option.imgLarge" noLoading />
+        }
+        <span>{{ option.label || option.value }}</span>
+      </ng-template>
       @if (info.appearance === "list") {
         @if (info.label) {
           <div class="label">{{ info.label }}:</div>
@@ -416,7 +422,7 @@
           >
             @for (option of options; track $index) {
               <mat-list-option [value]="option.value" [disabled]="option.disabled">
-                {{ option.label || option.value }}
+                <ng-container [ngTemplateOutlet]="optionValue" [ngTemplateOutletContext]="{$implicit: option}"></ng-container>
               </mat-list-option>
             }
           </mat-selection-list>
@@ -462,7 +468,7 @@
                 <ng-scrollbar matSelectViewport>
                   @for (option of options; track $index) {
                     <mat-option [value]="option.value" [disabled]="option.disabled">
-                      {{ option.label || option.value }}
+                      <ng-container [ngTemplateOutlet]="optionValue" [ngTemplateOutletContext]="{$implicit: option}"></ng-container>
                     </mat-option>
                   }
                 </ng-scrollbar>
@@ -482,7 +488,7 @@
                 <ng-scrollbar matSelectViewport>
                   @for (option of options; track $index) {
                     <mat-option [value]="option.value" [disabled]="option.disabled">
-                      {{ option.label || option.value }}
+                      <ng-container [ngTemplateOutlet]="optionValue" [ngTemplateOutletContext]="{$implicit: option}"></ng-container>
                     </mat-option>
                   }
                 </ng-scrollbar>

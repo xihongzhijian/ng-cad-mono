@@ -8,7 +8,7 @@
   </div>
   @if (previewSrc(); as src) {
     <div class="toolbar" style="align-items: flex-end">
-      <app-image [src]="src" [bigPicSrc]="src" controlBigPic [style]="imgStyle()"></app-image>
+      <app-image [src]="src" [bigPicSrc]="src" [style]="imgStyle()"></app-image>
       <button mat-flat-button (click)="downloadPreview()">下载</button>
     </div>
   }

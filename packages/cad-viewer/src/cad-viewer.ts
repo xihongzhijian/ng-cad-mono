@@ -199,7 +199,16 @@ export class CadViewer extends EventEmitter {
     return this;
   }
 
-  // TODO: get/set cad position
+  get position() {
+    const box = this.draw.viewbox();
+    return [box.x, box.y];
+  }
+  set position(value: [number, number]) {
+    const box = this.draw.viewbox();
+    box.x = value[0];
+    box.y = value[1];
+    this.draw.viewbox(box);
+  }
 
   moveX(dx: number) {
     const box = this.draw.viewbox();
@@ -207,14 +216,12 @@ export class CadViewer extends EventEmitter {
     this.draw.viewbox(box);
     return this;
   }
-
   moveY(dy: number) {
     const box = this.draw.viewbox();
     box.y -= dy;
     this.draw.viewbox(box);
     return this;
   }
-
   move(dx: number, dy: number) {
     const box = this.draw.viewbox();
     box.x -= dx;
@@ -289,7 +296,7 @@ export class CadViewer extends EventEmitter {
   async drawEntity(entity: CadEntity, style: Partial<CadStyle> = {}, isFromParent?: boolean) {
     const {draw} = this;
     const config = this.getConfig();
-    const {color, fontStyle, lineStyle, dimStyle} = CadStylizer.get(entity, config, style);
+    const {fontStyle, lineStyle, dimStyle} = CadStylizer.get(entity, config, style);
     let shouldDraw = entity.visible;
     if (entity instanceof CadDimension) {
       if (config.hideDimensions) {
@@ -393,8 +400,8 @@ export class CadViewer extends EventEmitter {
       for (const path of paths) {
         const {edges, vertices} = path;
         const edgePoints = edges.map((v) => v.start);
-        drawResult = drawResult.concat(drawShape(el, edgePoints, "fill", 0));
-        drawResult = drawResult.concat(drawShape(el, vertices, "fill", drawResult.length));
+        drawResult = drawResult.concat(drawShape(el, edgePoints, {color: "fill"}, 0));
+        drawResult = drawResult.concat(drawShape(el, vertices, {color: "fill"}, drawResult.length));
       }
       if (!drawResult.length) {
         drawResult = [];
@@ -567,7 +574,7 @@ export class CadViewer extends EventEmitter {
     } else if (entity instanceof CadLeader) {
       const start = entity.vertices[0];
       const end = entity.vertices[1];
-      drawResult = drawLeader(el, start, end, entity.size, color);
+      drawResult = drawLeader(el, start, end, entity.size, dimStyle);
     } else if (entity instanceof CadImage) {
       drawResult = await drawImage(el, entity);
     }

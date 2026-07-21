@@ -1,10 +1,11 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
-import {CadAxis, CadImage, CadSpline} from "./cad-data";
+import {isEmpty} from "lodash";
+import {CadAxis, CadDimensionBlock, CadImage, CadSpline} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
-import {CadDimensionStyle, FontStyle, LineStyle} from "./cad-data/cad-styles";
+import {CadDimensionStyle, FontStyle, LineStyle, LineStyleBasic} from "./cad-data/cad-styles";
 
-const setLineStyle = (el: Element, style: LineStyle) => {
+const setLineStyle = (el: Element, style: LineStyleBasic) => {
   const {color, width, dashArray} = style;
   el.stroke({width, color});
   if (dashArray) {
@@ -16,14 +17,17 @@ export const drawLine = (draw: Container, start: Point, end: Point, style?: Line
   let el = draw.children()[i] as SvgLine;
   let {x: x1, y: y1} = start;
   let {x: x2, y: y2} = end;
-  const {dashArray, padding} = style || {};
-  if (dashArray && dashArray.length > 0) {
+  const {dashArray, padding, forcePadding} = style || {};
+  if (forcePadding || (dashArray && dashArray.length > 0)) {
     const line = new Line(start, end);
     let [offsetStart, offsetEnd] = Array.isArray(padding) ? [...padding] : [padding];
     const getNum = (n: any) => {
       const result = Number(n);
       if (isNaN(result)) {
         return 0;
+      }
+      if (forcePadding) {
+        return result;
       }
       return Math.min(result, line.length / 10);
     };
@@ -52,7 +56,13 @@ export const drawCircle = (draw: Container, center: Point, radius: number, style
     el.size(radius * 2).center(center.x, center.y);
   } else {
     el = draw.circle(radius * 2).center(center.x, center.y);
-    el.addClass("stroke").fill("none");
+    el.addClass("stroke");
+    if (style?.fillColor) {
+      el.fill(style.fillColor);
+      el.addClass("fill");
+    } else {
+      el.fill("none");
+    }
   }
   setLineStyle(el, style || {});
   return [el];
@@ -162,7 +172,10 @@ export const drawText = (
   return [el];
 };
 
-export const drawShape = (draw: Container, points: Point[], color?: string, i = 0) => {
+export interface ShapeStyle extends LineStyleBasic {
+  blank?: boolean;
+}
+export const drawShape = (draw: Container, points: Point[], style?: ShapeStyle, i = 0) => {
   let el = draw.children()[i] as Path;
   const path = points
     .map((p, j) => {
@@ -179,20 +192,194 @@ export const drawShape = (draw: Container, points: Point[], color?: string, i = 
   } else {
     el = draw.path(path).addClass("fill stroke");
   }
-  if (color) {
-    el.stroke(color).fill(color);
-  }
+  setLineStyle(el, style || {});
+  const {color, blank} = style || {};
+  el.fill(blank ? "none" : color || "none");
   return [el];
 };
 
-export const drawTriangle = (draw: Container, p1: Point, p2: Point, size: number, color?: string, i?: number) => {
-  const theta = new Line(p1, p2).theta.rad;
-  const dTheta = (30 / 180) * Math.PI;
-  const theta1 = theta + dTheta;
-  const theta2 = theta - dTheta;
-  const p3 = p1.clone().add(size * Math.cos(theta1), size * Math.sin(theta1));
-  const p4 = p1.clone().add(size * Math.cos(theta2), size * Math.sin(theta2));
-  return drawShape(draw, [p1, p3, p4], color, i);
+export interface ArrowInfo {
+  triangle?: {
+    noThirdLine?: boolean;
+    reverse?: boolean;
+  };
+  oblique?: {
+    thick?: boolean;
+  };
+  circle?: {
+    double?: boolean;
+  };
+  square?: Record<string, never>;
+  angle?: number;
+  blank?: boolean;
+  dimLinePaddingFactor?: number;
+  extLinePaddingFactor?: number;
+  sizeFactor?: number;
+  lineStyle?: LineStyle;
+}
+export const getArrowInfo = (blockRaw: string, lineStyle?: LineStyle) => {
+  const info: ArrowInfo = {lineStyle};
+  const block = blockRaw.replace(/^_/, "") as CadDimensionBlock;
+  switch (block) {
+    case "":
+    case "CLOSEDBLANK":
+    case "Closed":
+      info.triangle = {};
+      if (block !== "Closed") {
+        info.dimLinePaddingFactor = 1;
+      }
+      if (block === "CLOSEDBLANK" || block === "Closed") {
+        info.blank = true;
+      }
+      break;
+    case "Dot":
+    case "DotSmall":
+      info.circle = {};
+      if (block === "Dot") {
+        info.dimLinePaddingFactor = 0.5;
+      } else {
+        info.sizeFactor = 0.25;
+      }
+      break;
+    case "DotBlank":
+    case "Small":
+      info.circle = {};
+      info.blank = true;
+      if (block === "DotBlank") {
+        info.dimLinePaddingFactor = 0.5;
+      } else {
+        info.sizeFactor = 0.25;
+      }
+      break;
+    case "Oblique":
+    case "ARCHTICK":
+      info.oblique = {};
+      info.angle = 45;
+      if (block === "ARCHTICK") {
+        info.oblique.thick = true;
+      }
+      break;
+    case "Open":
+    case "Open30":
+    case "Open90":
+      info.triangle = {noThirdLine: true};
+      info.blank = true;
+      if (block === "Open30") {
+        info.angle = 30;
+      } else if (block === "Open90") {
+        info.angle = 90;
+        info.sizeFactor = 0.5;
+      }
+      break;
+    case "Origin":
+    case "Origin2":
+      info.circle = {};
+      info.blank = true;
+      if (block === "Origin2") {
+        info.circle.double = true;
+        info.dimLinePaddingFactor = 0.5;
+      }
+      break;
+    case "BoxFilled":
+    case "BoxBlank":
+      info.square = {};
+      info.dimLinePaddingFactor = 0.5;
+      if (block === "BoxBlank") {
+        info.blank = true;
+        info.extLinePaddingFactor = -0.5;
+      }
+      break;
+    case "DatumFilled":
+    case "DatumBlank":
+      info.triangle = {reverse: true};
+      info.dimLinePaddingFactor = 1;
+      info.angle = 60;
+      if (block === "DatumBlank") {
+        info.blank = true;
+      }
+      break;
+    case "Integral": // TODO
+      info.oblique = {};
+      info.angle = 45;
+      break;
+    default:
+      console.warn(`Unknown arrow block: ${block}`);
+  }
+  return info;
+};
+
+export interface DrawArrowOptions {
+  info?: ReturnType<typeof getArrowInfo>;
+  color?: string;
+  i?: number;
+}
+export const drawArrow = (draw: Container, p1: Point, p2: Point, size: number, options?: DrawArrowOptions) => {
+  const info = options?.info || getArrowInfo("");
+  const {angle = 20, blank} = info;
+  if (typeof info.sizeFactor === "number") {
+    size *= info.sizeFactor;
+  }
+  const {i} = options || {};
+  const lineStyle = {...options?.info?.lineStyle, color: options?.color};
+  if (info.triangle) {
+    const theta = new Line(p1, p2).theta.rad;
+    const dTheta = (angle / 360) * Math.PI;
+    const theta1 = theta + dTheta;
+    const theta2 = theta - dTheta;
+    let d = size / Math.cos(dTheta);
+    if (info.triangle.reverse) {
+      p1 = p1.clone().add(size * Math.cos(theta), size * Math.sin(theta));
+      d = -d;
+    }
+    const p3 = p1.clone().add(d * Math.cos(theta1), d * Math.sin(theta1));
+    const p4 = p1.clone().add(d * Math.cos(theta2), d * Math.sin(theta2));
+    let path: Point[];
+    if (info.triangle.noThirdLine) {
+      path = [p3, p1, p4];
+    } else {
+      path = [p1, p3, p4, p1];
+    }
+    return drawShape(draw, path, {...lineStyle, blank}, i);
+  } else if (info.oblique) {
+    const theta = new Line(p1, p2).theta.rad;
+    const dTheta = (45 / 180) * Math.PI;
+    const theta1 = theta + dTheta;
+    const theta2 = theta + dTheta + Math.PI;
+    const size2 = (size / 2) * Math.SQRT2;
+    const p3 = p1.clone().add(size2 * Math.cos(theta1), size2 * Math.sin(theta1));
+    const p4 = p1.clone().add(size2 * Math.cos(theta2), size2 * Math.sin(theta2));
+    if (info.oblique.thick) {
+      const d = size / 20;
+      const theta3 = theta + (135 / 180) * Math.PI;
+      const dx = Math.cos(theta3) * d;
+      const dy = Math.sin(theta3) * d;
+      const p5 = p3.clone().add(dx, dy);
+      const p6 = p3.clone().sub(dx, dy);
+      const p7 = p4.clone().sub(dx, dy);
+      const p8 = p4.clone().add(dx, dy);
+      return drawShape(draw, [p5, p6, p7, p8, p5], {...lineStyle, blank}, i);
+    } else {
+      return drawLine(draw, p3, p4, lineStyle, i);
+    }
+  } else if (info.circle) {
+    const radius = size / 2;
+    const result = drawCircle(draw, p1, radius, {...lineStyle, fillColor: info.blank ? "none" : options?.color}, i);
+    if (info.circle.double) {
+      const radius2 = radius / 2;
+      const j = typeof i === "number" ? i + result.length : undefined;
+      const result2 = drawCircle(draw, p1, radius2, lineStyle, j);
+      result.push(...result2);
+    }
+    return result;
+  } else if (info.square) {
+    const radius = size / 2;
+    const p3 = p1.clone().add(radius, radius);
+    const p4 = p1.clone().add(-radius, radius);
+    const p5 = p1.clone().add(-radius, -radius);
+    const p6 = p1.clone().add(radius, -radius);
+    return drawShape(draw, [p3, p4, p5, p6, p3], {...lineStyle, blank}, i);
+  }
+  return [];
 };
 
 export const drawDimensionLinear = (
@@ -213,7 +400,53 @@ export const drawDimensionLinear = (
   }
   const [p1, p2, p3, p4] = points;
 
-  const dimLineStyle = style?.dimensionLine || {};
+  let arrowSize = Number(style?.arrows?.size ?? 0);
+  const arrowColor = style?.arrows?.color ?? color;
+  let arrowInfos1: ReturnType<typeof getArrowInfo> | undefined;
+  let arrowInfos2: ReturnType<typeof getArrowInfo> | undefined;
+  const dimLinePadding = [0, 0];
+  const extLinePadding = [0, 0];
+  if (!style?.arrows?.hidden) {
+    if (isNaN(arrowSize) || arrowSize <= 0) {
+      arrowSize = Math.max(1, Math.min(20, p3.distanceTo(p4) / 8));
+    }
+    let block1 = "";
+    let block2 = "";
+    const block = style?.arrows?.block;
+    if (typeof block === "string") {
+      block1 = block;
+      block2 = block;
+    }
+    if (Array.isArray(block)) {
+      block1 = block[0] || "";
+      block2 = block[1] || "";
+    }
+    arrowInfos1 = getArrowInfo(block1, style?.arrows?.lineStyle);
+    arrowInfos2 = getArrowInfo(block2, style?.arrows?.lineStyle);
+    if (typeof arrowInfos1.dimLinePaddingFactor === "number") {
+      dimLinePadding[0] = arrowSize * arrowInfos1.dimLinePaddingFactor;
+    }
+    if (typeof arrowInfos1.extLinePaddingFactor === "number") {
+      extLinePadding[0] = arrowSize * arrowInfos1.extLinePaddingFactor;
+    }
+    if (typeof arrowInfos2.dimLinePaddingFactor === "number") {
+      dimLinePadding[1] = arrowSize * arrowInfos2.dimLinePaddingFactor;
+    }
+    if (typeof arrowInfos2.extLinePaddingFactor === "number") {
+      extLinePadding[1] = arrowSize * arrowInfos2.extLinePaddingFactor;
+    }
+  }
+
+  const dimLineStyle = {...style?.dimensionLine};
+  if (isEmpty(dimLineStyle.padding)) {
+    dimLineStyle.padding = dimLinePadding;
+    dimLineStyle.forcePadding = true;
+  }
+  const extLineStyle = {...style?.extensionLines};
+  if (isEmpty(extLineStyle.padding)) {
+    extLineStyle.padding = extLinePadding;
+    extLineStyle.forcePadding = true;
+  }
   let dimLine: ReturnType<typeof drawLine> = [];
   if (!dimLineStyle.hidden) {
     if (!dimLineStyle.color) {
@@ -223,51 +456,44 @@ export const drawDimensionLinear = (
     dimLine.forEach((el) => el.addClass("dim-line"));
     i += dimLine.length;
   }
-  const extLinesStyle = style?.extensionLines || {};
   let extLine1: ReturnType<typeof drawLine> = [];
   let extLine2: ReturnType<typeof drawLine> = [];
-  if (!extLinesStyle.hidden) {
-    const length = extLinesStyle.length;
-    if (!extLinesStyle.color) {
-      extLinesStyle.color = color;
+  if (!extLineStyle.hidden) {
+    const length = extLineStyle.length;
+    if (!extLineStyle.color) {
+      extLineStyle.color = color;
     }
     if (typeof length === "number") {
       if (axis === "x") {
-        extLine1 = drawLine(draw, p3.clone().sub(0, length), p3.clone().add(0, length), extLinesStyle, i);
+        extLine1 = drawLine(draw, p3.clone().sub(0, length), p3.clone().add(0, length), extLineStyle, i);
         i += extLine1.length;
-        extLine2 = drawLine(draw, p4.clone().sub(0, length), p4.clone().add(0, length), extLinesStyle, i);
+        extLine2 = drawLine(draw, p4.clone().sub(0, length), p4.clone().add(0, length), extLineStyle, i);
         i += extLine2.length;
       } else if (axis === "y") {
-        extLine1 = drawLine(draw, p3.clone().sub(length, 0), p3.clone().add(length, 0), extLinesStyle, i);
+        extLine1 = drawLine(draw, p3.clone().sub(length, 0), p3.clone().add(length, 0), extLineStyle, i);
         i += extLine1.length;
-        extLine2 = drawLine(draw, p4.clone().sub(length, 0), p4.clone().add(length, 0), extLinesStyle, i);
+        extLine2 = drawLine(draw, p4.clone().sub(length, 0), p4.clone().add(length, 0), extLineStyle, i);
         i += extLine2.length;
       }
     } else {
-      extLine1 = drawLine(draw, p1, p3, extLinesStyle, i);
+      extLine1 = drawLine(draw, p1, p3, extLineStyle, i);
       i += extLine1.length;
-      extLine2 = drawLine(draw, p2, p4, extLinesStyle, i);
+      extLine2 = drawLine(draw, p2, p4, extLineStyle, i);
       i += extLine2.length;
     }
     [...extLine1, ...extLine2].forEach((el) => el.addClass("ext-line"));
   }
-  const arrowsStyle = style?.arrows || {};
-  let arrow1: ReturnType<typeof drawTriangle> = [];
-  let arrow2: ReturnType<typeof drawTriangle> = [];
-  if (!arrowsStyle.hidden) {
-    let size = Number(arrowsStyle.size);
-    if (!arrowsStyle.color) {
-      arrowsStyle.color = color;
-    }
-    if (isNaN(size)) {
-      size = Math.max(1, Math.min(20, p3.distanceTo(p4) / 8));
-    }
-    arrow1 = drawTriangle(draw, p3, p4, size, arrowsStyle.color, i);
+  let arrow1: ReturnType<typeof drawArrow> = [];
+  let arrow2: ReturnType<typeof drawArrow> = [];
+  if (arrowInfos1) {
+    arrow1 = drawArrow(draw, p3, p4, arrowSize, {info: arrowInfos1, color: arrowColor, i});
     i += arrow1.length;
-    arrow2 = drawTriangle(draw, p4, p3, size, arrowsStyle.color, i);
-    i += arrow2.length;
-    [...arrow1, ...arrow2].forEach((el) => el.addClass("dim-arrow"));
   }
+  if (arrowInfos2) {
+    arrow2 = drawArrow(draw, p4, p3, arrowSize, {info: arrowInfos2, color: arrowColor, i});
+    i += arrow2.length;
+  }
+  [...arrow1, ...arrow2].forEach((el) => el.addClass("dim-arrow"));
   const textStyle = {...style?.text};
   let textEls: ReturnType<typeof drawText> = [];
   if (!textStyle.hidden) {
@@ -330,12 +556,26 @@ export const drawDimensionLinear = (
   return [...dimLine, ...extLine1, ...extLine2, ...arrow1, ...arrow2, ...textEls].filter((v) => v);
 };
 
-export const drawLeader = (draw: Container, start: Point, end: Point, size: number, color?: string, i = 0) => {
-  const line = drawLine(draw, start, end, {color}, i);
-  i += line.length;
-  const triangle = drawTriangle(draw, start, end, size, color, i);
-  // i += triangle.length;
-  return [...line, ...triangle];
+export const drawLeader = (draw: Container, start: Point, end: Point, size: number, style?: CadDimensionStyle, i = 0) => {
+  let block = style?.arrows?.block ?? "";
+  if (Array.isArray(block)) {
+    block = block[0] ?? "";
+  }
+  const arrowInfo = getArrowInfo(block, style?.arrows?.lineStyle);
+  const arrow = drawArrow(draw, start, end, size, {info: arrowInfo, color: style?.arrows?.color, i});
+  i += arrow.length;
+  const lineStyle = {...style?.dimensionLine};
+  const paddingFactor = arrowInfo.dimLinePaddingFactor;
+  if (typeof paddingFactor === "number" && isEmpty(lineStyle.padding)) {
+    lineStyle.padding = [paddingFactor * size, 0];
+    lineStyle.forcePadding = true;
+  }
+  let line: ReturnType<typeof drawLine> = [];
+  if (!lineStyle?.hidden) {
+    line = drawLine(draw, start, end, lineStyle, i);
+    // i += line.length;
+  }
+  return [...arrow, ...line];
 };
 
 export const drawImage = async (draw: Container, e: CadImage, i = 0) => {

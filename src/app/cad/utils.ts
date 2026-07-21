@@ -1,6 +1,7 @@
 import {remoteHost} from "@app/app.common";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
+import {CustomValidators} from "@app/utils/input-validators";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
@@ -10,12 +11,15 @@ import {
   CadCircle,
   CadData,
   CadDimension,
+  CadDimensionBlock,
+  cadDimensionBlocks,
   CadDimensionLinear,
   CadLeader,
   CadLine,
   CadLineLike,
   CadMtext,
   CadMtextInfo,
+  CadStylizer,
   CadViewer,
   findAllAdjacentLines,
   generateLineTexts,
@@ -25,11 +29,25 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {
+  dataURLtoBlob,
+  DEFAULT_TOLERANCE,
+  downloadByBlob,
+  isBetween,
+  isEqualTo,
+  isGreaterThan,
+  isTypeOf,
+  Line,
+  ObjectOf,
+  Point,
+  Rectangle
+} from "@lucilor/utils";
 import {CadFentiInfo, getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import JSZip from "jszip";
 import {difference, intersection, isEmpty} from "lodash";
 import {CadCollection} from "./collections";
 import {cadDimensionOptions} from "./options";
@@ -807,7 +825,7 @@ export const exportCadData = (data: CadData) => {
   return exportData;
 };
 
-export type OpenCadDimensionFormKey = keyof CadDimensionLinear | "删除标注" | "隐藏尺寸线" | "字体大小";
+export type OpenCadDimensionFormKey = keyof CadDimensionLinear | "cad" | "entityRef" | "删除标注" | "隐藏尺寸线" | "字体大小" | "箭头";
 export const openCadDimensionForm = async (
   collection: CadCollection,
   message: MessageService,
@@ -817,7 +835,26 @@ export const openCadDimensionForm = async (
 ) => {
   const dimension2 = dimension.clone();
   const form: InputInfo<typeof dimension>[] = [];
-  const allKeys: OpenCadDimensionFormKey[] = [...keysOf(dimension2), "删除标注", "隐藏尺寸线", "字体大小"];
+  const allKeys: OpenCadDimensionFormKey[] = [
+    "mingzi",
+    "活动标注显示扣数",
+    "xianshigongshiwenben",
+    "qujian",
+    "cad",
+    "entityRef",
+    "axis",
+    "ref",
+    "distance",
+    "箭头",
+    "字体大小",
+    "quzhifanwei",
+    "隐藏尺寸线",
+    "删除标注"
+  ];
+  const {dimStyle} = CadStylizer.get(dimension2, cad.getConfig());
+  const getter = new InputInfoWithDataGetter(dimension2, {clearable: true});
+  const getter2 = new InputInfoWithDataGetter(dimension2.entity1, {clearable: true});
+  const getter3 = new InputInfoWithDataGetter(dimension2.entity2, {clearable: true});
   for (const key of keys || allKeys) {
     switch (key) {
       case "mingzi":
@@ -826,7 +863,7 @@ export const openCadDimensionForm = async (
           label: "",
           groupStyle: {display: "flex"},
           infos: [
-            {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}, style: {flex: "1 1 0"}},
+            getter.string("mingzi", {label: "名字", style: {flex: "1 1 0"}, clearable: true}),
             {
               type: "select",
               label: "",
@@ -842,27 +879,132 @@ export const openCadDimensionForm = async (
         });
         break;
       case "活动标注显示扣数":
-        form.push({type: "string", label: "活动标注显示扣数", model: {data: dimension2, key}, style: {flex: "1 1 0"}});
+        form.push(getter.string("活动标注显示扣数"));
         break;
-      case "删除标注":
-        form.push({type: "boolean", label: "删除标注", appearance: "radio", value: false});
+      case "xianshigongshiwenben":
+        form.push(getter.string("xianshigongshiwenben", {label: "显示公式文本"}));
+        break;
+      case "qujian":
+        form.push(getter.string("qujian", {label: "区间", validators: CustomValidators.numberRangeStr}));
+        break;
+      case "cad":
+        form.push(
+          getInputInfoGroup([
+            getter.string("cad1", {label: "CAD1", readonly: true}),
+            getter.string("cad2", {label: "CAD2", readonly: true})
+          ])
+        );
+        break;
+      case "entityRef":
+        form.push(
+          getInputInfoGroup([
+            getter2.selectSingle("location", cadDimensionOptions.location.values, {label: "线1位置", readonly: true}),
+            getter3.selectSingle("location", cadDimensionOptions.location.values, {label: "线2位置", readonly: true})
+          ])
+        );
+        break;
+      case "axis":
+        form.push(getter.selectSingle("axis", cadDimensionOptions.axis.values, {label: "方向"}));
+        break;
+      case "ref":
+        form.push(getter.selectSingle("ref", cadDimensionOptions.ref.values));
+        break;
+      case "箭头":
+        {
+          const blocksRaw: string[] = [];
+          if (Array.isArray(dimension2.style.arrows?.block)) {
+            blocksRaw.push(...dimension2.style.arrows.block);
+          } else {
+            blocksRaw.push(dimension2.style.arrows?.block ?? "");
+          }
+          const blocks = blocksRaw.map((v) => CadStylizer.getPlainDimArrowBlock(v));
+          const setBlocks = () => {
+            if (blocks[0] === blocks[1]) {
+              dimension2.setStyle({arrows: {block: blocks[0]}});
+            } else {
+              dimension2.setStyle({arrows: {block: blocks}});
+            }
+          };
+          if (typeof blocks[0] !== "string") {
+            blocks[0] = "";
+          }
+          if (typeof blocks[1] !== "string") {
+            blocks[1] = blocks[0];
+          }
+          const arrowInput1: InputInfo = {
+            type: "select",
+            label: "第一个箭头类型",
+            options: cadDimensionOptions.block.values,
+            value: blocks[0],
+            onChange: (val: CadDimensionBlock) => {
+              const [block1, block2] = blocks;
+              blocks[0] = val;
+              if (block1 === block2) {
+                blocks[1] = val;
+                arrowInput2.value = val;
+              }
+              setBlocks();
+            }
+          };
+          const arrowInput2: InputInfo = {
+            type: "select",
+            label: "第二个箭头类型",
+            options: cadDimensionOptions.block.values,
+            value: blocks[1],
+            onChange: (val: CadDimensionBlock) => {
+              blocks[1] = val;
+              setBlocks();
+            }
+          };
+          form.push(getInputInfoGroup([arrowInput1, arrowInput2]));
+          form.push({
+            type: "number",
+            label: "箭头大小",
+            hint: "小于等于0时箭头大小根据线长变化",
+            value: dimStyle.arrows?.size ?? 0,
+            onChange: (val: number) => {
+              dimension2.setStyle({arrows: {size: val}});
+            }
+          });
+        }
+        break;
+      case "字体大小":
+        form.push({
+          type: "number",
+          label: "字体大小",
+          value: dimStyle.text?.size,
+          onChange: (val) => {
+            dimension2.setStyle({text: {size: val}});
+          }
+        });
+        break;
+      case "quzhifanwei":
+        form.push(getter.string("quzhifanwei", {label: "取值范围"}));
         break;
       case "隐藏尺寸线":
-        form.push({type: "boolean", label: "隐藏尺寸线", appearance: "radio", value: !!dimension2.style.dimensionLine?.hidden});
+        form.push({
+          type: "boolean",
+          label: "隐藏尺寸线",
+          appearance: "checkbox",
+          value: !!dimStyle.dimensionLine?.hidden,
+          onChange: (val) => {
+            dimension2.setStyle({dimensionLine: {hidden: val}});
+          }
+        });
         break;
       case "xiaoshuchuli":
         form.push({
           type: "select",
           label: "小数处理",
           model: {data: dimension2, key},
-          options: cadDimensionOptions.xiaoshuchuli.values.slice()
+          options: cadDimensionOptions.xiaoshuchuli.values
         });
-        break;
-      case "字体大小":
-        form.push({type: "number", label: "字体大小", value: dimension2.style.text?.size});
         break;
       case "算料单缩放标注文字":
         form.push({type: "boolean", label: "算料单缩放标注文字", model: {data: dimension2, key}});
+        break;
+      case "删除标注":
+        form.push({type: "boolean", label: "删除标注", appearance: "checkbox", value: false, hint: "若选中，确定后将删除标注"});
         break;
     }
   }
@@ -877,12 +1019,6 @@ export const openCadDimensionForm = async (
       cad.remove(dimension);
     } else {
       Object.assign(dimension, dimension2);
-      if (result.隐藏尺寸线) {
-        dimension.setStyle({dimensionLine: {hidden: true}});
-      }
-      if (result.字体大小) {
-        dimension.setStyle({text: {size: result.字体大小}});
-      }
       await cad.render(dimension);
     }
   }
@@ -1033,4 +1169,33 @@ export const getIsCadSuanliaoxianshi = (data: CadData, key: string) => {
     return true;
   }
   return arr.includes(key);
+};
+
+export const generateDimArrowPreview = async () => {
+  const cadSmall = new CadViewer().appendTo(document.body);
+  cadSmall.setConfig({backgroundColor: "white", padding: [2], width: 100, height: 100, minLinewidth: 2});
+  const cadLarge = new CadViewer().appendTo(document.body);
+  cadLarge.setConfig({...cadSmall.getConfig(), padding: [40], width: 3840, height: 2160, minLinewidth: 50});
+  const leaderTemplate = new CadLeader();
+  leaderTemplate.size = 8;
+  leaderTemplate.vertices = [new Point(10, 0), new Point(0, 0)];
+  const zip = new JSZip();
+  for (const block of cadDimensionBlocks) {
+    const leaderSmall = leaderTemplate.clone(true);
+    leaderSmall.setStyle({arrows: {block}});
+    const leaderLarge = leaderSmall.clone(true);
+    await Promise.all([cadSmall.add(leaderSmall), cadLarge.add(leaderLarge)]);
+    cadSmall.center();
+    cadLarge.center();
+    const block2 = block || "CLOSEDFILLED";
+    const imgSmallName = `${block2}-small.png`;
+    const imgLargeName = `${block2}-large.png`;
+    zip.file(imgSmallName, dataURLtoBlob(await cadSmall.toDataURL()));
+    zip.file(imgLargeName, dataURLtoBlob(await cadLarge.toDataURL()));
+    await Promise.all([cadSmall.remove(leaderSmall), cadLarge.remove(leaderLarge)]);
+  }
+  cadSmall.destroy();
+  cadLarge.destroy();
+  const blob = await zip.generateAsync({type: "blob"});
+  downloadByBlob(blob, {filename: "dim-arrows.zip"});
 };

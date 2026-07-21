@@ -42,6 +42,7 @@ import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -57,7 +58,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOptions, InputInfoString} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOption, InputInfoOptions, InputInfoString} from "./input.types";
 import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
 
 @Component({
@@ -91,7 +92,8 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
     MatTooltipModule,
     NgScrollbarModule,
     NgTemplateOutlet,
-    TextFieldModule
+    TextFieldModule,
+    TypedTemplateDirective
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
@@ -205,7 +207,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
   });
 
-  options: {value: any; label: string; disabled?: boolean; img?: string; vid?: number}[] = [];
+  options: (InputInfoOption & {label: string})[] = [];
 
   getOptionText() {
     const info = this.info();
@@ -473,7 +475,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img, vid: v.vid};
+        return {...v, label: v.label || String(v.value)};
       });
       // const isRequired = validators === Validators.required || (Array.isArray(validators) && validators.includes(Validators.required));
       // if (isRequired && !readonly && !disabled) {

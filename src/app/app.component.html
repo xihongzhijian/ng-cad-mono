@@ -7,6 +7,7 @@
     </button>
     <mat-menu #links="matMenu">
       <button mat-menu-item (click)="changeProject()">更换项目</button>
+      <button mat-menu-item (click)="generateDimArrowPreview()">生成标注箭头预览图</button>
       @for (routeInfo of routesInfo(); track $index) {
         <button mat-menu-item (click)="navigate(routeInfo)">
           {{ routeInfo.title2 }}
