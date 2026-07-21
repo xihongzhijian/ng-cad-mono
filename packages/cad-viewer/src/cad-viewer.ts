@@ -400,8 +400,8 @@ export class CadViewer extends EventEmitter {
       for (const path of paths) {
         const {edges, vertices} = path;
         const edgePoints = edges.map((v) => v.start);
-        drawResult = drawResult.concat(drawShape(el, edgePoints, {color: "fill", i: 0}));
-        drawResult = drawResult.concat(drawShape(el, vertices, {color: "fill", i: drawResult.length}));
+        drawResult = drawResult.concat(drawShape(el, edgePoints, {color: "fill"}, 0));
+        drawResult = drawResult.concat(drawShape(el, vertices, {color: "fill"}, drawResult.length));
       }
       if (!drawResult.length) {
         drawResult = [];
