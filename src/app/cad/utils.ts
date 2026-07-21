@@ -12,6 +12,7 @@ import {
   CadData,
   CadDimension,
   CadDimensionBlock,
+  cadDimensionBlocks,
   CadDimensionLinear,
   CadLeader,
   CadLine,
@@ -29,8 +30,9 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {
+  dataURLtoBlob,
   DEFAULT_TOLERANCE,
-  downloadByUrl,
+  downloadByBlob,
   isBetween,
   isEqualTo,
   isGreaterThan,
@@ -45,6 +47,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import JSZip from "jszip";
 import {difference, intersection, isEmpty} from "lodash";
 import {CadCollection} from "./collections";
 import {cadDimensionOptions} from "./options";
@@ -1159,35 +1162,31 @@ export const getIsCadSuanliaoxianshi = (data: CadData, key: string) => {
   return arr.includes(key);
 };
 
-export const getDimArrowPreviewImg = async (cad: CadViewer) => {
-  const dimension = cad.data.entities.dimension[0];
-  if (!(dimension instanceof CadDimensionLinear)) {
-    return;
+export const generateDimArrowPreview = async () => {
+  const cadSmall = new CadViewer().appendTo(document.body);
+  cadSmall.setConfig({backgroundColor: "white", padding: [2], width: 100, height: 100, minLinewidth: 2});
+  const cadLarge = new CadViewer().appendTo(document.body);
+  cadLarge.setConfig({...cadSmall.getConfig(), padding: [40], width: 3840, height: 2160, minLinewidth: 50});
+  const leaderTemplate = new CadLeader();
+  leaderTemplate.size = 8;
+  leaderTemplate.vertices = [new Point(10, 0), new Point(0, 0)];
+  const zip = new JSZip();
+  for (const block of cadDimensionBlocks) {
+    const leaderSmall = leaderTemplate.clone(true);
+    leaderSmall.setStyle({arrows: {block}});
+    const leaderLarge = leaderSmall.clone(true);
+    await Promise.all([cadSmall.add(leaderSmall), cadLarge.add(leaderLarge)]);
+    cadSmall.center();
+    cadLarge.center();
+    const block2 = block || "CLOSEDFILLED";
+    const imgSmallName = `${block2}-small.png`;
+    const imgLargeName = `${block2}-large.png`;
+    zip.file(imgSmallName, dataURLtoBlob(await cadSmall.toDataURL()));
+    zip.file(imgLargeName, dataURLtoBlob(await cadLarge.toDataURL()));
+    await Promise.all([cadSmall.remove(leaderSmall), cadLarge.remove(leaderLarge)]);
   }
-  const style = CadStylizer.get(dimension, cad.getConfig()).dimStyle;
-  console.log(style);
-  const points = cad.data.getDimensionPoints(dimension);
-  const {size = 0} = style.arrows || {};
-  const dx = points[1].x - points[0].x;
-  const dy = points[2].y - points[0].y;
-  console.log(dx, dy);
-  let block = style.arrows?.block;
-  if (Array.isArray(block)) {
-    block = block[1];
-  }
-  if (typeof block !== "string" || !block) {
-    block = "CLOSEDFILLED";
-  }
-  block = CadStylizer.getPlainDimArrowBlock(block);
-
-  cad.position = [0, 0];
-  const origin = new Point(points[3].x - size, points[3].y - size / 2);
-  const canvas = await cad.toCanvas();
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    return;
-  }
-  ctx.translate(origin.x, origin.y);
-  downloadByUrl(canvas.toDataURL("image/png"), {filename: `${block}.png`});
+  cadSmall.destroy();
+  cadLarge.destroy();
+  const blob = await zip.generateAsync({type: "blob"});
+  downloadByBlob(blob, {filename: "dim-arrows.zip"});
 };
-(window as any).getDimArrowPreviewImg = getDimArrowPreviewImg;

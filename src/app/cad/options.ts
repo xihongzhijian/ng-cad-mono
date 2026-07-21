@@ -1,4 +1,4 @@
-import {imgEmpty} from "@app/app.common";
+import {getFilepathUrl} from "@app/app.common";
 import {CadAxis, CadDimension, CadDimensionBlock, cadDimensionBlocks, CadDimensionEntity, FlipType} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfoOption, InputInfoOptions} from "@modules/input/components/input.types";
@@ -112,13 +112,19 @@ export const cadDimensionOptions = {
         DotSmall: "小点",
         DotBlank: "空心点",
         Small: "空心小点",
-        BoxFilled: "方框",
-        BoxBlank: "实心方框",
+        BoxFilled: "实心方框",
+        BoxBlank: "方框",
         DatumBlank: "基准三角形",
         DatumFilled: "实心基准三角形",
         Integral: "积分"
       } as const;
-      const result: InputInfoOption<CadDimensionBlock> = {value: block, label: map[block] ?? block, img: imgEmpty};
+      const block2 = block || "CLOSEDFILLED";
+      const result: InputInfoOption<CadDimensionBlock> = {
+        value: block,
+        label: map[block] ?? block2,
+        img: getFilepathUrl(`images/dim-arrows/${block2}-small.png`),
+        imgLarge: getFilepathUrl(`images/dim-arrows/${block2}-large.png`)
+      };
       return result;
     }),
     defaultValue: ""

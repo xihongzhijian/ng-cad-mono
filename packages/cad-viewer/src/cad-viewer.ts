@@ -296,7 +296,7 @@ export class CadViewer extends EventEmitter {
   async drawEntity(entity: CadEntity, style: Partial<CadStyle> = {}, isFromParent?: boolean) {
     const {draw} = this;
     const config = this.getConfig();
-    const {color, fontStyle, lineStyle, dimStyle} = CadStylizer.get(entity, config, style);
+    const {fontStyle, lineStyle, dimStyle} = CadStylizer.get(entity, config, style);
     let shouldDraw = entity.visible;
     if (entity instanceof CadDimension) {
       if (config.hideDimensions) {
@@ -574,7 +574,7 @@ export class CadViewer extends EventEmitter {
     } else if (entity instanceof CadLeader) {
       const start = entity.vertices[0];
       const end = entity.vertices[1];
-      drawResult = drawLeader(el, start, end, entity.size, color);
+      drawResult = drawLeader(el, start, end, entity.size, dimStyle);
     } else if (entity instanceof CadImage) {
       drawResult = await drawImage(el, entity);
     }

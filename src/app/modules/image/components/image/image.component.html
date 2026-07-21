@@ -1,7 +1,7 @@
-<div class="img-container" [class.small-pic]="bigPicSrc() && !bigPicClickShowDisabled()" (click)="clickImgContainer()">
+<div class="img-container" [class.small-pic]="bigPicSrc() && !bigPicClickShowDisabled()" (click)="clickImgContainer($event)">
   @if (loading()) {
     <img
-      [src]="loadingSrc()"
+      [src]="noLoading() ? emptySrc() : loadingSrc()"
       (wheel)="onSmallPicWheel($event)"
       (pointerdown)="onSmallPicPointerDown($event)"
       (pointermove)="onSmallPicPointerMove($event)"
@@ -28,7 +28,28 @@
       (pointerup)="onSmallPicPointerUp($event)"
       (load)="onLoad($event)"
       (error)="onError($event)"
+      cdkOverlayOrigin
+      #origin="cdkOverlayOrigin"
     />
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="origin"
+      [cdkConnectedOverlayOpen]="bigPicVisible()"
+      (detach)="hideBigPic()"
+    >
+      <div class="big-pic" (pointerup)="onBigPicOuterClick($event)">
+        <div class="big-pic-container" (animate.enter)="onBigPicEnter($event)" (animate.leave)="onBigPicLeave($event)">
+          <img
+            [src]="currBigPicSrc()"
+            [style.object-fit]="objectFit()"
+            (wheel)="onBigPicWheel($event)"
+            (pointerdown)="onBigPicPointerDown($event)"
+            (pointermove)="onBigPicPointerMove($event)"
+            (pointerup)="onBigPicPointerUp($event)"
+          />
+        </div>
+      </div>
+    </ng-template>
   } @else {
     <img
       [src]="emptySrc()"
@@ -39,20 +60,3 @@
     />
   }
 </div>
-
-@if (currBigPicSrc(); as currBigPicSrc) {
-  <div #bigPicDiv class="big-pic" style="display: none" (pointerup)="hideBigPic()">
-    @if (bigPicVisible()) {
-      <div class="big-pic-container" (animate.enter)="onBigPicEnter($event)" (animate.leave)="onBigPicLeave($event)">
-        <img
-          [src]="currBigPicSrc"
-          [style.object-fit]="objectFit()"
-          (wheel)="onBigPicWheel($event)"
-          (pointerdown)="onBigPicPointerDown($event)"
-          (pointermove)="onBigPicPointerMove($event)"
-          (pointerup)="onBigPicPointerUp($event)"
-        />
-      </div>
-    }
-  </div>
-}

@@ -395,7 +395,7 @@
     @case ("select") {
       <ng-template #optionValue [appTypedTemplate]="{$implicit: options[0]}" let-option>
         @if (option.img) {
-          <img [src]="option.img" alt="{{ option.label }}" />
+          <app-image [src]="option.img" [bigPicSrc]="option.imgLarge" noLoading />
         }
         <span>{{ option.label || option.value }}</span>
       </ng-template>

@@ -58,7 +58,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOptions, InputInfoString} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoButtonInfo, InputInfoOption, InputInfoOptions, InputInfoString} from "./input.types";
 import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
 
 @Component({
@@ -207,7 +207,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
   });
 
-  options: {value: any; label: string; disabled?: boolean; img?: string; vid?: number}[] = [];
+  options: (InputInfoOption & {label: string})[] = [];
 
   getOptionText() {
     const info = this.info();
@@ -475,7 +475,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img, vid: v.vid};
+        return {...v, label: v.label || String(v.value)};
       });
       // const isRequired = validators === Validators.required || (Array.isArray(validators) && validators.includes(Validators.required));
       // if (isRequired && !readonly && !disabled) {

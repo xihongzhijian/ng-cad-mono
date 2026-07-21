@@ -10,6 +10,7 @@ import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {emulateTab} from "emulate-tab";
+import {generateDimArrowPreview} from "./cad/utils";
 import {MessageTestComponent} from "./modules/message/components/message-test/message-test.component";
 import {SpinnerComponent} from "./modules/spinner/components/spinner/spinner.component";
 import {routesInfo} from "./routing/routes-info";
@@ -82,6 +83,10 @@ export class AppComponent {
     if (form) {
       this.status.changeProject(data.project, data.clear);
     }
+  }
+
+  generateDimArrowPreview() {
+    generateDimArrowPreview();
   }
 
   navigate(routeInfo: (typeof routesInfo)[number]) {

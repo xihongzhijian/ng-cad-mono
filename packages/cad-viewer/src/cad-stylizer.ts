@@ -3,7 +3,7 @@ import Color, {ColorInstance} from "color";
 import {Property} from "csstype";
 import {getDeltaE00, LAB} from "delta-e";
 import {cloneDeep} from "lodash";
-import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
+import {CadDimension, CadEntity, CadHatch, CadLeader, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
 import {Defaults} from "./cad-utils";
 import {CadViewerConfig} from "./cad-viewer.types";
@@ -57,12 +57,17 @@ export class CadStylizer {
       this.mergeFontStyle(result.fontStyle, entity.fontStyle);
     }
 
-    if (entity instanceof CadDimension) {
+    if (entity instanceof CadDimension || entity instanceof CadLeader) {
       this.mergeDimStyle(result.dimStyle, entity.style);
       // this.mergeFontStyle(result.dimStyle.text, result.fontStyle, false);
     }
 
     result.lineStyle.width = linewidth;
+    this.mergeDimStyle(result.dimStyle, {
+      extensionLines: {width: linewidth},
+      dimensionLine: {width: linewidth},
+      arrows: {lineStyle: {width: linewidth}}
+    });
     const correctColorObj = (obj: {color?: Property.Color} | undefined) => {
       if (!obj) {
         return;

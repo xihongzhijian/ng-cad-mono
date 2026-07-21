@@ -1,3 +1,4 @@
+import {OverlayModule} from "@angular/cdk/overlay";
 import {
   AfterViewInit,
   type AnimationCallbackEvent,
@@ -11,13 +12,12 @@ import {
   inject,
   input,
   output,
-  signal,
-  viewChild
+  signal
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {imgEmpty, imgLoading} from "@app/app.common";
-import {getElementVisiblePercentage, timeout} from "@lucilor/utils";
+import {getElementVisiblePercentage} from "@lucilor/utils";
 import {Property} from "csstype";
 import {ImageEvent} from "./image.component.types";
 
@@ -25,7 +25,7 @@ import {ImageEvent} from "./image.component.types";
   selector: "app-image",
   templateUrl: "./image.component.html",
   styleUrls: ["./image.component.scss"],
-  imports: [MatButtonModule, MatIconModule]
+  imports: [MatButtonModule, MatIconModule, OverlayModule]
 })
 export class ImageComponent implements AfterViewInit {
   private cd = inject(ChangeDetectorRef);
@@ -38,17 +38,18 @@ export class ImageComponent implements AfterViewInit {
   bigPicClickShowDisabled = input(false, {transform: booleanAttribute});
   prefix = input<string>();
   control = input(false, {transform: booleanAttribute});
-  controlBigPic = input(false, {transform: booleanAttribute});
   loadingSrc = input<string>(imgLoading);
   emptySrc = input<string>(imgEmpty);
   objectFit = input<Property.ObjectFit>("contain");
   noLazy = input(false, {transform: booleanAttribute});
+  noLoading = input(false, {transform: booleanAttribute});
   imgLoad = output<ImageEvent>();
   imgError = output<ImageEvent>();
   imgEnd = output<ImageEvent>();
 
   loading = signal(false);
   error = signal(false);
+  controlBigPic = signal(true);
 
   intersectionObserver = new IntersectionObserver((entries) => {
     if (entries.length < 1) {
@@ -134,8 +135,13 @@ export class ImageComponent implements AfterViewInit {
     const prefix = this.prefix();
     return this.getUrl(bigPicSrc, prefix);
   });
-  bigPicDiv = viewChild<ElementRef<HTMLDivElement>>("bigPicDiv");
   bigPicVisible = signal(false);
+  showBigPic() {
+    this.bigPicVisible.set(true);
+  }
+  hideBigPic() {
+    this.bigPicVisible.set(false);
+  }
 
   onBigPicEnter(event: AnimationCallbackEvent) {
     this.runScaleAnimation(event, 0, 1);
@@ -156,29 +162,6 @@ export class ImageComponent implements AfterViewInit {
     const done = () => event.animationComplete();
     animation.addEventListener("finish", done, {once: true});
     animation.addEventListener("cancel", done, {once: true});
-  }
-
-  async showBigPic() {
-    const bigPicSrc = this.bigPicSrc();
-    const bigPicDiv = this.bigPicDiv();
-    if (bigPicSrc && bigPicDiv) {
-      const el = bigPicDiv.nativeElement;
-      document.body.append(el);
-      bigPicDiv.nativeElement.style.display = "flex";
-      await timeout();
-      this.bigPicVisible.set(true);
-    }
-  }
-  async hideBigPic() {
-    const bigPicSrc = this.bigPicSrc();
-    const bigPicDiv = this.bigPicDiv();
-    if (bigPicSrc && bigPicDiv) {
-      this.bigPicVisible.set(false);
-      await timeout(300);
-      const el = bigPicDiv.nativeElement;
-      this.el.nativeElement.append(el);
-      bigPicDiv.nativeElement.style.display = "none";
-    }
   }
 
   private _getDomMatrix(el: HTMLElement) {
@@ -301,9 +284,15 @@ export class ImageComponent implements AfterViewInit {
     this.onPointerUp(event);
   }
 
-  clickImgContainer() {
-    if (!this.bigPicClickShowDisabled()) {
+  clickImgContainer(event: MouseEvent) {
+    if (!this.bigPicClickShowDisabled() && this.currBigPicSrc()) {
       this.showBigPic();
+      event.stopPropagation();
     }
+  }
+
+  onBigPicOuterClick(event: MouseEvent) {
+    this.hideBigPic();
+    event.stopPropagation();
   }
 }

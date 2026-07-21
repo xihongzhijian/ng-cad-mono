@@ -16,20 +16,23 @@ export interface CadStyle {
   dimStyle?: CadDimensionStyle;
 }
 
-export interface LineStyle {
+export interface LineStyleBasic {
   color?: csstype.Properties["color"];
-  fillColor?: csstype.Properties["color"];
   dashArray?: number[];
+  width?: number;
+}
+
+export interface LineStyle extends LineStyleBasic {
+  fillColor?: csstype.Properties["color"];
   padding?: number | number[];
   forcePadding?: boolean;
-  width?: number;
 }
 
 export interface CadDimensionStyle {
   color?: csstype.Properties["color"];
   dimensionLine?: LineStyle & {hidden?: boolean};
   extensionLines?: LineStyle & {hidden?: boolean; length?: number};
-  arrows?: {hidden?: boolean; color?: csstype.Properties["color"]; size?: number; block?: string | string[]};
+  arrows?: {hidden?: boolean; color?: csstype.Properties["color"]; size?: number; block?: string | string[]; lineStyle?: LineStyle};
   text?: FontStyle & {hidden?: boolean};
 }
 
