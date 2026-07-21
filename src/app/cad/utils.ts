@@ -911,12 +911,13 @@ export const openCadDimensionForm = async (
         break;
       case "箭头":
         {
-          const blocks: string[] = [];
+          const blocksRaw: string[] = [];
           if (Array.isArray(dimension2.style.arrows?.block)) {
-            blocks.push(...dimension2.style.arrows.block);
+            blocksRaw.push(...dimension2.style.arrows.block);
           } else {
-            blocks.push(dimension2.style.arrows?.block ?? "");
+            blocksRaw.push(dimension2.style.arrows?.block ?? "");
           }
+          const blocks = blocksRaw.map((v) => CadStylizer.getPlainDimArrowBlock(v));
           const setBlocks = () => {
             if (blocks[0] === blocks[1]) {
               dimension2.setStyle({arrows: {block: blocks[0]}});
@@ -924,30 +925,38 @@ export const openCadDimensionForm = async (
               dimension2.setStyle({arrows: {block: blocks}});
             }
           };
-          form.push(
-            getInputInfoGroup([
-              {
-                type: "select",
-                label: "第一个箭头类型",
-                options: cadDimensionOptions.block.values,
-                value: CadStylizer.getPlainDimArrowBlock(blocks[0] ?? ""),
-                onChange: (val: CadDimensionBlock) => {
-                  blocks[0] = val;
-                  setBlocks();
-                }
-              },
-              {
-                type: "select",
-                label: "第二个箭头类型",
-                options: cadDimensionOptions.block.values,
-                value: CadStylizer.getPlainDimArrowBlock(blocks[1] ?? ""),
-                onChange: (val: CadDimensionBlock) => {
-                  blocks[1] = val;
-                  setBlocks();
-                }
+          if (typeof blocks[0] !== "string") {
+            blocks[0] = "";
+          }
+          if (typeof blocks[1] !== "string") {
+            blocks[1] = blocks[0];
+          }
+          const arrowInput1: InputInfo = {
+            type: "select",
+            label: "第一个箭头类型",
+            options: cadDimensionOptions.block.values,
+            value: blocks[0],
+            onChange: (val: CadDimensionBlock) => {
+              const [block1, block2] = blocks;
+              blocks[0] = val;
+              if (block1 === block2) {
+                blocks[1] = val;
+                arrowInput2.value = val;
               }
-            ])
-          );
+              setBlocks();
+            }
+          };
+          const arrowInput2: InputInfo = {
+            type: "select",
+            label: "第二个箭头类型",
+            options: cadDimensionOptions.block.values,
+            value: blocks[1],
+            onChange: (val: CadDimensionBlock) => {
+              blocks[1] = val;
+              setBlocks();
+            }
+          };
+          form.push(getInputInfoGroup([arrowInput1, arrowInput2]));
           form.push({
             type: "number",
             label: "箭头大小",
