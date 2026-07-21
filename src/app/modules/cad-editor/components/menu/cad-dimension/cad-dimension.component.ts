@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -31,7 +31,6 @@ import {CadStatusEditDimension} from "@services/cad-status";
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule]
 })
 export class CadDimensionComponent implements OnInit, OnDestroy {
-  private cd = inject(ChangeDetectorRef);
   private config = inject(AppConfigService);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
@@ -229,7 +228,6 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
       const collection = this.status.collection();
       const result = await openCadDimensionForm(collection, this.message, this.status.cad, dimension);
       if (result) {
-        await this.status.cad.render(dimension);
         this.status.highlightDimensions([dimension]);
         this.dimensions.update((v) => [...v]);
       }
@@ -328,7 +326,7 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
         if (!(dimension instanceof CadDimensionLinear)) {
           continue;
         }
-        dimension.setStyle(dimension.style);
+        dimension.setStyle(dimension0.style);
       }
       await cad.render(dimensions);
     }
