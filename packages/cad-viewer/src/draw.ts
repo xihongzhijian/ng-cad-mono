@@ -1,5 +1,6 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
+import {isEmpty} from "lodash";
 import {CadAxis, CadDimensionBlock, CadImage, CadSpline} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
 import {CadDimensionStyle, FontStyle, LineStyle, LineStyleBasic} from "./cad-data/cad-styles";
@@ -437,12 +438,12 @@ export const drawDimensionLinear = (
   }
 
   const dimLineStyle = {...style?.dimensionLine};
-  if (!dimLineStyle.padding) {
+  if (isEmpty(dimLineStyle.padding)) {
     dimLineStyle.padding = dimLinePadding;
     dimLineStyle.forcePadding = true;
   }
   const extLineStyle = {...style?.extensionLines};
-  if (!style?.extensionLines?.padding) {
+  if (isEmpty(extLineStyle.padding)) {
     extLineStyle.padding = extLinePadding;
     extLineStyle.forcePadding = true;
   }
@@ -565,7 +566,7 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
   i += arrow.length;
   const lineStyle = {...style?.dimensionLine};
   const paddingFactor = arrowInfo.dimLinePaddingFactor;
-  if (typeof paddingFactor === "number" && !lineStyle.padding) {
+  if (typeof paddingFactor === "number" && isEmpty(lineStyle.padding)) {
     lineStyle.padding = [paddingFactor * size, 0];
     lineStyle.forcePadding = true;
   }
