@@ -575,15 +575,15 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
                 }
                 return null;
               },
-              style: {flex: "1 1 0", width: 0}
+              style: {flex: "1 1 0", width: "50px"}
             },
             {
-              type: "string",
+              type: "select",
               label: "正反面",
               model: {data: data.info.刨坑信息[i], key: "正反面"},
               options: ["正面", "反面"],
               clearable: true,
-              style: {flex: "1 1 0", width: 0}
+              style: {flex: "1 1 0", width: "95px"}
             }
           );
         }

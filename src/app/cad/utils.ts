@@ -48,7 +48,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import JSZip from "jszip";
-import {difference, intersection, isEmpty} from "lodash";
+import {difference, intersection, isEmpty, uniq} from "lodash";
 import {CadCollection} from "./collections";
 import {cadDimensionOptions} from "./options";
 
@@ -499,137 +499,146 @@ export const shouldShowIntersection = (data: CadData) => {
 
 export const getIntersectionPoint = () => {};
 
-export const showIntersections = (data: CadData, projectConfig: ProjectConfig) => {
+export const showIntersections = (data: CadData, projectConfig: ProjectConfig, offsetItems?: any[]) => {
   if (!shouldShowIntersection(data)) {
     return;
   }
   const sortedEntitiesGroups = sortLines(data.entities);
-  const rect = data.getBoundingRect();
-  const rectCenter = new Point(rect.x, rect.y);
-  const drawing = {
-    leader: {length: 32, gap: 4, size: 15},
-    circle: {radius: 12, linewidth: 1, color: 5},
-    text: {size: 24, text: "", offset: 0}
-  };
   for (const key of intersectionKeys) {
-    const arr = data[key];
+    const arr = uniq(data[key]);
     if (arr.length < 1) {
       continue;
     }
+
+    let drawLeader = false;
+    let drawCircle = false;
+    let drawText = false;
+    let circleDashed = false;
+    let layer = "";
+    const drawing = {
+      leader: {size: 4},
+      circle: {radius: 4, linewidth: 1, color: 5},
+      text: {size: 24, text: "", offset: 0}
+    };
+    const setStyle = (name: string) => {
+      const val = projectConfig.get(name, "箭头");
+      const vals = val.split("+");
+      const sizeStr = vals.find((v) => v.startsWith("尺寸"))?.replace("尺寸", "");
+      if (sizeStr) {
+        const size = parseFloat(sizeStr);
+        drawing.leader.size = size;
+        drawing.circle.radius = size;
+      }
+      if (vals.includes("箭头")) {
+        drawLeader = true;
+        if (vals.includes("箭头旁文字")) {
+          drawText = true;
+        }
+        drawing.text.size = drawing.leader.size;
+        drawing.text.offset = drawing.leader.size / 8;
+      } else if (intersection(vals, ["实线圆", "虚线圆"]).length > 0) {
+        drawCircle = true;
+        if (vals.includes("虚线圆")) {
+          circleDashed = true;
+        }
+        if (vals.includes("旁边文字")) {
+          drawText = true;
+        }
+        drawing.text.size = drawing.circle.radius;
+        drawing.text.offset = drawing.circle.radius / 4;
+      }
+      drawing.text.size = Math.max(drawing.text.size, 8);
+    };
+    if (key === "zhidingweizhipaokeng") {
+      setStyle("指定位置刨坑表示方法");
+      layer = "指定位置刨坑";
+      drawing.text.text = "刨";
+    } else if (key === "指定位置不折") {
+      setStyle("指定位置不折表示方法");
+      layer = "指定位置不折";
+      drawing.text.text = "不折";
+    } else if (key === "指定分体位置") {
+      layer = "分体";
+      drawCircle = true;
+      drawText = true;
+      drawing.text.text = "分";
+      drawing.text.offset = 3;
+    }
+
     const circles: CadCircle[] = [];
     for (const sortedEntities of sortedEntitiesGroups) {
-      for (let i = 0; i < sortedEntities.length; i++) {
-        const e1 = sortedEntities[i];
-        const e2 = sortedEntities.at(i + 1);
-        let matched = false;
-        let isStartPoint = false;
-        let isEndPoint = false;
-        for (const ids of arr) {
-          if (ids.length === 1 && e1.isId(ids[0])) {
-            if (i === 0) {
-              matched = true;
-              isStartPoint = true;
-            } else if (i === sortedEntities.length - 1) {
-              matched = true;
-              isEndPoint = true;
-            }
-            break;
-          }
-          if (e1.isId(ids) && e2?.isId(ids)) {
-            matched = true;
-            break;
+      for (const ids of arr) {
+        let e1: CadLineLike | undefined;
+        let e2: CadLineLike | undefined;
+        let e1Index = -1;
+        let e2Index = -1;
+        for (const [i, e] of sortedEntities.entries()) {
+          if (e.isId(ids[0])) {
+            e1 = e;
+            e1Index = i;
+          } else if (e.isId(ids[1])) {
+            e2 = e;
+            e2Index = i;
           }
         }
-        if (!matched) {
+        if (e2Index >= 0 && e2Index < e1Index) {
+          [e1, e2] = [e2, e1];
+        }
+        if (!e1) {
           continue;
         }
-        let p1: Point;
-        let p2: Point;
-        let p3: Point;
-        if (isStartPoint) {
-          p1 = rectCenter;
-          p2 = e1.start;
-          p3 = e1.end;
-        } else if (isEndPoint) {
-          p1 = e1.start;
-          p2 = e1.end;
-          p3 = rectCenter;
-        } else {
-          if (!e2) {
-            continue;
-          }
+        let p1: Point | undefined;
+        let p2: Point | undefined;
+        let p3: Point | undefined;
+        if (e2) {
           p1 = e1.start;
           p2 = e1.end;
           p3 = e2.end;
-        }
-        const p4 = p1.clone().sub(p2).normalize().add(p3.clone().sub(p2).normalize());
-        const p5 = p2.clone().add(p4);
-        const p6 = p2.clone().sub(p4);
-        const center = new Line(p1, p3).middle;
-        let line: Line;
-        if (p5.distanceTo(center) > p6.distanceTo(center)) {
-          line = new Line(p5.clone(), p2.clone());
         } else {
-          line = new Line(p6.clone(), p2.clone());
+          if (e1Index === 0) {
+            p2 = e1.start;
+            p3 = e1.end;
+          } else if (e1Index === sortedEntities.length - 1) {
+            p1 = e1.start;
+            p2 = e1.end;
+          } else {
+            continue;
+          }
+        }
+
+        let isReverse = false;
+        if (offsetItems) {
+          const offsetItem = offsetItems.find((v) => e1.isId(v.line.houtaiId));
+          const nextMarkLine = offsetItem?.nextMarkLine;
+          if (nextMarkLine) {
+            const {reverse, reverseOverride} = nextMarkLine;
+            if (typeof reverse === "boolean" && typeof reverseOverride === "boolean" && reverse !== reverseOverride) {
+              isReverse = !isReverse;
+            }
+          }
+        }
+        let line: Line | undefined;
+        if (p1 && p3) {
+          const p4 = p1.clone().sub(p2).normalize().add(p3.clone().sub(p2).normalize());
+          const p5 = p2.clone().add(p4);
+          const p6 = p2.clone().sub(p4);
+          if (isReverse) {
+            line = new Line(p6.clone(), p2.clone());
+          } else {
+            line = new Line(p5.clone(), p2.clone());
+          }
+        } else if (!p1) {
+          line = new Line(e1.curve.getPoint(-1), e1.start.clone());
+        } else {
+          line = new Line(e1.curve.getPoint(2), e1.end.clone());
         }
         const theta = line.theta.rad;
         const d = new Point(Math.cos(theta), Math.sin(theta));
-        let drawLeader = false;
-        let drawCircle = false;
-        let drawText = false;
-        let circleDashed = false;
-        let layer = "";
-        if (key === "zhidingweizhipaokeng") {
-          line.end.sub(d.clone().multiply(drawing.leader.gap));
-          line.start.copy(line.end.clone().sub(d.clone().multiply(drawing.leader.length)));
-          const 指定位置刨坑表示方法 = projectConfig.get("指定位置刨坑表示方法", "箭头");
-          if (指定位置刨坑表示方法 === "箭头") {
-            drawLeader = true;
-          } else if (指定位置刨坑表示方法 === "箭头+箭头旁文字") {
-            drawLeader = true;
-            drawText = true;
-          } else if (指定位置刨坑表示方法 === "实线圆") {
-            drawCircle = true;
-          } else if (指定位置刨坑表示方法 === "实线圆+旁边文字") {
-            drawCircle = true;
-            drawText = true;
-          } else if (指定位置刨坑表示方法 === "虚线圆") {
-            drawCircle = true;
-            circleDashed = true;
-          } else if (指定位置刨坑表示方法 === "虚线圆+旁边文字") {
-            drawCircle = true;
-            circleDashed = true;
-            drawText = true;
-          }
-          layer = "指定位置刨坑";
-          drawing.text.text = "刨";
-          drawing.text.offset = 8;
-        } else if (key === "指定位置不折") {
-          line.end.sub(d.clone().multiply(drawing.leader.gap));
-          line.start.copy(line.end.clone().sub(d.clone().multiply(drawing.leader.length)));
-          const 指定位置不折表示方法 = projectConfig.get("指定位置不折表示方法", "箭头");
-          if (指定位置不折表示方法 === "箭头") {
-            drawLeader = true;
-          } else if (指定位置不折表示方法 === "箭头+箭头旁文字") {
-            drawLeader = true;
-            drawText = true;
-          } else if (指定位置不折表示方法 === "虚线圆") {
-            drawCircle = true;
-          } else if (指定位置不折表示方法 === "虚线圆+旁边文字") {
-            drawCircle = true;
-            drawText = true;
-          }
-          layer = "指定位置不折";
-          drawing.text.text = "不折";
-          drawing.text.offset = 8;
-        } else if (key === "指定分体位置") {
-          layer = "分体";
-          drawCircle = true;
-          drawText = true;
-          drawing.text.text = "分";
-          drawing.text.offset = 3;
-        }
         if (drawLeader) {
+          const gap = drawing.leader.size * 0.25;
+          const length = drawing.leader.size * 1.5;
+          line.end.sub(d.clone().multiply(gap));
+          line.start.copy(line.end.clone().sub(d.clone().multiply(length)));
           const leader = new CadLeader({
             layer,
             vertices: [line.end, line.start],
@@ -639,35 +648,30 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
           data.entities.add(leader);
         }
         if (drawCircle) {
-          const radius = Math.min(drawing.circle.radius, p1.distanceTo(p2) / 2 - 1, p2.distanceTo(p3) / 2 - 1);
-          const linetype = circleDashed ? "DASHEDX2" : "CONTINUOUS";
+          const d1 = p1?.distanceTo(p2);
+          const d2 = p3?.distanceTo(p2);
+          const getRadius = (d: number | undefined) => (d ? d / 2 - Math.min(1, d / 10) : Infinity);
+          const radius = Math.min(drawing.circle.radius, getRadius(d1), getRadius(d2));
           const circle = new CadCircle({
             layer,
             center: p2,
             radius,
-            linetype: linetype,
             linewidth: drawing.circle.linewidth,
             color: drawing.circle.color,
             info: {isIntersectionEntity: true}
           });
+          if (circleDashed) {
+            circle.dashArray = [10, 3];
+          }
           data.entities.add(circle);
           circles.push(circle);
         }
         if (drawText) {
-          let anchor = [0, 0];
-          let insert = [0, 0];
-          if (drawLeader) {
-            anchor = [d.x > 0 ? 1 : 0, d.y < 0 ? 1 : 0];
-            insert = line.start.clone().sub(d.clone().multiply(drawing.text.offset)).toArray();
-          } else if (drawCircle) {
-            anchor = [d.x > 0 ? 1 : 0, d.y < 0 ? 1 : 0];
-            insert = p2.clone().sub(d.clone().multiply(drawing.text.offset)).toArray();
-          }
           const text = new CadMtext({
             layer,
-            insert,
+            insert: line.start.clone().sub(d.clone().multiply(drawing.text.offset)).toArray(),
             text: drawing.text.text,
-            anchor,
+            anchor: [d.x > 0 ? 1 : 0, d.y < 0 ? 1 : 0],
             font_size: drawing.text.size,
             info: {isIntersectionEntity: true}
           });

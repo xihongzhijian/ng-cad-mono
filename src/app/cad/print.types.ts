@@ -15,7 +15,7 @@ export interface DrawDesignPicsParams {
 
 export interface PrintCadsParamsOrder {
   materialResult?: Formulas;
-  unfold?: {cad: CadData; offsetStrs: string[]}[];
+  unfold?: {cad: CadData; offsetStrs: string[]; offsetItems: any[]}[];
   bomTable?: BomTable;
   型材物料明细?: 型材物料明细List;
 }

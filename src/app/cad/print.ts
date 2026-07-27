@@ -22,6 +22,7 @@ import {
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
+import {getCadEntityAngularDimension} from "@modules/cad-editor/components/menu/cad-line/cad-line.utils";
 import {cloneDeep} from "lodash";
 import pdfmake from "pdfmake";
 import {type ContentImage} from "pdfmake/interfaces";
@@ -345,7 +346,7 @@ export const configCadDataForPrint = async (
   cad: CadViewer,
   data: CadData | CadEntities | CadEntity[] | CadEntity,
   params: PrintCadsParams,
-  zxpjConfig?: {isZxpj: true; lineLengthFontStyle?: FontStyle; 使用显示线长?: boolean}
+  zxpjConfig?: {isZxpj: true; lineLengthFontStyle?: FontStyle; 使用显示线长?: boolean; skipShowIntersections?: boolean}
 ) => {
   const linewidth = params.linewidth || 1;
   const dimStyle = params.dimStyle;
@@ -528,7 +529,9 @@ export const configCadDataForPrint = async (
         data.entities.add(mtext2);
       }
     });
-    showIntersections(data, params.projectConfig);
+    if (!zxpjConfig?.skipShowIntersections) {
+      showIntersections(data, params.projectConfig);
+    }
     await cad.render(data.getAllEntities());
 
     const 宽度标注 = data.entities.dimension.find((e) => e instanceof CadDimensionLinear && e.info.宽度标注);
@@ -671,13 +674,24 @@ const getUnfoldCadViewers = async (
     return mtext;
   };
 
-  for (const [j, {cad, offsetStrs}] of unfold.entries()) {
+  for (const [j, {cad, offsetStrs, offsetItems}] of unfold.entries()) {
     const rowIndex = rowNum - Math.floor(j / colNum);
     const colIndex = j % colNum;
     const boxRect = new Rectangle();
     boxRect.min.set(colIndex * boxWidth + boxPadding[3], (rowIndex - 1) * boxHeight + boxPadding[2]);
     boxRect.max.set((colIndex + 1) * boxWidth - boxPadding[1], rowIndex * boxHeight - boxPadding[0]);
-    await configCadDataForPrint(unfoldCadViewer, cad, params, {isZxpj: true, lineLengthFontStyle: {size: 3}, 使用显示线长: true});
+    await configCadDataForPrint(unfoldCadViewer, cad, params, {
+      isZxpj: true,
+      lineLengthFontStyle: {size: 3},
+      使用显示线长: true,
+      skipShowIntersections: true
+    });
+    cad.entities.forEach((e) => {
+      const angularDims = getCadEntityAngularDimension(e);
+      if (angularDims.length > 0) {
+        e.children.separate(angularDims);
+      }
+    });
     const calcZhankai = cad.info.calcZhankai || [];
     const bancai = cad.info.bancai || {};
 
@@ -774,6 +788,8 @@ const getUnfoldCadViewers = async (
         scale[0] *= -1;
       }
       cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
+      showIntersections(cad, params.projectConfig, offsetItems);
+      unfoldCad.entities.merge(cad.entities);
 
       const pointsMap = generatePointsMap(cad.entities);
       for (const {point, lines} of pointsMap) {
@@ -782,18 +798,30 @@ const getUnfoldCadViewers = async (
         }
         const e = lines[0];
         if (e.info.startLine) {
+          let leaderSize = 4;
+          cad.entities.forEach((e2) => {
+            if (e2.info.isIntersectionEntity) {
+              if (e2 instanceof CadLeader) {
+                leaderSize = e2.size;
+              }
+            }
+          });
           const leader = new CadLeader();
           leader.setColor("red");
+          leader.size = leaderSize;
+          const leaderGap = leaderSize * 0.25;
+          const leaderLength = leaderSize * 1.5;
           const targetPoint = e.start.equals(point) ? e.start : e.end;
-          const to = targetPoint.clone().add(-1, 1);
-          const from = to.clone().add(-10, 10);
+          const to = targetPoint.clone().add(-leaderGap, leaderGap);
+          const theta = Math.PI / 4;
+          const from = to.clone().add(-leaderLength * Math.cos(theta), leaderLength * Math.sin(theta));
           leader.vertices = [to, from];
           unfoldCad.entities.add(leader);
           const text = new CadMtext();
           text.insert.copy(from);
           text.setColor("red");
           text.text = "刨坑起点";
-          text.fontStyle.size = 8;
+          text.fontStyle.size = Math.max(leaderSize, 6);
           text.anchor.set(0.5, 1);
           unfoldCad.entities.add(text);
         }
