@@ -16,6 +16,7 @@ import {
   calcZxpj,
   CalcZxpjOptions,
   getMokuaiInfoScbl,
+  getMokuaiInfoSlgs,
   isMokuaiItemEqual,
   updateMokuaiItems
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -239,7 +240,12 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
     for (const mokuai of mokuais) {
+      const slgsResult = getMokuaiInfoSlgs(xhmrmsbj.menshanbujuInfos, mokuai, inputResult, materialResult);
+      const varNames = Object.keys(slgsResult?.formulas || {});
       for (const key of getMokuaiInfoScbl(xhmrmsbj.menshanbujuInfos, mokuai)) {
+        if (!varNames.includes(key)) {
+          continue;
+        }
         result.data.输出变量公式计算结果[key] = materialResult2[key];
       }
     }
