@@ -224,9 +224,11 @@ export const getCadInfoInputs = (
         info = getter2.string(key, {readonly: true});
         break;
       case "激光开料是否翻转":
-      case "激光开料打标":
       case "激光开料排版后只保留孔":
         info = getter2.boolean(key);
+        break;
+      case "激光开料打标":
+        info = getter2.boolean(key, {allowEmpty: true});
         break;
       case "指定下单板材":
       case "指定下单材料":
