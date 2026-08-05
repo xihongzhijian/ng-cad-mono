@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Integrated Browser",
+      "request": "launch",
+      "type": "editor-browser",
+      "url": "https://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
       "type": "msedge",
       "request": "attach",
       "name": "Attach to Edge",
