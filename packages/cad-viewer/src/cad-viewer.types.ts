@@ -94,7 +94,7 @@ export interface CadViewerConfig {
   enableZoom: boolean;
   /**
    * Padding of dashed line.
-   * @default 2
+   * @default 0
    * @example 2, [2, 4]
    * @description
    * - 2: 2px padding at start and end
@@ -161,7 +161,7 @@ export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
   fontStyle: {},
   dimStyle: {},
   enableZoom: true,
-  dashedLinePadding: 2,
+  dashedLinePadding: 0,
   hotKeys: {
     selectAll: [{key: "a", ctrl: true}],
     unSelectAll: [{key: "Escape"}],

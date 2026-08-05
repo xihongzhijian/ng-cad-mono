@@ -1,7 +1,7 @@
 import {CadCollection} from "@app/cad/collections";
 import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {CadData, CadEntity, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadEntity, CadLine, CadLineLike, cadLineOptions, CadViewer, Defaults, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoArray} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -209,6 +209,20 @@ export const getCadLineInputs = (
           update指定展开长();
           info = [展开方式, 指定展开长];
         }
+        break;
+      case "虚线":
+        info = {
+          type: "boolean",
+          label: key,
+          value: (line.dashArray?.length ?? 0) > 0,
+          onChange: (val) => {
+            if (val) {
+              line.dashArray = Defaults.DASH_ARRAY;
+            } else {
+              delete line.dashArray;
+            }
+          }
+        };
         break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};

@@ -20,6 +20,7 @@ import {
   CadLineLike,
   cadLineOptions,
   CadMtext,
+  CadStylizer,
   Defaults,
   findAdjacentLines,
   generatePointsMap,
@@ -627,6 +628,26 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.status.emitChangeCadSignal();
   }
 
+  getLineDashArray() {
+    const lines = this.selected();
+    const getBool = (line: CadLineLike) => (line.dashArray?.length ?? 0) > 0;
+    return lines.length > 0 && lines.every(getBool);
+  }
+  setLineDashArray(bool: boolean) {
+    const lines = this.selected();
+    lines.forEach((line) => {
+      if (bool) {
+        line.dashArray = Defaults.DASH_ARRAY;
+      } else {
+        delete line.dashArray;
+      }
+    });
+    if (lines.length > 0) {
+      this.status.cad.render(lines);
+    }
+    this.status.emitChangeCadSignal();
+  }
+
   lineInputInfos1 = computed(() => {
     const lengthInfo = this.getLineLengthInfo();
     const selected = this.selected();
@@ -782,6 +803,14 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       },
       getStringInfo("linewidth", "线宽"),
+      {
+        type: "boolean",
+        label: "虚线",
+        value: this.getLineDashArray(),
+        onChange: (val) => {
+          this.setLineDashArray(val);
+        }
+      },
       ...getNameInputInfo(),
       getBooleanInfo("刨坑起始线"),
       getStringInfo("kegaimingzi", "可改名字", {hidden: data.type !== "包边正面", disabled: selected.length !== 1}),
@@ -955,6 +984,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     const lines = points.map((v) => {
       const l = new CadLine({start: v[0], end: v[1]});
       l.dashArray = Defaults.DASH_ARRAY;
+      l.padding = 2;
       l.opacity = 0.7;
       l.宽高虚线 = {source: line.id, position: v[2]};
       return l;

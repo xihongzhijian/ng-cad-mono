@@ -25,7 +25,6 @@ export interface LineStyleBasic {
 export interface LineStyle extends LineStyleBasic {
   fillColor?: csstype.Properties["color"];
   padding?: number | number[];
-  forcePadding?: boolean;
 }
 
 export interface CadDimensionStyle {

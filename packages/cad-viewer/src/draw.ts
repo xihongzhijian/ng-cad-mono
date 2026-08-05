@@ -1,6 +1,6 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
-import {isEmpty} from "lodash";
+import {isNil} from "lodash";
 import {CadAxis, CadDimensionBlock, CadImage, CadSpline} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
 import {CadDimensionStyle, FontStyle, LineStyle, LineStyleBasic} from "./cad-data/cad-styles";
@@ -10,6 +10,8 @@ const setLineStyle = (el: Element, style: LineStyleBasic) => {
   el.stroke({width, color});
   if (dashArray) {
     el.css("stroke-dasharray", dashArray.join(", "));
+  } else {
+    el.css("stroke-dasharray", "");
   }
 };
 
@@ -17,17 +19,14 @@ export const drawLine = (draw: Container, start: Point, end: Point, style?: Line
   let el = draw.children()[i] as SvgLine;
   let {x: x1, y: y1} = start;
   let {x: x2, y: y2} = end;
-  const {dashArray, padding, forcePadding} = style || {};
-  if (forcePadding || (dashArray && dashArray.length > 0)) {
+  const {padding} = style || {};
+  if (!isNil(padding)) {
     const line = new Line(start, end);
     let [offsetStart, offsetEnd] = Array.isArray(padding) ? [...padding] : [padding];
     const getNum = (n: any) => {
       const result = Number(n);
       if (isNaN(result)) {
         return 0;
-      }
-      if (forcePadding) {
-        return result;
       }
       return Math.min(result, line.length / 10);
     };
@@ -438,14 +437,12 @@ export const drawDimensionLinear = (
   }
 
   const dimLineStyle = {...style?.dimensionLine};
-  if (isEmpty(dimLineStyle.padding)) {
+  if (isNil(dimLineStyle.padding)) {
     dimLineStyle.padding = dimLinePadding;
-    dimLineStyle.forcePadding = true;
   }
   const extLineStyle = {...style?.extensionLines};
-  if (isEmpty(extLineStyle.padding)) {
+  if (isNil(extLineStyle.padding)) {
     extLineStyle.padding = extLinePadding;
-    extLineStyle.forcePadding = true;
   }
   let dimLine: ReturnType<typeof drawLine> = [];
   if (!dimLineStyle.hidden) {
@@ -566,9 +563,8 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
   i += arrow.length;
   const lineStyle = {...style?.dimensionLine};
   const paddingFactor = arrowInfo.dimLinePaddingFactor;
-  if (typeof paddingFactor === "number" && isEmpty(lineStyle.padding)) {
+  if (typeof paddingFactor === "number" && isNil(lineStyle.padding)) {
     lineStyle.padding = [paddingFactor * size, 0];
-    lineStyle.forcePadding = true;
   }
   let line: ReturnType<typeof drawLine> = [];
   if (!lineStyle?.hidden) {

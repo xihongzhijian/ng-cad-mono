@@ -143,6 +143,7 @@ export class CadViewer extends EventEmitter {
           case "hideLineGongshi":
           case "reverseSimilarColor":
           case "validateLines":
+          case "dashedLinePadding":
             needsRender = true;
             break;
           case "fontStyle":

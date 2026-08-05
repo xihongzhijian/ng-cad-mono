@@ -1,8 +1,7 @@
-import {keysOf} from "@lucilor/utils";
 import Color, {ColorInstance} from "color";
 import {Property} from "csstype";
 import {getDeltaE00, LAB} from "delta-e";
-import {cloneDeep} from "lodash";
+import {cloneDeep, isNil, mergeWith} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLeader, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
 import {Defaults} from "./cad-utils";
@@ -11,17 +10,15 @@ import {CadViewerConfig} from "./cad-viewer.types";
 export class CadStylizer {
   static get(entity: CadEntity, config: CadViewerConfig, params: CadStyle = {}) {
     const {dashedLinePadding, minLinewidth, validateLines} = config;
-    const defaultStyle: Required<CadStyle> = {
+    const result: Required<CadStyle> = {
       color: "white",
       fontStyle: {size: Defaults.FONT_SIZE, family: "", weight: "", ...config.fontStyle, ...params.fontStyle},
-      lineStyle: {padding: dashedLinePadding, dashArray: entity.dashArray},
+      lineStyle: {dashArray: entity.dashArray},
       opacity: 1,
       dimStyle: {text: {size: 16}}
     };
-    const result: Required<CadStyle> = {...defaultStyle, ...params};
-    this.mergeDimStyle(result.dimStyle, defaultStyle.dimStyle);
     this.mergeDimStyle(result.dimStyle, config.dimStyle);
-    this.mergeDimStyle(result.dimStyle, params.dimStyle || {});
+    this._mergeObj(result, params);
     let linewidth: number;
     let color = new Color(params.color || entity.getColor() || 0);
     if (params.lineStyle) {
@@ -60,6 +57,25 @@ export class CadStylizer {
     if (entity instanceof CadDimension || entity instanceof CadLeader) {
       this.mergeDimStyle(result.dimStyle, entity.style);
       // this.mergeFontStyle(result.dimStyle.text, result.fontStyle, false);
+    }
+
+    if (entity instanceof CadLineLike) {
+      if (!isNil(entity.padding)) {
+        result.lineStyle.padding = cloneDeep(entity.padding);
+      }
+      // 宽高虚线特殊样式
+      if (entity instanceof CadLine && !isNil(entity.宽高虚线)) {
+        if (isNil(result.lineStyle.dashArray)) {
+          result.lineStyle.dashArray = Defaults.DASH_ARRAY;
+        }
+        if (isNil(result.lineStyle.padding)) {
+          result.lineStyle.padding = 2;
+        }
+      }
+    }
+
+    if (!isNil(result.lineStyle.dashArray) && isNil(result.lineStyle.padding)) {
+      result.lineStyle.padding = cloneDeep(dashedLinePadding);
     }
 
     result.lineStyle.width = linewidth;
@@ -164,14 +180,16 @@ export class CadStylizer {
     }
   }
 
-  static mergeDimStyle(style1: CadDimensionStyle, style2: CadDimensionStyle) {
-    keysOf(style2).forEach((key) => {
-      if (key === "color") {
-        style1[key] = style2[key];
-      } else {
-        style1[key] = {...style1[key], ...cloneDeep(style2[key])};
+  private static _mergeObj<T>(obj1: T, obj2: T) {
+    mergeWith(obj1, obj2, (v1, v2) => {
+      if (Array.isArray(v1)) {
+        return v2;
       }
     });
+  }
+
+  static mergeDimStyle(style1: CadDimensionStyle, style2: CadDimensionStyle) {
+    this._mergeObj(style1, style2);
   }
 
   static getPlainDimArrowBlock = (block: string) => block.replace(/^_/, "");

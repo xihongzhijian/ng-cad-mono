@@ -73,6 +73,7 @@ export abstract class CadLineLike extends CadEntity {
   zhankaixiaoshuchuli: CadOptionValues<"zhankaixiaoshuchuli">;
   suanliaosanxiaoshuchuli: CadOptionValues<"suanliaosanxiaoshuchuli">;
   kailiaoshishanchu: boolean;
+  padding?: number | number[];
   变化方式: string;
   角度范围: number[];
   可输入修改: boolean;
