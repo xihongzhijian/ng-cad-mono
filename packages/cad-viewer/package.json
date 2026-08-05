@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/cad-viewer",
-  "version": "3.34.0",
+  "version": "3.34.1",
   "description": "cad-viewer",
   "type": "module",
   "main": "lib/index.js",
@@ -31,21 +31,21 @@
   "devDependencies": {
     "@types/delta-e": "^0.0.2",
     "@types/events": "^3.0.3",
-    "@types/lodash": "^4.17.24",
+    "@types/lodash": "^4.17.25",
     "@types/uuid": "^11.0.0",
     "csstype": "^3.2.3",
     "typescript": "~6.0.3",
-    "vite": "^8.0.16",
-    "vite-plugin-css-injected-by-js": "^5.0.1",
-    "vite-plugin-dts": "^5.0.2"
+    "vite": "^8.2.0",
+    "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vite-plugin-dts": "^5.0.3"
   },
   "dependencies": {
     "@lucilor/utils": "workspace:^",
-    "@svgdotjs/svg.js": "3.2.5",
+    "@svgdotjs/svg.js": "3.2.8",
     "color": "^5.0.3",
     "delta-e": "^0.0.8",
     "events": "^3.3.0",
     "lodash": "^4.18.1",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.1"
   }
 }

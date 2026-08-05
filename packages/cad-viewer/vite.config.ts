@@ -13,7 +13,7 @@ export default defineConfig(({mode}) => {
           emptyOutDir: false,
           watch: {},
           lib: {
-            entry: resolve(__dirname, "src/index.ts"),
+            entry: resolve(import.meta.dirname, "src/index.ts"),
             formats: ["es"],
             fileName: "index"
           },
@@ -31,7 +31,7 @@ export default defineConfig(({mode}) => {
         build: {
           outDir: "lib",
           lib: {
-            entry: resolve(__dirname, "src/index.ts"),
+            entry: resolve(import.meta.dirname, "src/index.ts"),
             formats: ["es"],
             fileName: "index"
           },
@@ -47,7 +47,7 @@ export default defineConfig(({mode}) => {
         build: {
           outDir: "dist",
           lib: {
-            entry: resolve(__dirname, "src/index.ts"),
+            entry: resolve(import.meta.dirname, "src/index.ts"),
             formats: ["umd"],
             fileName: () => "cad-viewer.js",
             name: "lucilor.cadViewer"
