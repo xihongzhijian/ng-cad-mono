@@ -823,7 +823,7 @@ export class AppStatusService {
     const cadYaoqiusRaw = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
     return cadYaoqiusRaw.map((v) => new Cad数据要求(v));
   });
-  getCadYaoqiu(name: string | CadData) {
+  getCadYaoqiu(name: string | CadData, defaultValue?: Cad数据要求) {
     if (name instanceof CadData) {
       name = name.name;
     }
@@ -836,25 +836,22 @@ export class AppStatusService {
       }
     }
     if (!result) {
-      result = yaoqius.find((v) => v.CAD分类 === "配件库");
-      if (result) {
-        result = cloneDeep(result);
-        result.CAD分类 = name;
-        yaoqius.push(result);
+      if (defaultValue) {
+        result = defaultValue;
+      } else {
+        result = yaoqius.find((v) => v.CAD分类 === "配件库");
+        if (result) {
+          result = cloneDeep(result);
+          result.CAD分类 = name;
+          yaoqius.push(result);
+        }
       }
     }
     return result;
   }
-  async fetchAndGetCadYaoqiu(name: string | CadData, force?: boolean) {
+  async fetchAndGetCadYaoqiu(name: string | CadData, force?: boolean, defaultValue?: Cad数据要求) {
     await this.cadYaoqiusManager.fetch(force);
-    if (name instanceof CadData) {
-      name = name.name;
-    }
-    let result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === name);
-    if (!result) {
-      result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === "配件库");
-    }
-    return result;
+    return this.getCadYaoqiu(name, defaultValue);
   }
 
   private _testModeWarningTimeKey = "testModeWarningIgnoreTime";

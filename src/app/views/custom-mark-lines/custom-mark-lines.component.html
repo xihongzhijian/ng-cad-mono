@@ -1,0 +1,33 @@
+<div class="toolbar">
+  <div class="title">自定义标记线</div>
+  <div class="placeholder"></div>
+  <button mat-flat-button (click)="submit()">保存</button>
+</div>
+<div>只有正反刀都添加了数据才会生效</div>
+<ng-scrollbar>
+  <div class="items vertical">
+    @for (item of items(); let i = $index; track i) {
+      <div class="item border">
+        <div class="toolbar">
+          <div class="title small">{{ item.name }}</div>
+          <div class="placeholder"></div>
+          @if (item.cadData) {
+            <button mat-flat-button (click)="removeCadData(item)">删除</button>
+          } @else {
+            <button mat-flat-button (click)="addCadData(item)">添加</button>
+          }
+        </div>
+        <div class="toolbar">
+          @if (item.cadData; as cad) {
+            <app-cad-item [cad]="cad" isLocal [buttons]="[]" [customInfo]="null" [yaoqiu]="cadYaoqiu()"></app-cad-item>
+            <div class="flex-column" style="flex: 0 1 200px">
+              @for (info of inputInfoGroups().at(i) ?? []; track $index) {
+                <app-input [info]="info"></app-input>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-scrollbar>

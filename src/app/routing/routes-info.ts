@@ -7,6 +7,7 @@ import {XinghaoGongshishuruComponent} from "@components/xinghao-gongshishuru/xin
 import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
 import {CleanComponent} from "@views/clean/clean.component";
+import {CustomMarkLinesComponent} from "@views/custom-mark-lines/custom-mark-lines.component";
 import {DingdanbiaoqianComponent} from "@views/dingdanbiaoqian/dingdanbiaoqian.component";
 import {DingdanyichangComponent} from "@views/dingdanyichang/dingdanyichang.component";
 import {ExportComponent} from "@views/export/export.component";
@@ -73,5 +74,6 @@ export const routesInfo: Route[] = [
   {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "多订单型材优化排产"},
   {path: "压花板测试", component: YahuabanTestComponent, title: "压花板测试"},
   {path: "型号公式输入", component: XinghaoGongshishuruComponent, title: "型号公式输入"},
-  {path: "list-projects", component: ListProjectsComponent, title: "项目列表"}
+  {path: "list-projects", component: ListProjectsComponent, title: "项目列表"},
+  {path: "custom-mark-lines", component: CustomMarkLinesComponent, title: "自定义标记线"}
 ];
