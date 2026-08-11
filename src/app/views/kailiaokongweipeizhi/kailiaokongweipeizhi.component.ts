@@ -1,7 +1,7 @@
 import {Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
-import {KlkwpzItem, KlkwpzSource} from "@components/klkwpz/klkwpz";
+import {KlkwpzFontFamily, KlkwpzItem, KlkwpzSource} from "@components/klkwpz/klkwpz";
 import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
@@ -26,6 +26,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
   id = signal("");
   data = signal<KlkwpzSource>({});
   klkwpzComponent = viewChild(KlkwpzComponent);
+  fontFamilies = signal<KlkwpzFontFamily[]>([]);
 
   ngOnInit() {
     this._fetch();
@@ -35,9 +36,13 @@ export class KailiaokongweipeizhiComponent implements OnInit {
     const id = this.route.snapshot.queryParams.id;
     if (id) {
       this.id.set(id);
-      const data = await this.http.getData<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id});
+      const data = await this.http.getData<{
+        孔位配置: ObjectOf<KlkwpzItem[]>;
+        fontFamilies: KlkwpzFontFamily[];
+      }>("peijian/kailiaokongweipeizhi/get", {id});
       if (data && typeof data === "object" && !Array.isArray(data)) {
-        this.data.set(data);
+        this.data.set(data.孔位配置);
+        this.fontFamilies.set(data.fontFamilies);
       }
     } else {
       if (environment.production) {

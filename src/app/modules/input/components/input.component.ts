@@ -361,16 +361,21 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     let fixedOptions: string[] | undefined;
     let optionsDisplayLimit: number | undefined;
     let noSortOptions: boolean | undefined;
+    let noFilterOptions: boolean | undefined;
     if (info.type === "string") {
       fixedOptions = info.fixedOptions;
       optionsDisplayLimit = info.optionsDisplayLimit;
       noSortOptions = info.noSortOptions;
+      noFilterOptions = info.noFilterOptions;
     }
     let result: typeof this.options;
     if (value) {
       result = options.filter((option) => {
         const values = getFilterValues(option);
         for (const v of values) {
+          if (noFilterOptions) {
+            return true;
+          }
           if (typeof value === "string" && queryString(value, v)) {
             return true;
           }

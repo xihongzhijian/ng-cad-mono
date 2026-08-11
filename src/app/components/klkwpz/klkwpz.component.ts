@@ -13,7 +13,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
-import {DabiaoKey, dabiaoKeys, isDabiaoKey, Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
+import {DabiaoKey, dabiaoKeys, isDabiaoKey, Klkwpz, KlkwpzFontFamily, KlkwpzItem, KlkwpzSource} from "./klkwpz";
 
 @Component({
   selector: "app-klkwpz",
@@ -30,6 +30,7 @@ export class KlkwpzComponent {
 
   data = input.required<KlkwpzSource>({});
   cadId = input<string>();
+  fontFamilies = input<KlkwpzFontFamily[]>([]);
 
   klkwpz = new Klkwpz();
   formData = signal<KlkwpzFormItem[]>([]);
@@ -325,6 +326,11 @@ export class KlkwpzComponent {
       delete item.固定行列阵列;
       delete item.增加指定偏移;
       if (dabiaoKey) {
+        for (const dabiaoKey2 of dabiaoKeys) {
+          if (dabiaoKey2 !== dabiaoKey) {
+            delete item[dabiaoKey2];
+          }
+        }
         let dabiaoItem = item[dabiaoKey];
         if (!dabiaoItem) {
           dabiaoItem = item[dabiaoKey] = {};
@@ -346,9 +352,11 @@ export class KlkwpzComponent {
           }
         }
         const getter = new InputInfoWithDataGetter(dabiaoItem.font, {clearable: true});
+        const fontFamilies = this.fontFamilies();
+        const fontFamilyOptions = fontFamilies.map((v) => v.name);
         arr = [
           getInputInfoGroup([
-            getter.string("family", {label: "字体名字"}),
+            getter.string("family", {label: "字体名字", options: fontFamilyOptions, noFilterOptions: true, noSortOptions: true}),
             getter.number("size", {label: "字体大小"}),
             getter.boolean("vertical", {label: "竖排"})
           ]),

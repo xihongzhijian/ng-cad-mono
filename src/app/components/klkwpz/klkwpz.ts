@@ -244,3 +244,8 @@ export const isDabiaoKey = (key: string): key is DabiaoKey => dabiaoKeys.include
 export interface DabiaoItem {
   font?: {family?: string; size?: number; vertical?: boolean};
 }
+
+export interface KlkwpzFontFamily {
+  name: string;
+  isCharset?: boolean;
+}
