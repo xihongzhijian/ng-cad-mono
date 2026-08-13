@@ -84,7 +84,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       {label: "是", value: true},
       {label: "否", value: false}
     ]);
-    const menleixingOptions = getOptions0(Array.from(menleixings).map((v) => ({value: v})));
+    const menleixingOptions = Array.from(menleixings).map((v) => ({value: v}));
     const showMenleixing = this.showMenleixing() && menleixingOptions.length > 1;
     const getter = new InputInfoWithDataGetter(data, {
       clearable: true,
@@ -103,7 +103,13 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         style: {width: "200px"},
         onInput: debounce(() => update(), 500)
       }),
-      getter.selectSingle("menleixing", menleixingOptions, {label: "门类型", style: {width: "150px"}, hidden: !showMenleixing}),
+      getter.string("menleixing", {
+        label: "门类型",
+        style: {width: "150px"},
+        hidden: !showMenleixing,
+        options: menleixingOptions
+      }),
+      getter.boolean("exact", {label: "精确搜索", style: {width: "90px"}}),
       getter.selectSingle("zuoshujubanben", zuoshujubanbenOptions, {
         label: "做数据版本",
         style: {width: "220px"}
@@ -114,7 +120,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       }),
       getInputInfoGroup(
         [
-          getter2.selectMultiple("keys", menshanKeys.slice(), {label: "位置", style: {width: "140px"}}),
+          getter2.selectMultiple("keys", menshanKeys, {label: "位置", style: {width: "140px"}}),
           getter2.string("name", {label: "布局名字", style: {width: "150px"}})
         ],
         {label: "根据布局搜索"}

@@ -12,7 +12,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterHuajian} from "@views/mrbcjfz/mrbcjfz.utils";
-import {MenshanKey} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {MenshanKey, menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {cloneDeep, isEqual} from "lodash";
 import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
@@ -70,6 +70,7 @@ export class LrsjStatusService implements OnDestroy {
     zuoshujubanben?: string;
     tingyong?: boolean;
     buju?: {keys: MenshanKey[]; name: string};
+    exact?: boolean;
   }>(session.load(this._xinghaoFilterKey) || {});
   xinghaoFilterEff = effect(() => {
     const filter = this.xinghaoFilter();
@@ -80,7 +81,7 @@ export class LrsjStatusService implements OnDestroy {
   });
   isXinghaoFilterEmpty = computed(() => {
     const filter = this.xinghaoFilter();
-    if (filter.buju && filter.buju.keys.length > 0 && filter.buju.name) {
+    if (filter.buju && filter.buju.name) {
       return false;
     }
     return !filter.name && !filter.menleixing && !filter.zuoshujubanben && typeof filter.tingyong !== "boolean";
@@ -573,10 +574,18 @@ export class LrsjStatusService implements OnDestroy {
         for (const xinghao of xinghaos.items) {
           xinghao.hidden = false;
           if (filter.name && !xinghao.hidden) {
-            xinghao.hidden = !queryString(filter.name, xinghao.mingzi);
+            if (filter.exact) {
+              xinghao.hidden = filter.name !== xinghao.mingzi;
+            } else {
+              xinghao.hidden = !queryString(filter.name, xinghao.mingzi);
+            }
           }
           if (filter.menleixing && !xinghao.hidden) {
-            xinghao.hidden = xinghao.menleixing !== filter.menleixing;
+            if (filter.exact) {
+              xinghao.hidden = xinghao.menleixing !== filter.menleixing;
+            } else {
+              xinghao.hidden = !queryString(filter.menleixing, xinghao.menleixing ?? "");
+            }
           }
           if (filter.zuoshujubanben && !xinghao.hidden) {
             const isVersion2024 = getIsVersion2024(xinghao.zuoshujubanben);
@@ -590,9 +599,19 @@ export class LrsjStatusService implements OnDestroy {
             xinghao.hidden = filter.tingyong !== !!xinghao.tingyong;
           }
           if (filter.buju && !xinghao.hidden) {
-            const {keys, name} = filter.buju;
-            if (keys.length > 0 && name) {
-              xinghao.hidden = keys.some((key) => name !== xinghao.info?.[key]?.buju);
+            const {name} = filter.buju;
+            let keys = filter.buju.keys;
+            if (!keys || keys.length < 1) {
+              keys = menshanKeys.slice();
+            }
+            if (name) {
+              xinghao.hidden = keys.every((key) => {
+                if (filter.exact) {
+                  return name !== xinghao.info?.[key]?.buju;
+                } else {
+                  return !queryString(name, xinghao.info?.[key]?.buju ?? "");
+                }
+              });
             }
           }
           if (!xinghao.hidden) {

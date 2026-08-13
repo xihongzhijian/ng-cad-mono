@@ -29,7 +29,6 @@ import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {emptyXuanxiangItem, getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {选项} from "@components/lurushuju/xinghao-data";
-import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, MaybePromise, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
@@ -740,7 +739,7 @@ export class MokuaiItemComponent {
     return map;
   });
   nodeTextVars = computed(() => {
-    const reg = /"(numF|f)ormula":"([^"]+)"/g;
+    const reg = /"(huajiankuanF|huajiangaoF|numF|f)ormula":"([^"]+)"/g;
     const text = this.nodeText();
     const vars = new Set<string>();
     if (!text) {
@@ -836,9 +835,9 @@ export class MokuaiItemComponent {
           {event: "remove", title: "将选中公式替换为空", onClick: () => this.removeNodeVars()},
           {
             event: "showText",
-            hidden: environment.production,
+            title: "显示源码",
             onClick: async () => {
-              const text = await this.getNodeText();
+              const text = await this.getNodeHtml();
               if (text) {
                 this.message.alert(text);
               }
@@ -857,6 +856,18 @@ export class MokuaiItemComponent {
       await this.message.error("效果图公式数据为空！");
     }
     return text;
+  }
+  async getNodeHtml() {
+    const text = await this.getNodeText();
+    if (!text) {
+      return "";
+    }
+    const vars = this.nodeTextVars();
+    let html = text;
+    for (const v of vars) {
+      html = html.replaceAll(`"${v}"`, `"<span class='accent'>${v}</span>"`);
+    }
+    return html;
   }
   async setNodeText(text: string) {
     this.mokuai.update((v) => ({...v, node: text}));
