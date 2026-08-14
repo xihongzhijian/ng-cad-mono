@@ -270,6 +270,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.msbjs.set(result.msbjs.map((v) => new MsbjInfo(v, this.getNode2rectData())));
       this.bjmkStatus.msbjsManager.setItems(this.msbjs());
       typesInfo = result.typesInfo;
+      this.step1Data.typesInfo = typesInfo;
     } else if (token) {
       this.isFromOrder.set(true);
     }
