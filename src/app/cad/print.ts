@@ -346,7 +346,13 @@ export const configCadDataForPrint = async (
   cad: CadViewer,
   data: CadData | CadEntities | CadEntity[] | CadEntity,
   params: PrintCadsParams,
-  zxpjConfig?: {isZxpj: true; lineLengthFontStyle?: FontStyle; 使用显示线长?: boolean; skipShowIntersections?: boolean}
+  zxpjConfig?: {
+    isZxpj: true;
+    lineLengthFontStyle?: FontStyle;
+    使用显示线长?: boolean;
+    skipShowIntersections?: boolean;
+    maxLineLength?: number;
+  }
 ) => {
   const linewidth = params.linewidth || 1;
   const dimStyle = params.dimStyle;
@@ -498,9 +504,14 @@ export const configCadDataForPrint = async (
         }
         const length = e.length;
         if (e instanceof CadLine) {
-          let maxLineLength = 100;
-          if (e.isHorizontal()) {
-            maxLineLength = 180;
+          let maxLineLength: number;
+          if (typeof zxpjConfig?.maxLineLength === "number") {
+            maxLineLength = zxpjConfig.maxLineLength;
+          } else {
+            maxLineLength = 100;
+            if (e.isHorizontal()) {
+              maxLineLength = 180;
+            }
           }
           if (length > maxLineLength * data.suanliaodanZoom) {
             setLinesLength(data, [e], maxLineLength);
@@ -684,7 +695,8 @@ const getUnfoldCadViewers = async (
       isZxpj: true,
       lineLengthFontStyle: {size: 3},
       使用显示线长: true,
-      skipShowIntersections: true
+      skipShowIntersections: true,
+      maxLineLength: Infinity
     });
     cad.entities.forEach((e) => {
       const angularDims = getCadEntityAngularDimension(e);
