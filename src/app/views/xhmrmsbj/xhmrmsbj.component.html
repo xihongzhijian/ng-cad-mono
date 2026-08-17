@@ -101,6 +101,9 @@
           <app-input [info]="kexuanmokuaiSearchInputInfo()"></app-input>
           @if (!isFromOrder()) {
             <button mat-flat-button (click)="setKexuanmokuai()">编辑</button>
+            <button mat-flat-button (click)="selectAllKexuanMokuais()">全选</button>
+            <button mat-flat-button (click)="copySelectedKexuanMokuais()">复制选中</button>
+            <button mat-flat-button (click)="removeSelectedKexuanMokuais()">删除选中</button>
           }
         </div>
       }
@@ -325,6 +328,7 @@
         @if (isFromOrder()) {
           <div class="center flex-110" [innerHTML]="getMokuaiTitle(mokuai, true)"></div>
         } @else {
+          <mat-checkbox [checked]="selectedKexuanMokuais().includes(mokuai)" (change)="toggleSelectedKexuanMokuai(mokuai)"></mat-checkbox>
           @if (data()?.isVersion2024) {
             <div class="link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle(mokuai, false) }}</div>
           } @else {

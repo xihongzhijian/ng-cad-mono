@@ -587,7 +587,7 @@ export class MokuaiItemComponent {
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
-  async updateMokaui(loaderId: string) {
+  async updateMokuai(loaderId: string) {
     const mokuai = this.mokuai();
     const error: ErrorItem = {content: "", details: []};
 
@@ -650,7 +650,7 @@ export class MokuaiItemComponent {
   async save() {
     const loaderId = this.spinner.defaultLoaderId;
     this.spinner.show(loaderId);
-    const mokuai = await this.updateMokaui(loaderId);
+    const mokuai = await this.updateMokuai(loaderId);
     if (!mokuai) {
       return;
     }
@@ -672,11 +672,10 @@ export class MokuaiItemComponent {
   async saveAs() {
     const loaderId = this.spinner.defaultLoaderId;
     this.spinner.show(loaderId);
-    const mokuai = await this.updateMokaui(loaderId);
-    if (!mokuai) {
-      return;
+    const mokuai = await this.updateMokuai(loaderId);
+    if (mokuai) {
+      await this.bjmkStatus.copyMokuai(mokuai);
     }
-    await this.bjmkStatus.copyMokuai(mokuai);
     this.spinner.hide(loaderId);
   }
   openDdbq() {

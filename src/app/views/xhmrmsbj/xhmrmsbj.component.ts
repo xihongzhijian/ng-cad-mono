@@ -28,13 +28,13 @@ import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {getValueString} from "@app/utils/get-value";
+import {getCopyName, getValueString} from "@app/utils/get-value";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
-import {MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
+import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
 import {MokuaikuComponent} from "@components/bujumokuai/mokuaiku/mokuaiku.component";
 import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
@@ -1901,15 +1901,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const event = await firstValueFrom(this._closeMokuaiku$);
     return event.selectedMokuais;
   }
-  async fetchMokuais(mokuaiIds: number[]) {
-    const step1Data = await getStep1Data(this.http, {}, {mokuaiIds});
-    if (!step1Data) {
-      return [];
+  async fetchMokuais(mokuaiIds: number[], typesInfo?: ZixuanpeijianTypesInfo) {
+    if (!typesInfo) {
+      const step1Data = await getStep1Data(this.http, {}, {mokuaiIds});
+      if (!step1Data) {
+        return [];
+      }
+      typesInfo = step1Data.typesInfo;
     }
     const mokuais: ZixuanpeijianMokuaiItem[] = [];
-    for (const type1 in step1Data.typesInfo) {
-      for (const type2 in step1Data.typesInfo[type1]) {
-        const info = step1Data.typesInfo[type1][type2];
+    for (const type1 in typesInfo) {
+      for (const type2 in typesInfo[type1]) {
+        const info = typesInfo[type1][type2];
         const mokuai: ZixuanpeijianMokuaiItem = {...info, type1, type2, totalWidth: "", totalHeight: "", cads: []};
         justifyMokuaiItem(mokuai);
         mokuais.push(mokuai);
@@ -2168,5 +2171,71 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     (info.onChange as any)?.(data.value, info);
+  }
+
+  selectedKexuanMokuais = signal<ZixuanpeijianMokuaiItem[]>([]);
+  toggleSelectedKexuanMokuai(mokuai: ZixuanpeijianMokuaiItem) {
+    const selected = this.selectedKexuanMokuais().slice();
+    const index = selected.findIndex((v) => v.id === mokuai.id);
+    if (index >= 0) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(mokuai);
+    }
+    this.selectedKexuanMokuais.set(selected);
+  }
+  getSelectedKexuanMokuais() {
+    const selected = this.selectedKexuanMokuais();
+    if (selected.length < 1) {
+      this.message.snack("请先选择模块");
+      return null;
+    }
+    return selected;
+  }
+  selectAllKexuanMokuais() {
+    const selected = this.selectedKexuanMokuais();
+    if (selected.length >= this.kexuanmokuais().length) {
+      this.selectedKexuanMokuais.set([]);
+    } else {
+      this.selectedKexuanMokuais.set(this.kexuanmokuais().slice());
+    }
+  }
+  async copySelectedKexuanMokuais() {
+    const selected = this.getSelectedKexuanMokuais();
+    if (!selected) {
+      return;
+    }
+    if (!(await this.message.confirm("确定要复制选中的可选模块吗？"))) {
+      return;
+    }
+    const ids = selected.map((v) => v.id);
+    const namesAll = this.bjmkStatus.mokuaisManager.items().map((v) => v.name);
+    const names = selected.map((v) => getCopyName(namesAll, v.type2));
+    const result = await this.http.getData<{typeInfos: ZixuanpeijianTypesInfo; mokuais: MokuaiItem[]}>("ngcad/copyPeijianmokuais", {
+      ids,
+      names
+    });
+    if (!result) {
+      return;
+    }
+    const {typeInfos, mokuais} = result;
+    if (mokuais.length > 0) {
+      this.bjmkStatus.mokuaisManager.refresh({add: mokuais});
+    }
+    const ids2 = mokuais.map((v) => v.id);
+    const mokuais2 = await this.fetchMokuais(ids2, typeInfos);
+    if (mokuais2.length > 0) {
+      this.setKexuanmokuai([...this.kexuanmokuais(), ...mokuais2]);
+    }
+  }
+  async removeSelectedKexuanMokuais() {
+    const selected = this.getSelectedKexuanMokuais();
+    if (!selected) {
+      return;
+    }
+    if (!(await this.message.confirm("确定要删除选中的可选模块吗？"))) {
+      return;
+    }
+    this.setKexuanmokuai(this.kexuanmokuais().filter((v) => !selected.find((v2) => v2.id === v.id)));
   }
 }
