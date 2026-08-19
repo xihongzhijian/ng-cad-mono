@@ -253,8 +253,12 @@ export class KlkwpzComponent {
     }
     arr.push(
       getter.coordinate("anchor2", {label: "", labelX: "孔cad定位点X", labelY: "孔cad定位点Y", compact: true}),
-      getter.string("x", {label: "第一个孔定位点到打孔起始点的x方向距离"}),
-      getter.string("y", {label: "第一个孔定位点到打孔起始点的y方向距离"})
+      getter.string("x", {label: "孔定位点到打孔起始点的x方向距离"}),
+      getter.string("y", {label: "孔定位点到打孔起始点的y方向距离"}),
+      getInputInfoGroup([
+        getter.string("offsetX", {label: "x方向偏移", validators: []}),
+        getter.string("offsetY", {label: "y方向偏移", validators: []})
+      ])
     );
     data.inputs2 = arr;
   }

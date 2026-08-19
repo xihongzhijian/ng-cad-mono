@@ -14,6 +14,8 @@ export interface KlkwpzItem {
   name: string;
   x: Gongshi;
   y: Gongshi;
+  offsetX?: Gongshi;
+  offsetY?: Gongshi;
   anchor1: Anchor;
   anchor2: Anchor;
   maxX: Gongshi;
@@ -87,6 +89,8 @@ export class Klkwpz {
       face: source.face || "",
       x: getGongshi(source.x),
       y: getGongshi(source.y),
+      offsetX: getGongshi(source.offsetX),
+      offsetY: getGongshi(source.offsetY),
       anchor1: getAnchor(source.anchor1, [0, 0]),
       anchor2: getAnchor(source.anchor2, [0.5, 0.5]),
       maxX: getGongshi(source.maxX),
@@ -186,6 +190,8 @@ export class Klkwpz {
       "face",
       "maxX",
       "maxY",
+      "offsetX",
+      "offsetY",
       "类型",
       "不删除超出板材的孔",
       "删除超出板材的孔X",
