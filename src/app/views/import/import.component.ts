@@ -21,7 +21,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
-import {difference, isEmpty} from "lodash";
+import {differenceWith, isEmpty} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {v4} from "uuid";
@@ -623,7 +623,12 @@ export class ImportComponent implements OnInit {
         const options2 = await this.http.getOptions({name: optionKey}, httpOptions);
         this._optionsCache[optionKey] = options2.map((v) => v.name);
       }
-      const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
+      const optionsNotExist = differenceWith(
+        optionValues,
+        this._optionsCache[optionKey],
+        ["所有"],
+        (a, b) => a === b || a.startsWith("不选")
+      );
       if (optionsNotExist.length > 0) {
         result.addErrorStr(`选项【${optionKey}】不存在或已停用: ${optionsNotExist.join(", ")}`);
       }
