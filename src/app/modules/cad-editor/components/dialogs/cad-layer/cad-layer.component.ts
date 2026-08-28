@@ -56,12 +56,14 @@ export class CadLayerComponent {
   forms = computed(() => {
     const forms: {infos: InputInfo[][]}[] = [];
     const layers = this.layers();
-    const names = layers.map((v) => v.name);
+    const names = new Set(layers.map((v) => v.name));
     for (const layer of layers) {
       const getter = new InputInfoWithDataGetter(layer);
+      const names2 = new Set(names);
+      names2.delete(layer.name);
       const infos: InputInfo[][] = [
         [
-          getter.string("name", {label: "名字", validators: [Validators.required, CustomValidators.duplicate(names)]}),
+          getter.string("name", {label: "名字", validators: [Validators.required, CustomValidators.duplicate(names2)]}),
           {
             label: "颜色",
             type: "color",

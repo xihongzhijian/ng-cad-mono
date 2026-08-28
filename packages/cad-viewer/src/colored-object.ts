@@ -5,6 +5,7 @@ import {isEqual} from "lodash";
 export class ColoredObject {
   private _color: ColorInstance;
   byLayerColor?: boolean;
+  byBlockColor?: boolean;
 
   constructor(...params: Parameters<typeof Color>) {
     this._color = new Color(...params);
@@ -16,12 +17,17 @@ export class ColoredObject {
 
   setColor(...params: Parameters<typeof Color>) {
     this._color = new Color(...params);
+    this.byLayerColor = false;
+    this.byBlockColor = false;
     return this;
   }
 
   getIndexColor() {
-    if (this._color === null) {
+    if (this._color === null || this.byLayerColor) {
       return 256;
+    }
+    if (this.byBlockColor) {
+      return 0;
     }
     const color = new Color(this._color);
     const rgb = color.array();
@@ -34,10 +40,13 @@ export class ColoredObject {
   }
 
   setIndexColor(index: number) {
+    this.byLayerColor = false;
+    this.byBlockColor = false;
     if (index === 256) {
       this.byLayerColor = true;
+    } else if (index === 0) {
+      this.byBlockColor = true;
     } else {
-      this.byLayerColor = false;
       const rgb = list[index];
       if (rgb) {
         this._color = new Color(rgb);

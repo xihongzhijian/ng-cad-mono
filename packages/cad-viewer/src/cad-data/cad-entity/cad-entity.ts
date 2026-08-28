@@ -212,6 +212,8 @@ export abstract class CadEntity extends ColoredObject {
       if (layer) {
         color = layer.getColor();
       }
+    } else if (this.byBlockColor) {
+      // TODO: get block color
     }
     if (!color) {
       color = new Color("white");
