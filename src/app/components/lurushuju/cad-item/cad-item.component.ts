@@ -186,17 +186,15 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     }
     this.afterEditCad.emit();
   }
-  zhankai = computed(() => {
+  zhankais = computed(() => {
     const cad = this.cad();
-    let zhankai: any;
     if (cad instanceof CadData) {
-      zhankai = cad.zhankai[0];
-    } else {
-      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
-        zhankai = cad.json.zhankai[0];
-      }
+      return cad.zhankai;
     }
-    return zhankai as CadZhankai | undefined;
+    return (cad?.json?.zhankai || []) as CadZhankai[];
+  });
+  zhankai = computed(() => {
+    return this.zhankais().at(0);
   });
 
   centerCad() {
@@ -723,10 +721,8 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       }
       return getValueString(value, {separator: "\n", separatorKv: "："});
     } else if (item.key === "展开信息") {
-      const zhankai = this.zhankai();
-      if (zhankai) {
-        return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
-      }
+      const zhankais = this.zhankais();
+      return zhankais.map((zhankai) => `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`).join("\n");
     } else if (item.key === "激光开料CAD模板") {
       const zhankai = this.zhankai();
       if (zhankai) {

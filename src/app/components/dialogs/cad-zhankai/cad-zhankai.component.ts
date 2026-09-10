@@ -383,4 +383,5 @@ export const editCadZhankai = async (dialog: MatDialog, data: CadData) => {
       delete data.info.切割模板;
     }
   }
+  return result;
 };

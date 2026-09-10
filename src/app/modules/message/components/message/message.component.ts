@@ -25,6 +25,7 @@ import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {Subscription} from "rxjs";
 import {createJSONEditor, JSONContent, JSONEditorPropsOptional, Mode} from "vanilla-jsoneditor";
 import {
   ButtonMessageData,
@@ -181,15 +182,21 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   inputsBackup: InputInfo[] = [];
   formInputs = viewChildren<InputComponent>("formInput");
   form = signal<InputInfo[]>([]);
+  private _formUpdateSubscription: Subscription | null = null;
   formEff = effect(() => {
     const data = this.data;
     if (data.type !== "form") {
       return;
     }
+    this._formUpdateSubscription?.unsubscribe();
+    this._formUpdateSubscription =
+      data.updateSubject?.subscribe(() => {
+        this.refreshForm();
+      }) ?? null;
     this.form.set(data.form);
   });
   refreshForm() {
-    this.form.update((v) => [...v]);
+    this.form.update((v) => cloneDeep(v));
   }
   reset() {
     switch (this.data.type) {

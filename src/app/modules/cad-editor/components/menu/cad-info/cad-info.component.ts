@@ -32,6 +32,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
 import {debounce, isEqual} from "lodash";
+import {Subject, Subscription} from "rxjs";
 import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
 
 @Component({
@@ -240,12 +241,19 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   });
 
   parseOptionString = computed(() => false);
+  private _infoGroup1UpdateSubscription: Subscription | null = null;
   infoGroup1 = computed(() => {
+    const subject = new Subject<void>();
+    this._infoGroup1UpdateSubscription?.unsubscribe();
+    this._infoGroup1UpdateSubscription = subject.subscribe(() => {
+      this.status.emitChangeCadSignal();
+    });
     const infos = getCadInfoInputs(
       ["id", "名字", "唯一码", "显示名字", "排版序号名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
       this.data().data,
       this.dialog,
       this.status,
+      subject,
       this.parseOptionString()
     );
     for (const info of infos) {
@@ -259,7 +267,13 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
     return infos;
   });
+  private _infoGroup2UpdateSubscription: Subscription | null = null;
   infoGroup2 = computed(() => {
+    const subject = new Subject<void>();
+    this._infoGroup2UpdateSubscription?.unsubscribe();
+    this._infoGroup2UpdateSubscription = subject.subscribe(() => {
+      this.status.emitChangeCadSignal();
+    });
     const infos = getCadInfoInputs(
       [
         "开料时刨坑",
@@ -287,6 +301,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.data().data,
       this.dialog,
       this.status,
+      subject,
       this.parseOptionString()
     );
     for (const info of infos) {
@@ -300,7 +315,13 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
     return infos;
   });
+  private _infoGroup3UpdateSubscription: Subscription | null = null;
   infoGroup3 = computed(() => {
+    const subject = new Subject<void>();
+    this._infoGroup3UpdateSubscription?.unsubscribe();
+    this._infoGroup3UpdateSubscription = subject.subscribe(() => {
+      this.status.emitChangeCadSignal();
+    });
     const infos = getCadInfoInputs(
       [
         "算料单显示放大倍数",
@@ -341,6 +362,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.data().data,
       this.dialog,
       this.status,
+      subject,
       this.parseOptionString()
     );
     for (const info of infos) {

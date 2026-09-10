@@ -1,5 +1,6 @@
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
+import {Subject} from "rxjs";
 import {JSONEditorPropsOptional} from "vanilla-jsoneditor";
 
 export interface MessageDataButton<T extends string = string> {
@@ -55,6 +56,7 @@ export interface FormMessageData extends BaseMessageData, FormBaseMessageData {
   type: "form";
   form: InputInfo[];
   autoFill?: (inputs: InputInfo[]) => void;
+  updateSubject?: Subject<void>;
 }
 
 export interface BookPageData {
@@ -81,13 +83,7 @@ export interface JsonMessageData extends BaseMessageData, FormBaseMessageData {
 }
 
 export type MessageData =
-  | AlertMessageData
-  | ConfirmMessageData
-  | FormMessageData
-  | BookMessageData
-  | ButtonMessageData
-  | IFrameMessageData
-  | JsonMessageData;
+  AlertMessageData | ConfirmMessageData | FormMessageData | BookMessageData | ButtonMessageData | IFrameMessageData | JsonMessageData;
 
 export const messageDataKeys = ["alert", "confirm", "form", "book", "editor", "button", "iframe", "json"] as const;
 export type MessageDataKeys = (typeof messageDataKeys)[number];

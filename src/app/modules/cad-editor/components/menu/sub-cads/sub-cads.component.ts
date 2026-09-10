@@ -31,7 +31,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
 import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
+import {BehaviorSubject, filter, lastValueFrom, Subject} from "rxjs";
 import {getCadInfoInputs2} from "../cad-info/cad-info.utils";
 import {MubanCadItemInfo} from "./sub-cads.types";
 
@@ -639,8 +639,9 @@ export class SubCadsComponent implements OnInit, OnDestroy {
     const mubanInfo = kailiaoInfo.mubans[index];
     data.options = mubanInfo.options;
     const yaoqiu = this.mubanYaoqiu();
-    const form = await getCadInfoInputs2(yaoqiu, "set", "kailiaocadmuban", data, this.http, this.dialog, this.status, false);
-    const result = await this.message.form(form);
+    const subject = new Subject<void>();
+    const form = await getCadInfoInputs2(yaoqiu, "set", "kailiaocadmuban", data, this.http, this.dialog, this.status, subject, false);
+    const result = await this.message.form(form, {updateSubject: subject});
     if (result) {
       dataRaw.options = data.options;
       mubanInfo.options = {...data.options};

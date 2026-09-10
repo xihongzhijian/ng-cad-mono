@@ -6,6 +6,7 @@ import {CadCollection} from "@app/cad/collections";
 import {cadOptionOptions, cadOptions} from "@app/cad/options";
 import {CustomValidators} from "@app/utils/input-validators";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
 import {openSuanliaodanFlipDialog} from "@components/dialogs/suanliaodan-flip/suanliaodan-flip.component";
 import {算料公式} from "@components/lurushuju/xinghao-data";
@@ -17,6 +18,7 @@ import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {Subject} from "rxjs";
 import {getLineNames} from "../cad-line/cad-line.utils";
 import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
@@ -85,6 +87,7 @@ export const getCadInfoInputs = (
   data: CadData | (() => CadData),
   dialog: MatDialog,
   status: AppStatusService,
+  subject: Subject<void>,
   parseOptionString: boolean,
   gongshis?: 算料公式[] | null
 ) => {
@@ -274,29 +277,48 @@ export const getCadInfoInputs = (
       case "展开信息":
         {
           const style: InputInfo["style"] = {flex: "1 1 0", width: 0, margin: "2px"};
+          const infos: InputInfo[] = [
+            {
+              type: "string",
+              label: "宽",
+              style,
+              options: gongshiOptions,
+              model: {data: getZhankai, key: "zhankaikuan"},
+              validators: Validators.required
+            },
+            {
+              type: "string",
+              label: "高",
+              style,
+              options: gongshiOptions,
+              model: {data: getZhankai, key: "zhankaigao"},
+              validators: Validators.required
+            },
+            {
+              type: "string",
+              label: "数量",
+              style,
+              model: {data: getZhankai, key: "shuliang"},
+              validators: Validators.required,
+              suffixTexts: [
+                {
+                  name: "编辑全部",
+                  onClick: async () => {
+                    const result = await editCadZhankai(dialog, getData(data));
+                    if (result) {
+                      subject?.next();
+                    }
+                  }
+                }
+              ]
+            }
+          ];
           info = {
             type: "group",
             label: key,
             groupStyle: {display: "flex"},
-            infos: [
-              {
-                type: "string",
-                label: "宽",
-                style,
-                options: gongshiOptions,
-                model: {data: getZhankai, key: "zhankaikuan"},
-                validators: Validators.required
-              },
-              {
-                type: "string",
-                label: "高",
-                style,
-                options: gongshiOptions,
-                model: {data: getZhankai, key: "zhankaigao"},
-                validators: Validators.required
-              },
-              {type: "string", label: "数量", style, model: {data: getZhankai, key: "shuliang"}, validators: Validators.required}
-            ]
+            hint: "只显示第一个展开，要编辑更多请点击“编辑全部”",
+            infos: infos
           };
         }
         break;
@@ -314,6 +336,7 @@ export const getCadInfoInputs = (
                 style,
                 selectOnly: true,
                 model: {data: getZhankai(), key: "kailiaomuban"},
+                hint: "只显示第一个展开的开料模板",
                 suffixIcons: [
                   {
                     name: "open_in_new",
@@ -421,6 +444,7 @@ export const getCadInfoInputs2 = async (
   http: CadDataService,
   dialog: MatDialog,
   status: AppStatusService,
+  subject: Subject<void>,
   parseOptionString: boolean,
   gongshis?: 算料公式[] | null
 ) => {
@@ -448,7 +472,7 @@ export const getCadInfoInputs2 = async (
         info.optionsDialog = {optionKey: key2, openInNewTab: true};
       }
     } else {
-      info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
+      info = getCadInfoInputs([key], data, dialog, status, subject, parseOptionString, gongshis)[0];
       if (key === "选项" && info.type === "object") {
         const requiredKeys: string[] = [];
         for (const {key2: optionKey} of requiredOptionItems || []) {
@@ -528,7 +552,8 @@ export const openCadForm = async (
   const {gongshis, validators} = opts || {};
   const data2 = data?.clone() || new CadData();
   const type: CadEditType = data ? "set" : "add";
-  const form = await getCadInfoInputs2(yaoqiu, type, collection, data2, http, dialog, status, parseOptionString, gongshis);
+  const subject = new Subject<void>();
+  const form = await getCadInfoInputs2(yaoqiu, type, collection, data2, http, dialog, status, subject, parseOptionString, gongshis);
   if (validators?.name) {
     const nameValidator = validators.name;
     const nameInput = form.find((v) => v.label === "名字");
@@ -542,7 +567,7 @@ export const openCadForm = async (
     title += `【${name}】`;
   }
   const {formMessageData, formMessageOthers} = opts || {};
-  const result = await message.form(form, {title, ...formMessageData}, formMessageOthers);
+  const result = await message.form(form, {title, ...formMessageData, updateSubject: subject}, formMessageOthers);
   if (result) {
     if (type === "add" && yaoqiu) {
       data2.type = yaoqiu.CAD分类;
