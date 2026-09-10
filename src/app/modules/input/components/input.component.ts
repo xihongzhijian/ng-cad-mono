@@ -1269,6 +1269,30 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const event = new MatSelectionListChange(selectionList, selectionList.selectedOptions.selected);
     selectionList.selectionChange.emit(event);
   }
+
+  async pasteImage() {
+    const info = this.info();
+    if (info.type !== "image") {
+      return;
+    }
+    try {
+      const clipboardContents = await navigator.clipboard.read();
+      for (const item of clipboardContents) {
+        if (!item.types.includes("image/png")) {
+          throw new Error("请先复制图片内容");
+        }
+        const blob = await item.getType("image/png");
+        await info.onChange?.(blob, info);
+        this.cd.markForCheck();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        this.message.error(error.message);
+      } else {
+        console.error(error);
+      }
+    }
+  }
 }
 
 interface SuffixIconsType {

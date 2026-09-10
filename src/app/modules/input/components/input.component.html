@@ -678,6 +678,7 @@
         }
         <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
         <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
+        <button mat-button (click)="pasteImage()">粘贴图片</button>
         @if (info.clearable) {
           <button mat-button (click)="clear()">删除图片</button>
         }

@@ -166,7 +166,7 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   bigPicSrc?: string;
   prefix?: string;
   model?: never;
-  onChange?: (val: File | null, info: this) => MaybePromise<void>;
+  onChange?: (val: Blob | null, info: this) => MaybePromise<void>;
 }
 
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {

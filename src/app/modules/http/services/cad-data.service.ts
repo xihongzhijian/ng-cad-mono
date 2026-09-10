@@ -398,12 +398,15 @@ export class CadDataService extends HttpService {
     return response?.code === 0;
   }
 
-  async uploadImage(file: File | FileList, options?: HttpOptions) {
+  async uploadImage(file: Blob | File | FileList, options?: HttpOptions) {
     if (file instanceof FileList) {
       file = file[0];
     }
     if (!file) {
       return null;
+    }
+    if (!(file instanceof File)) {
+      file = new File([file], "image.png", {type: "image/png"});
     }
     type UploadImageResult = {url: string; name: string; size: number};
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
