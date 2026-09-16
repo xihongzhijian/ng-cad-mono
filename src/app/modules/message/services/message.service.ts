@@ -3,7 +3,9 @@ import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
+import {getIsFulfilled} from "@app/app.common";
 import {ResultWithErrors} from "@app/utils/error-message";
+import {tryParseJson} from "@app/utils/json-helper";
 import {downloadByString, MaybePromise, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -174,11 +176,15 @@ export class MessageService {
       }
     }
   }
-  async pasteText(config?: {successText?: string; errorText?: string}) {
+  async pasteText<R = any, S = undefined>(
+    action: (text: string) => MaybePromise<void | ResultWithErrors<R, S> | boolean>,
+    config?: {successText?: string; errorText?: string}
+  ) {
     const {successText = "已粘贴", errorText = "粘贴失败"} = config || {};
     try {
       const text = await navigator.clipboard.readText();
-      if (successText) {
+      const res = await action(text);
+      if (successText && (await getIsFulfilled(res, this))) {
         await this.snack(successText);
       }
       return text;
@@ -189,6 +195,28 @@ export class MessageService {
       }
       return null;
     }
+  }
+
+  async copyValue<T>(key: string, value: T, config?: {successText?: string; errorText?: string; project?: string}) {
+    const obj = {key, value, project: config?.project};
+    return this.copyText(JSON.stringify(obj), config);
+  }
+  async pasteValue<T, R = any, S = undefined>(
+    key: string,
+    action: (data: T) => MaybePromise<void | ResultWithErrors<R, S> | boolean>,
+    config?: {successText?: string; errorText?: string; project?: string}
+  ) {
+    await this.pasteText(async (text) => {
+      const obj = tryParseJson<{key: string; value: T; project?: string}>(text);
+      const res = new ResultWithErrors(null);
+      if (!obj || obj.key !== key) {
+        return res.addErrorStr("请先复制对应内容");
+      }
+      if (obj.project && obj.project !== config?.project) {
+        return res.addErrorStr("复制的数据不属于当前项目");
+      }
+      return await action(obj.value);
+    }, config);
   }
 
   async importData<T = any, R = any, S = undefined>(
@@ -208,15 +236,8 @@ export class MessageService {
     const {reviver} = jsonOptions || {};
     try {
       const data = JSON.parse(await file.text(), reviver);
-      let res = action(data);
-      if (res instanceof Promise) {
-        res = await res;
-      }
-      let fulfilled = true;
-      if (res instanceof ResultWithErrors) {
-        fulfilled = await res.check(this);
-      }
-      if (fulfilled) {
+      const res = await action(data);
+      if (await getIsFulfilled(res, this)) {
         await this.snack(`${title}导入成功`);
       }
     } catch (e) {

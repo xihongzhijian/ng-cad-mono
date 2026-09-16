@@ -23,7 +23,6 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadDimensionForm} from "@app/cad/utils";
-import {tryParseJson} from "@app/utils/json-helper";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -392,29 +391,26 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this.config.setConfig("scroll", scroll);
   }, 1000);
 
-  private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = async (entities) => {
-    const copyInfo = {
-      key: "cad-viewer copy entities",
-      entities: entities.export()
-    };
-    await this.message.copyText(JSON.stringify(copyInfo));
+  private _entitiesKey = "cad-viewer_entities";
+  private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = (entities) => {
+    this.message.copyValue(this._entitiesKey, entities.export());
   };
-  private _onEntitiesPasteStart: CadEventCallBack<"entitiespastestart"> = async () => {
-    const copyInfoStr = await navigator.clipboard.readText();
-    const copyInfo = tryParseJson(copyInfoStr);
-    if (copyInfo?.key === "cad-viewer copy entities" && copyInfo.entities) {
-      const cad = this.status.cad;
-      const entities = new CadEntities(copyInfo.entities, true);
-      if (cad.pointerPosition) {
-        const {x: px, y: py} = cad.pointerPosition;
-        const point2 = cad.getWorldPoint(px, py);
-        const rect = entities.getBoundingRect();
-        entities.transform({translate: point2.sub(rect.x, rect.y)}, true);
+  private _onEntitiesPasteStart: CadEventCallBack<"entitiespastestart"> = () => {
+    this.message.pasteValue(this._entitiesKey, async (entitiesData) => {
+      if (entitiesData) {
+        const cad = this.status.cad;
+        const entities = new CadEntities(entitiesData, true);
+        if (cad.pointerPosition) {
+          const {x: px, y: py} = cad.pointerPosition;
+          const point2 = cad.getWorldPoint(px, py);
+          const rect = entities.getBoundingRect();
+          entities.transform({translate: point2.sub(rect.x, rect.y)}, true);
+        }
+        entities.forEach((e) => (e.opacity = 0.3));
+        cad.entitiesToPaste = entities;
+        await cad.add(entities);
       }
-      entities.forEach((e) => (e.opacity = 0.3));
-      cad.entitiesToPaste = entities;
-      await cad.add(entities);
-    }
+    });
   };
   private _onEntitiesPasteEnd: CadEventCallBack<"entitiespasteend"> = async (entities) => {
     const cad = this.status.cad;

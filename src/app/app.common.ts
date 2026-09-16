@@ -1,9 +1,11 @@
 import {AbstractControlOptions, FormControl, FormControlOptions, FormControlState, FormGroup} from "@angular/forms";
 import {environment} from "@env";
 import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
+import {MessageService} from "@modules/message/services/message.service";
 import {Properties} from "csstype";
 import JsBarcode from "jsbarcode";
 import {TDocumentInformation} from "pdfmake/interfaces";
+import {ResultWithErrors} from "./utils/error-message";
 
 declare global {
   interface Window {
@@ -277,3 +279,13 @@ export interface StyledItem {
   class?: string | string[];
   style?: Properties;
 }
+
+export const getIsFulfilled = async <R = any, S = undefined>(result: void | ResultWithErrors<R, S> | boolean, message: MessageService) => {
+  let fulfilled = true;
+  if (result instanceof ResultWithErrors) {
+    fulfilled = await result.check(message);
+  } else if (result === false) {
+    fulfilled = false;
+  }
+  return fulfilled;
+};

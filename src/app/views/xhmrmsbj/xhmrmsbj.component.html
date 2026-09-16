@@ -102,8 +102,9 @@
           @if (!isFromOrder()) {
             <button mat-flat-button (click)="setKexuanmokuai()">编辑</button>
             <button mat-flat-button (click)="selectAllKexuanMokuais()">全选</button>
-            <button mat-flat-button (click)="copySelectedKexuanMokuais()">复制选中</button>
             <button mat-flat-button (click)="removeSelectedKexuanMokuais()">删除选中</button>
+            <button mat-flat-button (click)="copySelectedKexuanMokuais()">复制选中</button>
+            <button mat-flat-button (click)="pasteKexuanMokuais()">粘贴</button>
           }
         </div>
       }
@@ -233,6 +234,8 @@
           <div class="title">型号板材分组</div>
           @if (!isFromOrder()) {
             <button mat-flat-button (click)="openMrbcjfzDialog()">编辑</button>
+            <button mat-flat-button (click)="copyMrbcjfz()">复制</button>
+            <button mat-flat-button (click)="pasteMrbcjfz()">粘贴</button>
           }
         </div>
         <div class="xinghao-info flex-column">

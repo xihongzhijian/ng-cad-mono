@@ -15,15 +15,13 @@ import {
   replaceQiegemubanGroup
 } from "@app/cad/cad-qiegemuban";
 import {flipOptions} from "@app/cad/options";
-import {tryParseJson} from "@app/utils/json-helper";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
-import {isTypeOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -41,7 +39,6 @@ import {getOpenDialogFunc} from "../dialog.common";
 export class CadZhankaiComponent extends Utils() {
   dialogRef = inject<MatDialogRef<CadZhankaiComponent, CadZhankaiDialogOutput>>(MatDialogRef);
   data = inject<CadZhankaiDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {zhankais: [], qiegemubanGroups: []};
-  private config = inject(AppConfigService);
   private dialog = inject(MatDialog);
 
   private message = inject(MessageService);
@@ -315,6 +312,7 @@ export class CadZhankaiComponent extends Utils() {
     return group;
   }
 
+  private _qiegemubanKey = "cad-zhankai-qiegemuban";
   async editQiegemuban(i: number) {
     const group = await this.getQiegemubanGroup(i, true);
     const result = await openCadQiegemubanGroupDialog(this.dialog, {data: {group}});
@@ -329,20 +327,19 @@ export class CadZhankaiComponent extends Utils() {
     if (!group) {
       return;
     }
-    const data = {id: "cad-zhankai-qiegemuban", qiegemubans: group.qiegemubans};
-    await this.message.copyText(JSON.stringify(data));
+    await this.message.copyValue(this._qiegemubanKey, group.qiegemubans);
   }
-  async pasteQiegemuban(i: number) {
-    const text = await this.message.pasteText();
-    const data = tryParseJson(text || "");
-    if (!isTypeOf(data, "object") || data.id !== "cad-zhankai-qiegemuban") {
-      await this.message.error("没有切割模板数据");
-      return;
-    }
-    const qiegemubans = data.qiegemubans as CadQiegemuban[];
-    const group = await this.getQiegemubanGroup(i, true);
-    group.qiegemubans = qiegemubans;
-    this.qiegemubanGroups.update((v) => [...v]);
+  pasteQiegemuban(i: number) {
+    this.message.pasteValue<CadQiegemuban[]>(this._qiegemubanKey, async (qiegemubans) => {
+      const res = new ResultWithErrors(null);
+      if (!Array.isArray(qiegemubans)) {
+        return res.addErrorStr("没有切割模板数据");
+      }
+      const group = await this.getQiegemubanGroup(i, true);
+      group.qiegemubans = qiegemubans;
+      this.qiegemubanGroups.update((v) => [...v]);
+      return res;
+    });
   }
   async emptyQiegemuban(i: number) {
     if (!(await this.message.confirm("是否确定删除切割模板？"))) {

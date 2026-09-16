@@ -26,15 +26,15 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
-import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
+import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail, ResultWithErrors} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {getCopyName, getValueString} from "@app/utils/get-value";
+import {getValueString} from "@app/utils/get-value";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
-import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
+import {MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
 import {MokuaikuComponent} from "@components/bujumokuai/mokuaiku/mokuaiku.component";
 import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
@@ -78,6 +78,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
+import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjComponent} from "@views/msbj/msbj.component";
@@ -1369,15 +1370,45 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.close.emit({isSubmited: this.isSubmited()});
   }
 
+  private _mrbcjfzTable = "p_xinghao";
   async openMrbcjfzDialog() {
     const xinghao = this.xinghao();
     if (!xinghao || this.isFromOrder()) {
       return;
     }
-    const result = await openMrbcjfzDialog(this.dialog, {data: {id: xinghao.raw.vid, table: "p_xinghao"}});
+    const result = await openMrbcjfzDialog(this.dialog, {data: {id: xinghao.raw.vid, table: this._mrbcjfzTable}});
     if (result) {
       this.xinghao.set(result.data);
     }
+  }
+
+  private _mrbcjfzKey = "xhmrmsbjCopyMrbcjfz";
+  copyMrbcjfz() {
+    const xinghao = this.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    this.message.copyValue(this._mrbcjfzKey, xinghao.默认板材);
+  }
+  pasteMrbcjfz() {
+    this.message.pasteValue<MrbcjfzXinghaoInfo["默认板材"]>(this._mrbcjfzKey, async (value) => {
+      const xinghao = this.xinghao();
+      if (!xinghao) {
+        return false;
+      }
+      if (!(await this.message.confirm("该操作无法撤销。是否确定粘贴板材分组？"))) {
+        return false;
+      }
+      const valueOld = cloneDeep(xinghao.默认板材);
+      xinghao.默认板材 = value;
+      const res = await MrbcjfzComponent.updateMrbcjfz(this.http, this._mrbcjfzTable, xinghao, this.isFromOrder());
+      if (res) {
+        this.refreshXinghao();
+      } else {
+        xinghao.默认板材 = valueOld;
+      }
+      return true;
+    });
   }
 
   isVersion2024 = computed(() => {
@@ -2200,33 +2231,33 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.selectedKexuanMokuais.set(this.kexuanmokuais().slice());
     }
   }
-  async copySelectedKexuanMokuais() {
+  private _copyKexuanMokuaisKey = "xhmrmsbj_copy_kexuan_mokuais";
+  copySelectedKexuanMokuais() {
     const selected = this.getSelectedKexuanMokuais();
     if (!selected) {
       return;
     }
-    if (!(await this.message.confirm("确定要复制选中的可选模块吗？"))) {
-      return;
-    }
     const ids = selected.map((v) => v.id);
-    const namesAll = this.bjmkStatus.mokuaisManager.items().map((v) => v.name);
-    const names = selected.map((v) => getCopyName(namesAll, v.type2));
-    const result = await this.http.getData<{typeInfos: ZixuanpeijianTypesInfo; mokuais: MokuaiItem[]}>("ngcad/copyPeijianmokuais", {
-      ids,
-      names
-    });
-    if (!result) {
-      return;
-    }
-    const {typeInfos, mokuais} = result;
-    if (mokuais.length > 0) {
-      this.bjmkStatus.mokuaisManager.refresh({add: mokuais});
-    }
-    const ids2 = mokuais.map((v) => v.id);
-    const mokuais2 = await this.fetchMokuais(ids2, typeInfos);
-    if (mokuais2.length > 0) {
-      this.setKexuanmokuai([...this.kexuanmokuais(), ...mokuais2]);
-    }
+    this.message.copyValue(this._copyKexuanMokuaisKey, ids, {project: this.status.project});
+  }
+  pasteKexuanMokuais() {
+    this.message.pasteValue<number[]>(
+      this._copyKexuanMokuaisKey,
+      async (ids) => {
+        const res = new ResultWithErrors(null);
+        const ids2 = difference(
+          ids,
+          this.kexuanmokuais().map((v) => v.id)
+        );
+        if (ids2.length < 1) {
+          return res.addErrorStr("没有新的可选模块可粘贴");
+        }
+        const mokuais = await this.fetchMokuais(ids2);
+        this.setKexuanmokuai([...this.kexuanmokuais(), ...mokuais]);
+        return res;
+      },
+      {project: this.status.project}
+    );
   }
   async removeSelectedKexuanMokuais() {
     const selected = this.getSelectedKexuanMokuais();

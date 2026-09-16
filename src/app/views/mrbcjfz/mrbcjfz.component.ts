@@ -556,6 +556,24 @@ export class MrbcjfzComponent {
     return errorMsg;
   }
 
+  static async updateMrbcjfz(http: CadDataService, table: string, xinghao: MrbcjfzXinghaoInfo, isFromOrder = false, loaderId?: string) {
+    const updateData: TableUpdateParams<MrbcjfzXinghao>["data"] = {vid: xinghao.raw.vid};
+    updateData.morenbancai = JSON.stringify(xinghao.默认板材);
+    if (isFromOrder) {
+      const response = await http.post(
+        "peijian/api/updateMorenbancaijifenzu",
+        {
+          name: xinghao.raw.mingzi,
+          morenbancai: xinghao.默认板材
+        },
+        {spinner: loaderId}
+      );
+      return response?.code === 0;
+    } else {
+      return !!(await http.tableUpdate({table, data: updateData}, {spinner: loaderId}));
+    }
+  }
+
   async submit() {
     let result = false;
     const xinghao = this.xinghao();
@@ -570,22 +588,7 @@ export class MrbcjfzComponent {
     if (this.inputData()) {
       result = true;
     } else {
-      const data: TableUpdateParams<MrbcjfzXinghao>["data"] = {vid: xinghao.raw.vid};
-      data.morenbancai = JSON.stringify(xinghao.默认板材);
-      if (this.isFromOrder()) {
-        const response = await this.http.post(
-          "peijian/api/updateMorenbancaijifenzu",
-          {
-            name: xinghao.raw.mingzi,
-            morenbancai: xinghao.默认板材
-          },
-          {spinner: this.loaderId}
-        );
-        result = response?.code === 0;
-      } else {
-        const table = this.table();
-        result = !!(await this.http.tableUpdate({table, data}, {spinner: this.loaderId}));
-      }
+      result = await MrbcjfzComponent.updateMrbcjfz(this.http, this.table(), xinghao, this.isFromOrder(), this.loaderId);
     }
     this.dataSubmit.emit({data: xinghao, errors});
     return result;
