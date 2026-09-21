@@ -196,7 +196,9 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.form.set(data.form);
   });
   refreshForm() {
-    this.form.update((v) => cloneDeep(v));
+    for (const input of this.formInputs()) {
+      input.refresh();
+    }
   }
   reset() {
     switch (this.data.type) {

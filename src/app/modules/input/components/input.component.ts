@@ -1293,6 +1293,13 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
       }
     }
   }
+
+  refresh() {
+    this.cd.markForCheck();
+    for (const input of this.inputComponents()) {
+      input.refresh();
+    }
+  }
 }
 
 interface SuffixIconsType {
