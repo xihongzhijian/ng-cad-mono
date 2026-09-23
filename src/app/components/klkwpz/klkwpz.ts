@@ -199,8 +199,7 @@ export class Klkwpz {
       "增加指定偏移",
       "固定行列阵列",
       "自增等距阵列",
-      "孔依附板材边缘",
-      ...dabiaoKeys
+      "孔依附板材边缘"
     ]);
     delete (result as any).name;
     return result;
