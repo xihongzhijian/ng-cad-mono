@@ -970,8 +970,8 @@ export const printCads = async (params: PrintCadsParams) => {
   const imageContents2: ContentImage[] = [];
 
   let pageOrientation: PdfDocument["pageOrientation"] = "portrait";
-  for (let i = 0; i < cads.length; i++) {
-    const data = cads[i];
+  for (const [j, data] of cads.entries()) {
+    const i = data.info.originalIndex ?? j;
     const rect = data.getBoundingRect();
     let localWidth: number;
     let localHeight: number;
@@ -1017,6 +1017,9 @@ export const printCads = async (params: PrintCadsParams) => {
         const {urls, showSmall, showLarge, styles} = designPics[keyword];
         let isOwn = true;
         let currUrls = urls[i];
+        if (keyword === "设计图") {
+          console.log({i, urls, obj: designPics[keyword]});
+        }
         if (!Array.isArray(currUrls) || currUrls.length === 0) {
           currUrls = urls[0];
           isOwn = false;

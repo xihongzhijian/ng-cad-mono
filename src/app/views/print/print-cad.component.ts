@@ -300,7 +300,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     timer.start(this.loaderId);
     const printType = this.printType();
     this.spinner.show(this.loaderId, {text: `正在生成${printType}...`});
-    const cads = params.cads.map((v) => this.splitCads(v)).flat();
+    const cads = params.cads.map((v, i) => this.splitCads(v, i)).flat();
     // cads.forEach((v) => {
     //     v.entities.forEach((e) => (e.selectable = false));
     // });
@@ -417,7 +417,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  splitCads(source: CadData) {
+  splitCads(source: CadData, index: number) {
     const {top, bottom} = source.getBoundingRect();
     const yValues = [bottom - 500, top + 500];
     const layerName = "分页线";
@@ -428,12 +428,14 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     });
     const count = yValues.length - 1;
     if (count < 2) {
+      source.info.originalIndex = index;
       return [source];
     }
     yValues.sort((a, b) => a - b);
     const result: CadData[] = Array(count);
     for (let i = 0; i < yValues.length - 1; i++) {
       result[i] = new CadData();
+      result[i].info.originalIndex = index;
     }
     source.entities.forEach((e) => {
       if (e.layer === layerName) {
