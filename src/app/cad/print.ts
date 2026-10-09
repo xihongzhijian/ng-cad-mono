@@ -970,8 +970,9 @@ export const printCads = async (params: PrintCadsParams) => {
   const imageContents2: ContentImage[] = [];
 
   let pageOrientation: PdfDocument["pageOrientation"] = "portrait";
-  for (const [j, data] of cads.entries()) {
-    const i = data.info.originalIndex ?? j;
+  const usedIndexs = new Set<number>();
+  for (let i = 0; i < cads.length; i++) {
+    const data = cads[i];
     const rect = data.getBoundingRect();
     let localWidth: number;
     let localHeight: number;
@@ -1012,14 +1013,12 @@ export const printCads = async (params: PrintCadsParams) => {
 
     const designPics = params.designPics;
     let img2: string | undefined;
+    const isIndexUsed = usedIndexs.has(i);
     if (designPics) {
       for (const keyword in designPics) {
         const {urls, showSmall, showLarge, styles} = designPics[keyword];
         let isOwn = true;
         let currUrls = urls[i];
-        if (keyword === "设计图") {
-          console.log({i, urls, obj: designPics[keyword]});
-        }
         if (!Array.isArray(currUrls) || currUrls.length === 0) {
           currUrls = urls[0];
           isOwn = false;
@@ -1038,7 +1037,7 @@ export const printCads = async (params: PrintCadsParams) => {
               cad.center();
             }
           }
-          if (showLarge && isOwn) {
+          if (showLarge && isOwn && !isIndexUsed) {
             const data2 = new CadData();
             const cadImages = await drawDesignPics(data2, keyword, currUrls.length, false, rect, styles);
             const cadImagePadding = [50 * scaleY, 50 * scaleX];
@@ -1086,18 +1085,21 @@ export const printCads = async (params: PrintCadsParams) => {
         }
       }
     }
-    const {imgs} = await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
-    if (imgs.length > 0) {
-      for (const img of imgs) {
+    if (!isIndexUsed) {
+      const {imgs} = await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
+      if (imgs.length > 0) {
+        for (const img of imgs) {
+          imageContents1.push({image: img, width: localWidth, height: localHeight});
+        }
+      } else {
+        const img = await cad.toDataURL();
         imageContents1.push({image: img, width: localWidth, height: localHeight});
       }
-    } else {
-      const img = await cad.toDataURL();
-      imageContents1.push({image: img, width: localWidth, height: localHeight});
+      if (img2) {
+        imageContents2.push({image: img2, width: localWidth, height: localHeight});
+      }
     }
-    if (img2) {
-      imageContents2.push({image: img2, width: localWidth, height: localHeight});
-    }
+    usedIndexs.add(i);
 
     const cadConfig = cad.getConfig();
     const unfold = params.orders?.[i]?.unfold;
