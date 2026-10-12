@@ -14,17 +14,23 @@ export interface CadPreviewRawParams {
   showFenti?: boolean;
   showIntersections?: boolean;
 }
-export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>): Partial<CadViewerConfig> => ({
-  width: 300,
-  height: 150,
-  padding: [5],
-  backgroundColor: "transparent",
-  reverseSimilarColor: {backgroundColor: "black"},
-  hideLineLength: collection === "CADmuban",
-  hideLineGongshi: false,
-  lineGongshi: 8,
-  ...config
-});
+export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>) => {
+  const result: Partial<CadViewerConfig> = {
+    width: 300,
+    height: 150,
+    padding: [5],
+    backgroundColor: "transparent",
+    reverseSimilarColor: {backgroundColor: "black"},
+    hideLineLength: collection === "CADmuban",
+    hideLineGongshi: false,
+    lineGongshi: 8,
+    ...config
+  };
+  if (config?.backgroundColor && config.backgroundColor !== "transparent") {
+    result.reverseSimilarColor = true;
+  }
+  return result;
+};
 export const getCadPreviewRaw = async (collection: CadCollection, data: CadData, params: CadPreviewRawParams = {}) => {
   const cad = new CadViewer(new CadData(), getCadPreviewConfig(collection, params.config));
   cad.dom.style.opacity = "0";
