@@ -79,7 +79,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   }
   intersectionEff = this.status.getCadStatusEffect(
     (v): v is CadStatusIntersection => {
-      return v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo;
+      return v instanceof CadStatusIntersection && this.intersectionKeys.includes(v.info as IntersectionKey);
     },
     () => {
       this.prevConfig = this._setIntersectionConfig();
@@ -92,8 +92,6 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.config.setConfig(this.prevConfig, {sync: false});
     },
     () => {
-      this.config.setConfig(this.prevConfig, {sync: false});
-      this.prevConfig = this._setIntersectionConfig();
       this._updateCadPoints();
     }
   );
@@ -525,7 +523,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.toggleCadStatus(new CadStatusSelectJointpoint(i));
   }
 
-  intersectionKeys = intersectionKeys;
+  intersectionKeys: IntersectionKey[] = ["zhidingweizhipaokeng", "指定位置不折", "指定分体位置"];
   intersectionKeysTranslate = intersectionKeysTranslate;
   intersectionInputs = signal<Partial<Record<IntersectionKey, InputInfo[][]>>>({});
   updateIntersectionInputs() {
