@@ -800,6 +800,18 @@ const getUnfoldCadViewers = async (
         scale[0] *= -1;
       }
       cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
+      cadRect.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]});
+      for (const e of cad.entities.mtext) {
+        if (e.text === "正面") {
+          if (e.insert.x > cadRect.x) {
+            e.anchor.set(1, 1);
+            e.insert.set(cadRect.right, cadRect.top);
+          } else {
+            e.anchor.set(0, 1);
+            e.insert.set(cadRect.left, cadRect.top);
+          }
+        }
+      }
       showIntersections(cad, params.projectConfig, offsetItems);
       unfoldCad.entities.merge(cad.entities);
 
