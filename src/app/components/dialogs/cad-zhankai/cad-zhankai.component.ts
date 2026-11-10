@@ -349,6 +349,24 @@ export class CadZhankaiComponent extends Utils() {
     emptyQiegemubanGroup(qiegemubanGroups, i);
     this.qiegemubanGroups.set([...qiegemubanGroups]);
   }
+
+  export() {
+    const zhankais = this.zhankais();
+    this.message.exportData(
+      zhankais.map((v) => v.export()),
+      "CAD展开信息"
+    );
+  }
+  import() {
+    this.message.importData<any[]>(true, async (zhankais) => {
+      const result = new ResultWithErrors(null);
+      if (!Array.isArray(zhankais)) {
+        return result.addErrorStr("数据格式错误");
+      }
+      this.zhankais.update((v) => v.concat(zhankais.map((v2) => new CadZhankai(v2))));
+      return result;
+    });
+  }
 }
 
 export interface CadZhankaiDialogInput {
