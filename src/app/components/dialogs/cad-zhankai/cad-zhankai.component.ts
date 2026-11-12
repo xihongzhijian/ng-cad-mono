@@ -159,8 +159,16 @@ export class CadZhankaiComponent extends Utils() {
     }
   }
 
+  activeGroupIndex = signal<number | null>(null);
+
   inputInfoGroups = computed(() => {
-    const groups: {zhankai: CadZhankai; inputInfos: InputInfo[]; inputInfosFlip: InputInfo[][]; inputInfosFlipChai: InputInfo[][]}[] = [];
+    const groups: {
+      zhankai: CadZhankai;
+      inputInfos: InputInfo[];
+      inputInfosFlip: InputInfo[][];
+      inputInfosFlipChai: InputInfo[][];
+      active?: boolean;
+    }[] = [];
     const zhankais = this.zhankais();
     for (const [i, zhankai] of zhankais.entries()) {
       const getter = new InputInfoWithDataGetter(zhankai);

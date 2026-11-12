@@ -1,7 +1,7 @@
 <ng-scrollbar>
   <div class="items items-per-row">
     @for (group of inputInfoGroups(); track i; let i = $index) {
-      <div class="item">
+      <div class="item" (click)="activeGroupIndex.set(i)" [class.active]="activeGroupIndex() === i">
         @for (info of group.inputInfos; track $index) {
           @if (info.label === "名字") {
             <div class="toolbar">

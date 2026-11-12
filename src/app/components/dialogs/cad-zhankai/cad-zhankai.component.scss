@@ -57,6 +57,9 @@
     background-color: var(--mat-sys-surface);
     box-shadow: var(--mat-sys-level2);
     border-radius: 20px;
+    &.active {
+      background-color: var(--mat-sys-outline-variant);
+    }
 
     > app-input {
       width: 100%;
